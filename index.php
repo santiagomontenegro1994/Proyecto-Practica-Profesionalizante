@@ -1,13 +1,21 @@
 <?php
+session_start();
+
 require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
 require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
+
+if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
+  header('Location: cerrarsesion.php');
+  exit;
+}
+
 ?>
 
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Bienvenid@s!!</h1>
+      <h1>Bienvenid@ <?php echo $_SESSION['Usuario_Nombre'].' '.$_SESSION['Usuario_Apellido']; ?></h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item active"><a href="index.php">Home</a></li>

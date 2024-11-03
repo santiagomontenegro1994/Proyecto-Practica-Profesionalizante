@@ -36,7 +36,7 @@
             </a>
           </li>
           <li>
-            <a href="components-buttons.html">
+            <a href="listadosClientes.php">
               <i class="bi bi-circle"></i><span>Listados</span>
             </a>
           </li>
