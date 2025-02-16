@@ -1,0 +1,75 @@
+<?php
+session_start();
+
+if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
+  header('Location: cerrarsesion.php');
+  exit;
+}
+ ($_SESSION['Descarga']);
+
+//voy a necesitar la conexion: incluyo la funcion de Conexion.
+require_once 'funciones/conexion.php';
+
+//genero una variable para usar mi conexion desde donde me haga falta
+//no envio parametros porque ya los tiene definidos por defecto
+$MiConexion = ConexionBD();
+
+//ahora voy a llamar el script con la funcion que genera mi listado
+require_once 'funciones/select_general.php';
+
+
+//voy a ir listando lo necesario para trabajar en este script: 
+$ListadoTurnos = Listar_Turnos($MiConexion);
+$CantidadTurnos = count($ListadoTurnos);
+
+//Empiezo a guardar el contenido en una variable
+ob_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<h2><?php 
+// Separar el string en base a 'Cliente:' 
+$turnos_array = explode('Cliente:', ($_SESSION['Descarga'])); 
+// Eliminar el primer elemento si está vacío (puede suceder si 'Cliente:' está al inicio del string) 
+if (empty($turnos_array[0])) { array_shift($turnos_array); } 
+// Formatear la salida 
+foreach ($turnos_array as $turno) { 
+    $turno = trim($turno); // Eliminar espacios en blanco al principio y al final 
+    echo "Cliente: " . $turno . "<br><br>"; 
+}
+?></h2>
+</body>
+</html>
+
+
+<?php
+//Termino de guardar el contenido en un variable 
+$html=ob_get_clean();
+//echo $html;
+
+//creo la variable dompdf
+require_once 'libreria/dompdf/autoload.inc.php';
+use Dompdf\Dompdf;
+$dompdf = new Dompdf();
+
+//activo las opciones para poder generar el pdf con imagenes
+$options = $dompdf->getOptions();
+$options->set(array('isRemoteEnable' => true));
+$dompdf->setOptions($options);
+
+//le paso el $html en el que guardamos toda la lista
+$dompdf->loadHtml($html);
+
+//seteo el papel en A4 vertical
+$dompdf->setPaper('A4','portrait');
+
+$dompdf->render();
+//le indico el nombre del archivo y le doy true para que descargue
+$dompdf->stream("archivo.pdf", array("Attachment" => true));
+?>
