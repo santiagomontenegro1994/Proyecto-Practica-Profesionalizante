@@ -179,7 +179,8 @@ if (!empty($_POST['Buscar'])) {
                         <td><?php echo $ListadoTurnos[$i]['FECHA']; ?></td>
                         <td><?php echo $ListadoTurnos[$i]['HORARIO']; ?></td>
                         <td><?php for ($j = 0; $j<$cantidadIds; $j++) {
-                          echo $ListadoTiposTurnos[$array_ids[$j]-1]['DENOMINACION'];
+                          $indice = (int)$array_ids[$j] - 1;
+                          echo $ListadoTiposTurnos[$indice]['DENOMINACION'];
                           if ($j < $cantidadIds - 1){
                             echo ", ";}
                           } 
