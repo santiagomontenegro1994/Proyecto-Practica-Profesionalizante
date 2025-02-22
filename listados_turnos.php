@@ -124,8 +124,9 @@ if (!empty($_POST['Buscar'])) {
                       title="PDF"> Descargar TXT  </a> 
                   </div> 
                   <div class="col-sm-3 mt-2"> 
-                    <button type="submit" class="btn btn-success btn-xs d-inline-block" name="DescargarXLS">Descargar XLS</button> 
-                  </div> 
+                  <a href="descargar_turnosXLS.php" 
+                      class="btn btn-success btn-xs d-inline-block " 
+                      title="PDF"> Descargar XLS </a></div> 
                   <div class="col-sm-3 mt-2"> 
                   <a href="descargar_turnosCSV.php" 
                       class="btn btn-info btn-xs d-inline-block " 
