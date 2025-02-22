@@ -26,24 +26,33 @@ $CantidadTurnos = count($ListadoTurnos);
 ob_start();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Lista de Clientes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<h2><?php 
-// Separar el string en base a 'Cliente:' 
-$turnos_array = explode('Cliente:', ($_SESSION['Descarga'])); 
-// Eliminar el primer elemento si está vacío (puede suceder si 'Cliente:' está al inicio del string) 
-if (empty($turnos_array[0])) { array_shift($turnos_array); } 
-// Formatear la salida 
-foreach ($turnos_array as $turno) { 
-    $turno = trim($turno); // Eliminar espacios en blanco al principio y al final 
-    echo "Cliente: " . $turno . "<br><br>"; 
-}
-?></h2>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Lista de Clientes</h2>
+        <div class="list-group">
+            <?php
+            // Separar el string en base a 'Cliente:'
+            $turnos_array = explode('Cliente:', ($_SESSION['Descarga']));
+            // Eliminar el primer elemento si está vacío
+            if (empty($turnos_array[0])) {
+                array_shift($turnos_array);
+            }
+            // Formatear la salida
+            foreach ($turnos_array as $turno) {
+                $turno = trim($turno); // Eliminar espacios en blanco al principio y al final
+                echo "<div class='list-group-item'>Cliente: " . $turno . "</div>";
+            }
+            ?>
+        </div>
+    </div>
 </body>
 </html>
 
