@@ -110,6 +110,29 @@
         </ul>
       </li><!-- End Deposito Nav -->
 
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#tables-nav1" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-layout-text-window-reverse"></i><span>Panel de control</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="tables-nav1" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="panel_turnos.php">
+              <i class="bi bi-circle"></i><span>Turnos</span>
+            </a>
+          </li>
+          <li>
+            <a href="tables-data.html">
+              <i class="bi bi-circle"></i><span>Ventas</span>
+            </a>
+          </li>
+          <li>
+            <a href="tables-data.html">
+              <i class="bi bi-circle"></i><span>Compras</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Panel de control Nav -->
+
     </ul>
 
   </aside><!-- End Sidebar-->
