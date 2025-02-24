@@ -70,36 +70,32 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
 
         <!-- Revenue Card -->
         <div class="col-6 col-md-6">
-          <div class="card info-card revenue-card">
-
-            <div class="filter">
-              <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                <li class="dropdown-header text-start">
-                  <h6>Filtro</h6>
-                </li>
-
-                <li><a class="dropdown-item" href="#">Hoy</a></li>
-                <li><a class="dropdown-item" href="#">Semana</a></li>
-                <li><a class="dropdown-item" href="#">Mes</a></li>
-                <li><a class="dropdown-item" href="#">Año</a></li>
-              </ul>
-            </div>
-
-            <div class="card-body">
-              <h5 class="card-title">Ganancia <span>| Hoy</span></h5>
-
-              <div class="d-flex align-items-center">
-                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                  <i class="bi bi-currency-dollar"></i>
+            <div class="card info-card revenue-card">
+                <div class="filter">
+                <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <li class="dropdown-header text-start">
+                    <h6>Filtro</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="#" onclick="cambiarFiltro('hoy')">Hoy</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cambiarFiltro('semana')">Semana</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cambiarFiltro('mes')">Mes</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cambiarFiltro('año')">Año</a></li>
+                </ul>
                 </div>
-                <div class="ps-3">
-                  <h6>$3,264</h6>
-                </div>
-              </div>
-            </div>
 
-          </div>
+                <div class="card-body">
+                <h5 class="card-title">Ganancia <span id="periodo">| Hoy</span></h5>
+                <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                    <i class="bi bi-currency-dollar"></i>
+                    </div>
+                    <div class="ps-3">
+                    <h6 id="totalGanancia">$3,264</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div><!-- End Revenue Card -->
 
         <!-- Reports -->
