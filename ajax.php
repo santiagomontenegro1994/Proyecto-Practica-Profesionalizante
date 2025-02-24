@@ -1,7 +1,6 @@
 <?php
-
 // Conectar a la base de datos
-$conexion = new mysqli($Host = 'localhost', $User = 'root', $Password = '', $BaseDeDatos = 'proyecto');
+$conexion = new mysqli('localhost', 'root', '', 'proyecto');
 
 // Verificar la conexión
 if ($conexion->connect_error) {
@@ -13,22 +12,55 @@ $accion = $_GET['accion'] ?? '';
 $filtro = $_GET['filtro'] ?? '';
 
 // Ejecutar la acción correspondiente
-if ($accion === 'obtener_ganancia') {
-    // Consulta SQL base
-    $sql = "
-        SELECT 
-            IFNULL(SUM(ts.precio), 0) AS total
-        FROM 
-            turnos t
-        JOIN 
-            tipo_servicio ts
-        ON 
-            FIND_IN_SET(ts.idTipoServicio, t.idTipoServicio) > 0
-        WHERE 
-            t.idEstado = 3
-    ";
+switch ($accion) {
+    case 'obtener_turnos':
+        obtenerTurnos($conexion, $filtro);
+        break;
+    case 'obtener_ganancia':
+        obtenerGanancia($conexion, $filtro);
+        break;
+    case 'obtener_reportes':
+        obtenerReportes($conexion, $filtro);
+        break;
+    default:
+        echo json_encode(['error' => 'Acción no válida']);
+        break;
+}
 
-    // Agregar la condición del filtro
+// Método para obtener los turnos
+function obtenerTurnos($conexion, $filtro) {
+    $sql = "SELECT COUNT(*) AS total FROM turnos WHERE idEstado = 3";
+    switch ($filtro) {
+        case 'hoy':
+            $sql .= " AND Fecha = CURDATE()";
+            break;
+        case 'semana':
+            $sql .= " AND YEARWEEK(Fecha) = YEARWEEK(CURDATE())";
+            break;
+        case 'mes':
+            $sql .= " AND MONTH(Fecha) = MONTH(CURDATE()) AND YEAR(Fecha) = YEAR(CURDATE())";
+            break;
+        case 'año':
+            $sql .= " AND YEAR(Fecha) = YEAR(CURDATE())";
+            break;
+        default:
+            $sql .= " AND Fecha = CURDATE()";
+    }
+
+    $resultado = $conexion->query($sql);
+    if ($resultado->num_rows > 0) {
+        $fila = $resultado->fetch_assoc();
+        $total = $fila['total'];
+    } else {
+        $total = 0;
+    }
+
+    echo json_encode(['total' => $total]);
+}
+
+// Método para obtener la ganancia
+function obtenerGanancia($conexion, $filtro) {
+    $sql = "SELECT IFNULL(SUM(ts.precio), 0) AS total FROM turnos t JOIN tipo_servicio ts ON FIND_IN_SET(ts.idTipoServicio, t.idTipoServicio) > 0 WHERE t.idEstado = 3";
     switch ($filtro) {
         case 'hoy':
             $sql .= " AND t.Fecha = CURDATE()";
@@ -43,13 +75,10 @@ if ($accion === 'obtener_ganancia') {
             $sql .= " AND YEAR(t.Fecha) = YEAR(CURDATE())";
             break;
         default:
-            $sql .= " AND t.Fecha = CURDATE()"; // Por defecto, hoy
+            $sql .= " AND t.Fecha = CURDATE()";
     }
 
-    // Ejecutar la consulta
     $resultado = $conexion->query($sql);
-
-    // Obtener el resultado
     if ($resultado->num_rows > 0) {
         $fila = $resultado->fetch_assoc();
         $total = $fila['total'];
@@ -57,11 +86,13 @@ if ($accion === 'obtener_ganancia') {
         $total = 0;
     }
 
-    // Devolver el resultado en formato JSON
     echo json_encode(['total' => $total]);
-} else {
-    // Si la acción no es válida, devolver un error
-    echo json_encode(['error' => 'Acción no válida']);
+}
+
+// Método para obtener los reportes
+function obtenerReportes($conexion, $filtro) {
+    // Aquí puedes agregar la lógica para obtener los datos de los reportes
+    echo json_encode(['total' => 0]); // Ejemplo
 }
 
 // Cerrar la conexión
