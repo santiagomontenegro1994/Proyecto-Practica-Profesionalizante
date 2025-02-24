@@ -68,7 +68,7 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
           </div>
         </div><!-- End Sales Card -->
 
-        <!-- Revenue Card -->
+        <!-- Ganancia Card -->
         <div class="col-6 col-md-6">
             <div class="card info-card revenue-card">
                 <div class="filter">
@@ -91,12 +91,12 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
                     <i class="bi bi-currency-dollar"></i>
                     </div>
                     <div class="ps-3">
-                    <h6 id="totalGanancia">$3,264</h6>
+                    <h6 id="totalGanancia">$0</h6>
                     </div>
                 </div>
             </div>
         </div>
-        </div><!-- End Revenue Card -->
+        </div><!-- End Ganancia Card -->
 
         <!-- Reports -->
         <div class="col-12">
@@ -214,35 +214,35 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
                 </thead>
                 <tbody>
                   <tr>
-                    <th scope="row"><a href="#"><img src="assets/img/product-1.jpg" alt=""></a></th>
+                    <th scope="row"><a href="#"><img src="" alt=""></a></th>
                     <td><a href="#" class="text-primary fw-bold">Ut inventore ipsa voluptas nulla</a></td>
                     <td>$64</td>
                     <td class="fw-bold">124</td>
                     <td>$5,828</td>
                   </tr>
                   <tr>
-                    <th scope="row"><a href="#"><img src="assets/img/product-2.jpg" alt=""></a></th>
+                    <th scope="row"><a href="#"><img src="" alt=""></a></th>
                     <td><a href="#" class="text-primary fw-bold">Exercitationem similique doloremque</a></td>
                     <td>$46</td>
                     <td class="fw-bold">98</td>
                     <td>$4,508</td>
                   </tr>
                   <tr>
-                    <th scope="row"><a href="#"><img src="assets/img/product-3.jpg" alt=""></a></th>
+                    <th scope="row"><a href="#"><img src="" alt=""></a></th>
                     <td><a href="#" class="text-primary fw-bold">Doloribus nisi exercitationem</a></td>
                     <td>$59</td>
                     <td class="fw-bold">74</td>
                     <td>$4,366</td>
                   </tr>
                   <tr>
-                    <th scope="row"><a href="#"><img src="assets/img/product-4.jpg" alt=""></a></th>
+                    <th scope="row"><a href="#"><img src="" alt=""></a></th>
                     <td><a href="#" class="text-primary fw-bold">Officiis quaerat sint rerum error</a></td>
                     <td>$32</td>
                     <td class="fw-bold">63</td>
                     <td>$2,016</td>
                   </tr>
                   <tr>
-                    <th scope="row"><a href="#"><img src="assets/img/product-5.jpg" alt=""></a></th>
+                    <th scope="row"><a href="#"><img src="" alt=""></a></th>
                     <td><a href="#" class="text-primary fw-bold">Sit unde debitis delectus repellendus</a></td>
                     <td>$79</td>
                     <td class="fw-bold">41</td>
