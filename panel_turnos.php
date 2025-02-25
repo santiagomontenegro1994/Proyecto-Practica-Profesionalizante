@@ -49,13 +49,13 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
               </div>
 
               <div class="card-body">
-                  <h5 class="card-title">Turnos <span id="periodo-turnos">| Hoy</span></h5>
+                  <h5 class="card-title">Turnos <span id="periodo-turnos">|--</span></h5>
                   <div class="d-flex align-items-center">
                       <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                           <i class="bi bi-scissors"></i>
                       </div>
                       <div class="ps-3">
-                          <h6 id="totalTurnos">12</h6>
+                          <h6 id="totalTurnos">--</h6>
                       </div>
                   </div>
               </div>
@@ -80,13 +80,13 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
               </div>
 
               <div class="card-body">
-                  <h5 class="card-title">Ganancia <span id="periodo-ganancia">| Hoy</span></h5>
+                  <h5 class="card-title">Ganancia <span id="periodo-ganancia">| --</span></h5>
                   <div class="d-flex align-items-center">
                       <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                           <i class="bi bi-currency-dollar"></i>
                       </div>
                       <div class="ps-3">
-                          <h6 id="totalGanancia">$0</h6>
+                          <h6 id="totalGanancia">--</h6>
                       </div>
                   </div>
               </div>
@@ -111,7 +111,7 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
               </div>
 
               <div class="card-body">
-                <h5 class="card-title">Reportes <span id="periodo-reportes">/Hoy</span></h5>
+                <h5 class="card-title">Reportes <span id="periodo-reportes">/--</span></h5>
 
                   <!-- Line Chart -->
                   <div id="reportsChart"></div>
@@ -121,13 +121,13 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
                       new ApexCharts(document.querySelector("#reportsChart"), {
                         series: [{
                           name: 'Baño',
-                          data: [31, 40, 28, 51, 42, 82, 56],
+                          data: [31, 40, 28, 51, 42, 82, 56, 25, 38],
                         }, {
                           name: 'Corte',
-                          data: [11, 32, 45, 32, 34, 52, 41]
+                          data: [11, 32, 45, 32, 34, 52, 41, 30, 40]
                         }, {
                           name: 'Peinado',
-                          data: [15, 11, 32, 18, 9, 24, 11]
+                          data: [15, 11, 32, 18, 9, 24, 11, 50, 25]
                         }],
                         chart: {
                           height: 350,
@@ -157,8 +157,18 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
                           width: 2
                         },
                         xaxis: {
-                          type: 'datetime',
-                          categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
+                          type: 'time',
+                          categories: [
+                            "08:00", 
+                            "09:00", 
+                            "10:00", 
+                            "11:00", 
+                            "12:00", 
+                            "13:00", 
+                            "14:00", 
+                            "15:00", 
+                            "16:00"
+                          ]
                         },
                         tooltip: {
                           x: {
