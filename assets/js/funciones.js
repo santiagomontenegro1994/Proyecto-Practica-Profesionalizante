@@ -21,8 +21,13 @@ function cambiarFiltro(filtro, tipo) {
 
 function obtenerDatos(filtro, tipo) {
     // Hacer una solicitud AJAX al servidor
-    fetch(`select_general.php?accion=obtener_${tipo}&filtro=${filtro}`)
-        .then(response => response.json())
+    fetch(`ajax.php?accion=obtener_${tipo}&filtro=${filtro}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             // Actualizar los datos en la interfaz según el tipo
             switch (tipo) {
@@ -30,25 +35,29 @@ function obtenerDatos(filtro, tipo) {
                     const totalGananciaElement = document.getElementById('totalGanancia');
                     if (totalGananciaElement) {
                         totalGananciaElement.textContent = `$${data.total}`;
+                        console.log('Datos de ganancias:', data);
                     }
                     break;
                 case 'turnos':
                     const totalTurnosElement = document.getElementById('totalTurnos');
                     if (totalTurnosElement) {
                         totalTurnosElement.textContent = data.total;
+                        console.log('Datos de turnos:', data.total);
                     }
                     break;
                 case 'reportes':
                     // Aquí puedes actualizar el gráfico de reportes si es necesario
-                    console.log('Datos de reportes:', data);
+                    console.log('Datos de reportes:', data.total);
                     break;
                 default:
                     console.error('Tipo no válido:', tipo);
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error en la solicitud:', error);
+            alert('Hubo un error al obtener los datos. Por favor, inténtalo de nuevo.');
+        });
 }
-
 
 
 

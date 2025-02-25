@@ -29,7 +29,7 @@ switch ($accion) {
 
 // Método para obtener los turnos
 function obtenerTurnos($conexion, $filtro) {
-    $sql = "SELECT COUNT(*) AS total FROM turnos WHERE idEstado = 3";
+    $sql = "SELECT COUNT(*) AS total FROM turnos WHERE IdEstado = 3";
     switch ($filtro) {
         case 'hoy':
             $sql .= " AND Fecha = CURDATE()";
