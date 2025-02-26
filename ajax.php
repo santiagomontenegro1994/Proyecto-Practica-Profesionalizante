@@ -91,9 +91,120 @@ function obtenerGanancia($conexion, $filtro) {
 
 // Método para obtener los reportes
 function obtenerReportes($conexion, $filtro) {
-    // Aquí puedes agregar la lógica para obtener los datos de los reportes
-    echo json_encode(['total' => 0]); // Ejemplo
+    // Consulta SQL según el filtro
+    switch ($filtro) {
+        case 'hoy':
+            $sql = "
+                SELECT 
+                    horario,
+                    SUM(CASE WHEN FIND_IN_SET('1', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS baño,
+                    SUM(CASE WHEN FIND_IN_SET('2', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS corte,
+                    SUM(CASE WHEN FIND_IN_SET('3', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS peinado
+                FROM 
+                    turnos
+                WHERE 
+                    Fecha = CURDATE()
+                GROUP BY 
+                    horario
+                ORDER BY 
+                    horario;
+            ";
+            break;
+        case 'semana':
+            $sql = "
+                SELECT 
+                    horario,
+                    SUM(CASE WHEN FIND_IN_SET('1', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS baño,
+                    SUM(CASE WHEN FIND_IN_SET('2', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS corte,
+                    SUM(CASE WHEN FIND_IN_SET('3', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS peinado
+                FROM 
+                    turnos
+                WHERE 
+                    YEARWEEK(Fecha) = YEARWEEK(CURDATE())
+                GROUP BY 
+                    horario
+                ORDER BY 
+                    horario;
+            ";
+            break;
+        case 'mes':
+            $sql = "
+                SELECT 
+                    horario,
+                    SUM(CASE WHEN FIND_IN_SET('1', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS baño,
+                    SUM(CASE WHEN FIND_IN_SET('2', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS corte,
+                    SUM(CASE WHEN FIND_IN_SET('3', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS peinado
+                FROM 
+                    turnos
+                WHERE 
+                    MONTH(Fecha) = MONTH(CURDATE()) AND YEAR(Fecha) = YEAR(CURDATE())
+                GROUP BY 
+                    horario
+                ORDER BY 
+                    horario;
+            ";
+            break;
+        case 'año':
+            $sql = "
+                SELECT 
+                    horario,
+                    SUM(CASE WHEN FIND_IN_SET('1', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS baño,
+                    SUM(CASE WHEN FIND_IN_SET('2', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS corte,
+                    SUM(CASE WHEN FIND_IN_SET('3', idTipoServicio) > 0 THEN 1 ELSE 0 END) AS peinado
+                FROM 
+                    turnos
+                WHERE 
+                    YEAR(Fecha) = YEAR(CURDATE())
+                GROUP BY 
+                    horario
+                ORDER BY 
+                    horario;
+            ";
+            break;
+        default:
+            echo json_encode(['error' => 'Filtro no válido']);
+            return;
+    }
+
+    // Ejecutar la consulta
+    $resultado = $conexion->query($sql);
+
+    // Procesar los datos
+    $categorias = []; // Horarios
+    $baño = [];      // Datos para Baño
+    $corte = [];     // Datos para Corte
+    $peinado = [];   // Datos para Peinado
+
+    while ($fila = $resultado->fetch_assoc()) {
+        $categorias[] = $fila['horario'];
+        $baño[] = $fila['baño'];
+        $corte[] = $fila['corte'];
+        $peinado[] = $fila['peinado'];
+    }
+
+    // Formatear los datos para ApexCharts
+    $series = [
+        [
+            'name' => 'Baño',
+            'data' => $baño
+        ],
+        [
+            'name' => 'Corte',
+            'data' => $corte
+        ],
+        [
+            'name' => 'Peinado',
+            'data' => $peinado
+        ]
+    ];
+
+    // Devolver los datos en formato JSON
+    echo json_encode([
+        'series' => $series,
+        'categorias' => $categorias
+    ]);
 }
+
 
 // Cerrar la conexión
 $conexion->close();
