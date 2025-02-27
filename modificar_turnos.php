@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Inicia el buffering de salida
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
@@ -59,7 +60,6 @@ if (!empty($_POST['ModificarTurno'])) {
     //busco los datos de esta consulta y los muestro
     $DatosTurnoActual = Datos_Turno($MiConexion , $_GET['ID_TURNO']);
 }
-
 ?>
 
   <main id="main" class="main">
@@ -188,9 +188,8 @@ if (!empty($_POST['ModificarTurno'])) {
   $_SESSION['Mensaje']='';
 require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
 
+ob_end_flush(); // Envía la salida al navegador
 ?>
-
-
 </body>
 
 </html>
