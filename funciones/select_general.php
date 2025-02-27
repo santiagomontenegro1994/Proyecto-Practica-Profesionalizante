@@ -1,5 +1,4 @@
 <?php
-
 function Eliminar_Cliente($vConexion , $vIdConsulta) {
 
 
@@ -217,7 +216,6 @@ function Listar_Tipos($vConexion) {
     return $Listado;
 }
 
-
 function Listar_Estilistas($vConexion) {
 
     $Listado=array();
@@ -315,7 +313,7 @@ function Listar_Turnos($vConexion) {
 
         }
 
-        $SQL .= "ORDER BY T.Fecha, T.Horario";
+        $SQL .= "ORDER BY T.Fecha DESC, T.Horario";
 
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
         $rs = mysqli_query($vConexion, $SQL);
@@ -448,6 +446,4 @@ function ColorDeFila($vFecha,$vEstado) {
     return [$Title, $Color];
 
 }
-
-
 ?>
