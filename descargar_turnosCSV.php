@@ -1,4 +1,5 @@
 <?php
+// Iniciar sesión
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
@@ -7,36 +8,43 @@ if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no
 }
 
 // Verifica si hay datos para guardar
-if (!empty($_SESSION['Descarga']) && is_string($_SESSION['Descarga'])) {
-    // Convertir el string a un array
-    $lineas = explode("\n", $_SESSION['Descarga']); // Divide el string por saltos de línea
+if (!empty($_SESSION['Descarga'])) {
+    // Convertir los datos a un array
     $datos = [];
-    foreach ($lineas as $linea) {
-        $datos[] = explode(',', $linea); // Divide cada línea por comas
-    }
 
-    // Convertir los datos a formato CSV
-    $csvContent = '';
+    // Si los datos son un string, conviértelos a un array
+    if (is_string($_SESSION['Descarga'])) {
+        $lineas = explode("\n", $_SESSION['Descarga']);
+        foreach ($lineas as $linea) {
+            // Envolver toda la fecha en comillas dobles
+            $linea = preg_replace('/(Fecha:\s\d{4}-\d{2}-\d{2})/', '"$1"', $linea);
 
-    // Encabezados (opcional)
-    $csvContent .= "Turno,Hora\n";
+            // Dividir cada línea por el guion (-), asegurando que los valores se mantengan juntos
+            $fila = array_map('trim', explode(' - ', $linea));
 
-    // Datos
-    foreach ($datos as $fila) {
-        $csvContent .= implode(',', $fila) . "\n";
+            $datos[] = $fila; // Agregar la fila procesada al array de datos
+        }
     }
 
     // Nombre del archivo con fecha y hora
     $FechaHoraHoy = date('Ymd_His');
     $NombreArchivo = "Lista_Turnos_$FechaHoraHoy.csv";
 
-    // Forzar la descarga del archivo
-    header('Content-Type: text/csv'); // Tipo de contenido para CSV
-    header('Content-Disposition: attachment; filename="' . $NombreArchivo . '"'); // Forzar descarga
-    header('Content-Length: ' . strlen($csvContent)); // Tamaño del archivo
+    // Forzar la descarga del archivo CSV
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="' . $NombreArchivo . '"');
+    header('Cache-Control: max-age=0');
 
-    // Enviar el contenido del archivo
-    echo $csvContent;
+    // Abrir un flujo de salida para escribir el archivo CSV
+    $output = fopen('php://output', 'w');
+
+    // Escribir cada fila en el archivo CSV
+    foreach ($datos as $fila) {
+        fputcsv($output, $fila, ';'); // Escribir la fila con ';' como separador
+    }
+
+    // Cerrar el flujo de salida
+    fclose($output);
     exit;
 } else {
     // Si no hay datos, redirigir con un mensaje

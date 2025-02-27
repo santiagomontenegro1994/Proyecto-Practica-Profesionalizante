@@ -49,7 +49,7 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
               </div>
 
               <div class="card-body">
-                  <h5 class="card-title">Turnos <span id="periodo-turnos">|--</span></h5>
+                  <h5 class="card-title">Turnos Completados<span id="periodo-turnos">|--</span></h5>
                   <div class="d-flex align-items-center">
                       <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                           <i class="bi bi-scissors"></i>
@@ -118,7 +118,7 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
         </div>
         <!-- End Reports -->
 
-        <!-- Top Selling -->
+        <!-- Top Selling 
         <div class="col-12">
           <div class="card top-selling overflow-auto">
 
@@ -191,7 +191,8 @@ require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados e
             </div>
 
           </div>
-        </div><!-- End Top Selling -->
+        </div>
+         End Top Selling -->
 
       </div>
 
