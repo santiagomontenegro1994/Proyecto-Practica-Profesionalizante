@@ -167,9 +167,12 @@ function Modificar_Cliente($vConexion) {
 }
 
 function Modificar_Turno($vConexion) {
+    //divido el array a una cadena separada por coma para guardar
+    $string = implode(',', $_POST['TipoServicio']);
+
     $fecha = mysqli_real_escape_string($vConexion, $_POST['Fecha']);
     $horario = mysqli_real_escape_string($vConexion, $_POST['Horario']);
-    $tipoServicio = mysqli_real_escape_string($vConexion, $_POST['TipoServicio']);
+    $tipoServicio = mysqli_real_escape_string($vConexion, $string);
     $estilista = mysqli_real_escape_string($vConexion, $_POST['Estilista']);
     $cliente = mysqli_real_escape_string($vConexion, $_POST['Cliente']);
     $estado = mysqli_real_escape_string($vConexion, $_POST['Estado']);

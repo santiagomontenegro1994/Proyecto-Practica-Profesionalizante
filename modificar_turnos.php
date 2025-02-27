@@ -101,18 +101,21 @@ if (!empty($_POST['ModificarTurno'])) {
 
                     <div class="col-12">
                         <label for="selector" class="form-label">Tipo de Servicio</label>
-                        <select class="form-select" aria-label="Selector" name="TipoServicio">
-                        <option value="">Selecciona una opcion</option>
-                            <?php 
-                                $Selected='';
-                                for ($i=0; $i<$CantidadTipos; $i++) { 
-                                    $Selected = (!empty($DatosTurnoActual['TIPO_SERVICIO']) && $DatosTurnoActual['TIPO_SERVICIO'] == $ListadoTipos[$i]['ID'] )?'selected':'';
-                            ?>
-                            <option value="<?php echo $ListadoTipos[$i]['ID']; ?>"   <?php echo $Selected; ?> >
-                        <?php echo $ListadoTipos[$i]['DENOMINACION']; ?>
-                        </option>
-                        <?php } ?>
+                        <select class="js-example-basic-single form-select" aria-label="Selector" multiple="multiple" name="TipoServicio[]">
+                            <option value="">Selecciona una opción</option>
+                            <?php
+                            // Convertir el string de opciones seleccionadas en un array
+                            $opcionesSeleccionadas = !empty($DatosTurnoActual['TIPO_SERVICIO']) ? explode(',', $DatosTurnoActual['TIPO_SERVICIO']) : [];
 
+                            // Recorrer la lista de tipos de servicio
+                            for ($i = 0; $i < $CantidadTipos; $i++) {
+                                // Verificar si la opción actual está en el array de seleccionados
+                                $selected = in_array($ListadoTipos[$i]['ID'], $opcionesSeleccionadas) ? 'selected' : '';
+                            ?>
+                                <option value="<?php echo $ListadoTipos[$i]['ID']; ?>" <?php echo $selected; ?>>
+                                    <?php echo $ListadoTipos[$i]['DENOMINACION']; ?>
+                                </option>
+                            <?php } ?>
                         </select>
                     </div>
                     
@@ -190,6 +193,14 @@ require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro arc
 
 ob_end_flush(); // Envía la salida al navegador
 ?>
+
+<script>
+  // In your Javascript (external .js resource or <script> tag) SELECT 2
+  $(document).ready(function() {
+  $('.js-example-basic-single').select2();
+  });
+</script>
+
 </body>
 
 </html>
