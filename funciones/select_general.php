@@ -449,4 +449,19 @@ function ColorDeFila($vFecha,$vEstado) {
     return [$Title, $Color];
 
 }
+
+function Listar_Horarios_Ocupados($MiConexion, $fecha) {
+    $query = "SELECT Horario FROM turnos WHERE Fecha = ?";
+    $stmt = $MiConexion->prepare($query);
+    $stmt->bind_param("s", $fecha);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $horariosOcupados = [];
+    while ($row = $result->fetch_assoc()) {
+        $horariosOcupados[] = $row['Horario'];
+    }
+
+    return $horariosOcupados;
+}
 ?>

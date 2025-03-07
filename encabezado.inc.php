@@ -9,9 +9,10 @@
   <meta content="" name="description">
   <meta content="" name="keywords">
 
-  <!-- Flatpickr -->
+  <!-- Flatpickr y el Time Plugin -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/minuteIncrement.min.js"></script>
 
   <!-- Apexchart -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

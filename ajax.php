@@ -205,6 +205,22 @@ function obtenerReportes($conexion, $filtro) {
     ]);
 }
 
+// Método para obtener los horarios ocupados
+function obtenerHorariosOcupados($conexion, $fecha) {
+    $query = "SELECT Horario FROM turnos WHERE Fecha = ?";
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("s", $fecha);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $horariosOcupados = [];
+    while ($row = $result->fetch_assoc()) {
+        $horariosOcupados[] = $row['Horario'];
+    }
+
+    echo json_encode($horariosOcupados);
+}
+
 
 // Cerrar la conexión
 $conexion->close();
