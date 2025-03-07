@@ -68,7 +68,7 @@ if (!empty($_POST['Registrar'])) {
 
                     <div class="col-12">
                         <label for="fecha" class="form-label">Fecha</label>
-                        <input type="date" class="form-control"  name="Fecha" id="fecha">
+                        <input type="text" class="form-control" name="Fecha" id="fecha" placeholder="Selecciona una fecha">
                     </div>
 
                     <div class="col-12">
@@ -135,6 +135,31 @@ require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro arc
   // In your Javascript (external .js resource or <script> tag) SELECT 2
   $(document).ready(function() {
   $('.js-example-basic-single').select2();
+  });
+
+  // flatpickr para Fecha
+  flatpickr("#fecha", {
+    dateFormat: "Y-m-d", // Formato de la fecha
+    minDate: "today", // Solo permite fechas a partir de hoy
+    disable: [
+        function(date) {
+            // Deshabilitar sábados (6) y domingos (0)
+            return (date.getDay() === 0 || date.getDay() === 6);
+        }
+    ],
+    locale: {
+        weekdays: {
+            shorthand: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+            longhand: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+        }
+    },
+    onReady: function(selectedDates, dateStr, instance) {
+        // Aplicar estilo personalizado a los días deshabilitados
+        const disabledDays = instance.calendarContainer.querySelectorAll('.flatpickr-day.disabled');
+        disabledDays.forEach(day => {
+            day.style.color = 'red'; // Cambiar el color de los días deshabilitados a rojo
+        });
+    }
   });
 </script>
 
