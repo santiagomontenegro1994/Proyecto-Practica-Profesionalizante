@@ -136,3 +136,6 @@ function actualizarGrafico(series, categorias) {
         console.error('No se encontró el gráfico con ID "reportsChart".');
     }
 }
+
+
+
