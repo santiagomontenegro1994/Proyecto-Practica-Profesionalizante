@@ -144,7 +144,7 @@ require('footer.inc.php'); // Footer
     });
 
     // Configuración de Flatpickr para la Fecha
-    flatpickr("#fecha", {
+    const fechaInput = flatpickr("#fecha", {
         dateFormat: "Y-m-d", // Formato de la fecha
         minDate: "today", // Solo permite fechas a partir de hoy
         disable: [
@@ -168,61 +168,84 @@ require('footer.inc.php'); // Footer
         }
     });
 
-   // Configuración de Flatpickr para el Horario
-const horaInput = flatpickr("#hora", {
-    enableTime: true, // Habilitar selección de hora
-    noCalendar: true, // Ocultar el calendario
-    dateFormat: "H:i", // Formato de hora
-    time_24hr: true, // Usar formato de 24 horas
-    minuteIncrement: 30, // Intervalos de 30 minutos
-    minTime: "08:00", // Hora mínima
-    maxTime: "16:00", // Hora máxima
-    disable: [], // Inicialmente vacío, se llenará dinámicamente
-    onReady: function(selectedDates, dateStr, instance) {
-        // Aplicar estilo personalizado a los horarios deshabilitados
-        const disabledHours = instance.calendarContainer.querySelectorAll('.flatpickr-time .flatpickr-hour.disabled, .flatpickr-time .flatpickr-minute.disabled');
-        disabledHours.forEach(hour => {
-            hour.style.color = 'red'; // Cambiar el color de los horarios deshabilitados a rojo
-        });
-    }
-});
+    // Configuración de Flatpickr para el Horario
+    const horaInput = flatpickr("#hora", {
+        enableTime: true, // Habilitar selección de hora
+        noCalendar: true, // Ocultar el calendario
+        dateFormat: "H:i", // Formato de hora
+        time_24hr: true, // Usar formato de 24 horas
+        minuteIncrement: 30, // Intervalos de 30 minutos
+        minTime: "08:00", // Hora mínima por defecto
+        maxTime: "16:00", // Hora máxima
+        disable: [], // Inicialmente vacío, se llenará dinámicamente
+        onReady: function(selectedDates, dateStr, instance) {
+            // Aplicar estilo personalizado a los horarios deshabilitados
+            const disabledHours = instance.calendarContainer.querySelectorAll('.flatpickr-time .flatpickr-hour.disabled, .flatpickr-time .flatpickr-minute.disabled');
+            disabledHours.forEach(hour => {
+                hour.style.color = 'red'; // Cambiar el color de los horarios deshabilitados a rojo
+            });
+        }
+    });
 
-// Obtener horarios ocupados y actualizar dinámicamente
-document.getElementById('fecha').addEventListener('change', function() {
-    const fechaSeleccionada = this.value;
-    const fechaActual = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+    // Función para actualizar los horarios deshabilitados
+    function actualizarHorariosDeshabilitados(fechaSeleccionada) {
+        const fechaActual = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
 
-    if (!fechaSeleccionada) {
-        alert('Por favor, selecciona una fecha.');
-        return;
-    }
+        // Hacer una solicitud AJAX para obtener los horarios ocupados
+        fetch('ajax.php?action=obtener_horarios_ocupados&filtro=' + fechaSeleccionada)
+            .then(response => response.json())
+            .then(data => {
+                // Deshabilitar horarios ocupados
+                horaInput.set('disable', data);
 
-    // Hacer una solicitud AJAX para obtener los horarios ocupados
-    fetch('ajax.php?action=obtener_horarios_ocupados&filtro=' + fechaSeleccionada)
-        .then(response => response.json())
-        .then(data => {
-            // Deshabilitar horarios ocupados
-            horaInput.set('disable', data);
+                // Si la fecha seleccionada es hoy, deshabilitar horarios anteriores a la hora actual
+                if (fechaSeleccionada === fechaActual) {
+                    const horaActual = new Date();
+                    const horaActualFormateada = String(horaActual.getHours()).padStart(2, '0') + ':' + String(horaActual.getMinutes()).padStart(2, '0');
 
-            // Si la fecha seleccionada es hoy, deshabilitar horarios anteriores a la hora actual
-            if (fechaSeleccionada === fechaActual) {
-                const horaActual = new Date();
-                const horaActualFormateada = horaActual.getHours() + ':' + (horaActual.getMinutes() < 10 ? '0' : '') + horaActual.getMinutes();
+                    // Deshabilitar horarios anteriores a la hora actual
+                    horaInput.set('minTime', horaActualFormateada);
 
-                // Deshabilitar horarios anteriores a la hora actual
-                horaInput.set('minTime', horaActualFormateada);
-
-                // Si la hora actual es mayor que las 16:00, deshabilitar todo el día
-                if (horaActual.getHours() >= 16) {
-                    horaInput.set('disable', ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00']);
+                    // Si la hora actual es mayor que las 16:00, deshabilitar todo el día
+                    if (horaActual.getHours() >= 16) {
+                        horaInput.set('disable', ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00']);
+                    }
+                } else {
+                    // Si la fecha seleccionada es en el futuro, no hay restricciones adicionales
+                    horaInput.set('minTime', '08:00');
                 }
-            } else {
-                // Si la fecha seleccionada es en el futuro, no hay restricciones adicionales
-                horaInput.set('minTime', '08:00');
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Actualizar horarios deshabilitados al cargar la página
+    const fechaInicial = document.getElementById('fecha').value;
+    if (fechaInicial) {
+        actualizarHorariosDeshabilitados(fechaInicial);
+    }
+
+    // Actualizar horarios deshabilitados al cambiar la fecha
+    document.getElementById('fecha').addEventListener('change', function() {
+        const fechaSeleccionada = this.value;
+        actualizarHorariosDeshabilitados(fechaSeleccionada);
+    });
+
+    // Validación adicional en el formulario
+    document.getElementById('miFormulario').addEventListener('submit', function(event) {
+        const fechaSeleccionada = document.getElementById('fecha').value;
+        const fechaActual = new Date().toISOString().split('T')[0];
+        const horaSeleccionada = document.getElementById('hora').value;
+
+        if (fechaSeleccionada === fechaActual) {
+            const horaActual = new Date();
+            const horaActualFormateada = String(horaActual.getHours()).padStart(2, '0') + ':' + String(horaActual.getMinutes()).padStart(2, '0');
+
+            if (horaSeleccionada < horaActualFormateada) {
+                alert('No puedes seleccionar un horario anterior a la hora actual.');
+                event.preventDefault(); // Evitar que el formulario se envíe
             }
-        })
-        .catch(error => console.error('Error:', error));
-});
+        }
+    });
 </script>
 </body>
 </html>
