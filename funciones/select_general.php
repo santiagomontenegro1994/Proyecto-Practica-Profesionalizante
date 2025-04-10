@@ -464,4 +464,186 @@ function Listar_Horarios_Ocupados($MiConexion, $fecha) {
 
     return $horariosOcupados;
 }
+
+function Validar_Producto(){
+    $vMensaje='';
+        
+    if (strlen($_POST['Nombre']) < 3) {
+        $vMensaje.='Debes ingresar un nombre con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['Precio']) < 1) {
+        $vMensaje.='Debes ingresar un precio con al menos 1 caracter. <br />';
+    }
+    if (strlen($_POST['Stock']) < 1) {
+        $vMensaje.='Debes ingresar un stock con al menos 1 caracter. <br />';
+    }
+           
+    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
+    foreach($_POST as $Id=>$Valor){
+        $_POST[$Id] = trim($_POST[$Id]);
+        $_POST[$Id] = strip_tags($_POST[$Id]);
+    }
+    
+    
+    return $vMensaje;
+    
+}
+
+function InsertarProductos($vConexion) {
+    // Obtengo la fecha actual en formato 'YYYY-MM-DD'
+    $fechaActual = date('Y-m-d');
+
+    $SQL_Insert = "INSERT INTO productos (nombre, descripcion, precio, stock, fechaRegistro, idActivo)
+    VALUES ('" . $_POST['Nombre'] . "' , '" . $_POST['Descripcion'] . "' , '" . $_POST['Precio'] . "', '" . $_POST['Stock'] . "', '$fechaActual', '1')";
+
+    if (!mysqli_query($vConexion, $SQL_Insert)) {
+        // Si surge un error, finalizo la ejecución del script con un mensaje
+        die('<h4>Error al intentar insertar el registro.</h4>');
+    }
+
+    return true;
+}
+
+function Listar_Productos($vConexion) {
+
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+            FROM productos
+            ORDER BY nombre";
+
+    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_PRODUCTO'] = $data['idProducto'];
+        $Listado[$i]['NOMBRE'] = $data['nombre'];
+        $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
+        $Listado[$i]['PRECIO'] = $data['precio'];
+        $Listado[$i]['STOCK'] = $data['stock'];
+        $Listado[$i]['FECHA_REGISTRO'] = $data['fechaRegistro'];
+        $Listado[$i]['ACTIVO'] = $data['idActivo'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
+function Listar_Productos_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    switch ($criterio) {
+        case 'Nombre':
+            $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+                    FROM productos
+                    WHERE nombre LIKE '%$parametro%'
+                    ORDER BY nombre";
+            break;
+        case 'Descripcion':
+            $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+                    FROM productos
+                    WHERE descripcion LIKE '%$parametro%'
+                    ORDER BY nombre";
+            break;
+        case 'Precio':
+            $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+                    FROM productos
+                    WHERE precio LIKE '%$parametro%'
+                    ORDER BY nombre";
+            break;
+        case 'Stock':
+            $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+                    FROM productos
+                    WHERE stock LIKE '%$parametro%'
+                    ORDER BY nombre";
+            break;
+    }
+
+    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_PRODUCTO'] = $data['idProducto'];
+        $Listado[$i]['NOMBRE'] = $data['nombre'];
+        $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
+        $Listado[$i]['PRECIO'] = $data['precio'];
+        $Listado[$i]['STOCK'] = $data['stock'];
+        $Listado[$i]['FECHA_REGISTRO'] = $data['fechaRegistro'];
+        $Listado[$i]['ACTIVO'] = $data['idActivo'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
+function Datos_Producto($vConexion, $vIdProducto) {
+    $DatosProducto = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT * FROM productos 
+            WHERE idProducto = $vIdProducto";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosProducto['ID_PRODUCTO'] = $data['idProducto'];
+        $DatosProducto['NOMBRE'] = $data['nombre'];
+        $DatosProducto['DESCRIPCION'] = $data['descripcion'];
+        $DatosProducto['PRECIO'] = $data['precio'];
+        $DatosProducto['STOCK'] = $data['stock'];
+        $DatosProducto['FECHA_REGISTRO'] = $data['fechaRegistro'];
+        $DatosProducto['ACTIVO'] = $data['idActivo'];
+    }
+    return $DatosProducto;
+}
+
+function Modificar_Producto($vConexion) {
+    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
+    $descripcion = mysqli_real_escape_string($vConexion, $_POST['Descripcion']);
+    $precio = mysqli_real_escape_string($vConexion, $_POST['Precio']);
+    $stock = mysqli_real_escape_string($vConexion, $_POST['Stock']);
+    $activo = mysqli_real_escape_string($vConexion, $_POST['Activo']);
+    $idProducto = mysqli_real_escape_string($vConexion, $_POST['IdProducto']);
+
+    $SQL_MiConsulta = "UPDATE productos 
+    SET nombre = '$nombre',
+    descripcion = '$descripcion',
+    precio = '$precio',
+    stock = '$stock',
+    idActivo = '$activo'
+    WHERE idProducto = '$idProducto'";
+
+    if (mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function Eliminar_Producto($vConexion, $vIdProducto) {
+
+    // Verifico que el producto exista
+    $SQL_MiConsulta = "SELECT idProducto FROM productos 
+                        WHERE idProducto = $vIdProducto";
+
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idProducto'])) {
+        // Si el producto existe, lo elimino
+        mysqli_query($vConexion, "DELETE FROM productos WHERE idProducto = $vIdProducto");
+        return true;
+    } else {
+        return false;
+    }
+}
+
 ?>
