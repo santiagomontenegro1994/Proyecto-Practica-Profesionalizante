@@ -1,14 +1,14 @@
 <?php
     session_start();
     if (empty($_SESSION['Usuario_Nombre']) ) {
-        header('Location: cerrarsesion.php');
+        header('Location: ../cerrarsesion.php');
         exit;
     }
     
-    require_once 'funciones/conexion.php';
+    require_once '../funciones/conexion.php';
     $MiConexion = ConexionBD();
    
-    require_once 'funciones/select_general.php';
+    require_once '../funciones/select_general.php';
 
     if (Eliminar_Producto($MiConexion, $_GET['ID_PRODUCTO']) != false) {
         $_SESSION['Mensaje'] .= 'Se ha eliminado el producto seleccionado.';
@@ -18,6 +18,6 @@
         $_SESSION['Estilo'] = 'warning';
     }
     
-    header('Location: listados_productos.php');
+    header('Location: ../listados/listados_productos.php');
     exit;
 ?>

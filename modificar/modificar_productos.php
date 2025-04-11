@@ -3,17 +3,17 @@ ob_start();
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
 
-require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
+require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD();
 
 //ahora voy a llamar el script gral para usar las funciones necesarias
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
  
 //este array contendra los datos de la consulta original, y cuando 
 //pulse el boton, mantendrá los datos ingresados hasta que se validen y se puedan modificar
@@ -26,7 +26,7 @@ if (!empty($_POST['BotonModificarProducto'])) {
         if (Modificar_Producto($MiConexion) != false) {
             $_SESSION['Mensaje'] = "El producto se ha modificado correctamente!";
             $_SESSION['Estilo'] = 'success';
-            header('Location: listados_productos.php');
+            header('Location: ../listados/listados_productos.php');
             exit;
         } else {
             $_SESSION['Mensaje'] = "Hubo un error al intentar modificar el producto.";
@@ -115,7 +115,7 @@ if (!empty($_POST['BotonModificarProducto'])) {
                 <div class="text-center">
                     <input type='hidden' name="IdProducto" value="<?php echo $DatosProductoActual['ID_PRODUCTO']; ?>" />
                     <button type="submit" class="btn btn-primary" value="Modificar" name="BotonModificarProducto">Modificar</button>
-                    <a href="listados_productos.php" 
+                    <a href="../listados/listados_productos.php" 
                     class="btn btn-success btn-info " 
                     title="Listado"> Volver al listado  </a>
                 </div>

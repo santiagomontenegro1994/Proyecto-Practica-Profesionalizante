@@ -3,18 +3,18 @@ ob_start(); // Inicia el buffering de salida
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
 
-require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
+require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
 //require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD(); 
 
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
 $ListadoTipos = Listar_Tipos($MiConexion);
 $CantidadTipos = count($ListadoTipos);
 
@@ -40,7 +40,7 @@ if (!empty($_POST['ModificarTurno'])) {
         if (Modificar_Turno($MiConexion) != false) {
             $_SESSION['Mensaje'] = "Tu cliente se ha modificado correctamente!";
             $_SESSION['Estilo']='success';
-            header('Location: listados_turnos.php');
+            header('Location: ../listados/listados_turnos.php');
             exit;
         }
 
@@ -176,7 +176,7 @@ if (!empty($_POST['ModificarTurno'])) {
                         <input type='hidden' name="IdTurno" value="<?php echo $DatosTurnoActual['ID_TURNO']; ?>" />
 
                         <button class="btn btn-primary" type="submit" value="Modificar" name="ModificarTurno">Modificar</button>
-                        <a href="listados_turnos.php" 
+                        <a href="../listados/listados_turnos.php" 
                         class="btn btn-success btn-info " 
                         title="Listado"> Volver al listado  </a>
                     </div>
@@ -189,7 +189,7 @@ if (!empty($_POST['ModificarTurno'])) {
 
   <?php
   $_SESSION['Mensaje']='';
-require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
 
 ob_end_flush(); // Envía la salida al navegador
 ?>

@@ -2,20 +2,20 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
  ($_SESSION['Descarga']);
 
 //voy a necesitar la conexion: incluyo la funcion de Conexion.
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 
 //genero una variable para usar mi conexion desde donde me haga falta
 //no envio parametros porque ya los tiene definidos por defecto
 $MiConexion = ConexionBD();
 
 //ahora voy a llamar el script con la funcion que genera mi listado
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
 
 
 //voy a ir listando lo necesario para trabajar en este script: 
@@ -63,7 +63,7 @@ $html=ob_get_clean();
 //echo $html;
 
 //creo la variable dompdf
-require_once 'libreria/dompdf/autoload.inc.php';
+require_once '../libreria/dompdf/autoload.inc.php';
 use Dompdf\Dompdf;
 $dompdf = new Dompdf();
 

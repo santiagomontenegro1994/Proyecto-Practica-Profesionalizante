@@ -3,7 +3,7 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: cerrarsesion.php');
+    header('Location: ../cerrarsesion.php');
     exit;
 }
 
@@ -49,7 +49,7 @@ if (!empty($_SESSION['Descarga'])) {
 } else {
     // Si no hay datos, redirigir con un mensaje
     $_SESSION['Mensaje'] = "No hay datos para guardar en el archivo.";
-    header('Location: listados_turnos.php');
+    header('Location: ../listados/listados_turnos.php');
     exit;
 }
 ?>
