@@ -1,15 +1,15 @@
 <?php
     session_start();
     if (empty($_SESSION['Usuario_Nombre']) ) {
-        header('Location: cerrarsesion.php');
+        header('Location: ../cerrarsesion.php');
         exit;
     }
     
-    require_once 'funciones/conexion.php';
+    require_once '../funciones/conexion.php';
     $MiConexion = ConexionBD();
    
 
-    require_once 'funciones/select_general.php';
+    require_once '../funciones/select_general.php';
 
     if ( Eliminar_Turno($MiConexion , $_GET['ID_TURNO']) != false ) {
         $_SESSION['Mensaje'].='Se ha eliminado la consulta seleccionada';
@@ -20,6 +20,6 @@
     }
     
    
-    header('Location: listados_turnos.php');
+    header('Location: ../listados/listados_turnos.php');
     exit;
 ?>

@@ -1,6 +1,6 @@
 <?php
 // Cargar PhpSpreadsheet
-require 'vendor/autoload.php'; // Asegúrate de que la ruta sea correcta
+require '../vendor/autoload.php'; // Asegúrate de que la ruta sea correcta
 
 // Declaraciones "use"
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx; // Corregido: Usar Xlsx en lugar de Xl
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: cerrarsesion.php');
+    header('Location: ../cerrarsesion.php');
     exit;
 }
 
@@ -60,7 +60,7 @@ if (!empty($_SESSION['Descarga'])) {
 } else {
     // Si no hay datos, redirigir con un mensaje
     $_SESSION['Mensaje'] = "No hay datos para guardar en el archivo.";
-    header('Location: listados_turnos.php');
+    header('Location: ../listados/listados_turnos.php');
     exit;
 }
 ?>

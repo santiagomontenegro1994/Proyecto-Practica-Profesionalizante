@@ -2,19 +2,19 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
 
-require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
+require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
 //require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD();
 
 //ahora voy a llamar el script gral para usar las funciones necesarias
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
  
 //este array contendra los datos de la consulta original, y cuando 
 //pulse el boton, mantendrá los datos ingresados hasta que se validen y se puedan modificar
@@ -28,7 +28,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
         if (Modificar_Cliente($MiConexion) != false) {
             $_SESSION['Mensaje'] = "Tu cliente se ha modificado correctamente!";
             $_SESSION['Estilo']='success';
-            header('Location: listados_clientes.php');
+            header('Location: ../listados/listados_clientes.php');
             exit;
         }
 
@@ -116,7 +116,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
                     <input type='hidden' name="IdCliente" value="<?php echo $DatosClienteActual['ID_CLIENTE']; ?>" />
                     
                     <button type="submit" class="btn btn-primary" value="Modificar" name="BotonModificarCliente">Modificar</button>
-                    <a href="listados_clientes.php" 
+                    <a href="../listados/listados_clientes.php" 
                     class="btn btn-success btn-info " 
                     title="Listado"> Volver al listado  </a>
                 </div>
@@ -128,7 +128,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
 
 <?php
     $_SESSION['Mensaje']='';
-    require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+    require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
 ?>
 
 

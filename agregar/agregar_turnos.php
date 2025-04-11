@@ -2,17 +2,17 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: cerrarsesion.php');
+    header('Location: ../cerrarsesion.php');
     exit;
 }
 
-require('encabezado.inc.php'); // Encabezado
-require('barraLateral.inc.php'); // Barra lateral
+require('../encabezado.inc.php'); // Encabezado
+require('../barraLateral.inc.php'); // Barra lateral
 
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 $MiConexion = ConexionBD();
 
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
 $ListadoTipos = Listar_Tipos($MiConexion);
 $CantidadTipos = count($ListadoTipos);
 
@@ -22,7 +22,7 @@ $CantidadEstilistas = count($ListadoEstilistas);
 $ListadoClientes = Listar_Clientes_Turnos($MiConexion);
 $CantidadClientes = count($ListadoClientes);
 
-require_once 'funciones/insertar_clientes.php';
+require_once '../funciones/insertar_clientes.php';
 
 $_SESSION['Estilo'] = 'alert';
 
@@ -131,7 +131,7 @@ if (!empty($_POST['Registrar'])) {
 
 <?php
 $_SESSION['Mensaje'] = '';
-require('footer.inc.php'); // Footer
+require('../footer.inc.php'); // Footer
 ?>
 
 <!-- Scripts -->
@@ -192,7 +192,7 @@ require('footer.inc.php'); // Footer
         const fechaActual = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
 
         // Hacer una solicitud AJAX para obtener los horarios ocupados
-        fetch('ajax.php?action=obtener_horarios_ocupados&filtro=' + fechaSeleccionada)
+        fetch('../ajax.php?action=obtener_horarios_ocupados&filtro=' + fechaSeleccionada)
             .then(response => response.json())
             .then(data => {
                 // Deshabilitar horarios ocupados

@@ -2,23 +2,23 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
 
-require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
+require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
-require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
+require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
 //voy a necesitar la conexion: incluyo la funcion de Conexion.
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 
 //genero una variable para usar mi conexion desde donde me haga falta
 //no envio parametros porque ya los tiene definidos por defecto
 $MiConexion = ConexionBD();
 
 //ahora voy a llamar el script con la funcion que genera mi listado
-require_once 'funciones/select_general.php';
+require_once '../funciones/select_general.php';
 
 //voy a ir listando lo necesario para trabajar en este script: 
 $ListadoProductos = Listar_Productos($MiConexion);
@@ -69,7 +69,6 @@ if (!empty($_POST['BotonBuscar'])) {
               <div class="col-sm-3 mt-2">
                 <button type="submit" class="btn btn-success btn-xs d-inline-block" value="buscar" name="BotonBuscar">Buscar</button>
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
-                <button type="submit" class="btn btn-primary btn-xs d-inline-block" value="descargar" name="Descargar">Descargar</button>
               </div>
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
@@ -99,6 +98,15 @@ if (!empty($_POST['BotonBuscar'])) {
                   </div>
           </div>
           </form>
+
+          <!-- Report Buttons -->
+          <div class="row mb-4">
+            <div class="col-sm-12 text-end">
+              <a href="../descargas/listado_faltantes_pdf.php" class="btn btn-primary btn-xs">Listado de productos faltantes</a>
+            </div>
+          </div>
+          <!-- End Report Buttons -->
+
           <!-- Table with stripped rows -->
           <table class="table table-striped">
             <thead>
@@ -124,13 +132,13 @@ if (!empty($_POST['BotonBuscar'])) {
                         <td><?php echo $ListadoProductos[$i]['FECHA_REGISTRO']; ?></td>
                         <td><?php echo $ListadoProductos[$i]['ACTIVO'] ? 'Sí' : 'No'; ?></td>
                         <td>
-                          <a href="eliminar_productos.php?ID_PRODUCTO=<?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?>" 
+                          <a href="../eliminar/eliminar_productos.php?ID_PRODUCTO=<?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?>" 
                             title="Eliminar" 
                             onclick="return confirm('Confirma eliminar este producto?');">
                             <i class="bi bi-trash-fill text-danger fs-5"></i>
                           </a>
 
-                          <a href="modificar_productos.php?ID_PRODUCTO=<?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?>" 
+                          <a href="../modificar/modificar_productos.php?ID_PRODUCTO=<?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?>" 
                             title="Modificar">
                             <i class="bi bi-pencil-fill text-warning fs-5"></i>
                           </a>
@@ -150,7 +158,7 @@ if (!empty($_POST['BotonBuscar'])) {
 
 <?php
   $_SESSION['Mensaje'] = '';
-  require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+  require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
 ?>
 
 </body>

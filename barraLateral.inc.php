@@ -3,7 +3,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="index.php">
+        <a class="nav-link " href="../inicio/index.php">
           <i class="bi bi-grid"></i>
           <span>Menu</span>
         </a>
@@ -15,12 +15,12 @@
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="agregar_clientes.php">
+            <a href="../agregar/agregar_clientes.php">
               <i class="bi bi-circle"></i><span>Agregar</span>
             </a>
           </li>
           <li>
-            <a href="listados_clientes.php">
+            <a href="../listados/listados_clientes.php">
               <i class="bi bi-circle"></i><span>Listados</span>
             </a>
           </li>
@@ -33,12 +33,12 @@
         </a>
         <ul id="forms-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="agregar_turnos.php">
+            <a href="../agregar/agregar_turnos.php">
               <i class="bi bi-circle"></i><span>Agregar</span>
             </a>
           </li>
           <li>
-            <a href="listados_turnos.php">
+            <a href="../listados/listados_turnos.php">
               <i class="bi bi-circle"></i><span>Listados</span>
             </a>
           </li>
@@ -46,22 +46,22 @@
       </li><!-- End Turnos Nav -->
 
       <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#product-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-tag"></i><span>Productos</span><i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link collapsed" data-bs-target="#deposito-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-house"></i><span>Deposito</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
-        <ul id="product-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="deposito-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="agregar_productos.php">
-              <i class="bi bi-circle"></i><span>Agregar</span>
+            <a href="../agregar/agregar_productos.php">
+              <i class="bi bi-circle"></i><span>Agregar Producto</span>
             </a>
           </li>
           <li>
-            <a href="listados_productos.php">
-              <i class="bi bi-circle"></i><span>Listados</span>
+            <a href="../listados/listados_productos.php">
+              <i class="bi bi-circle"></i><span>Listados Productos</span>
             </a>
           </li>
         </ul>
-      </li><!-- End Productos Nav -->
+      </li><!-- End Deposito Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
@@ -85,29 +85,6 @@
           </li>
         </ul>
       </li><!-- End Ventas Nav -->
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-house"></i><span>Deposito</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="icons-bootstrap.html">
-              <i class="bi bi-circle"></i><span>Bootstrap Icons</span>
-            </a>
-          </li>
-          <li>
-            <a href="icons-remix.html">
-              <i class="bi bi-circle"></i><span>Remix Icons</span>
-            </a>
-          </li>
-          <li>
-            <a href="icons-boxicons.html">
-              <i class="bi bi-circle"></i><span>Boxicons</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Deposito Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#tables-nav1" data-bs-toggle="collapse" href="#">

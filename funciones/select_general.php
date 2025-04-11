@@ -646,4 +646,26 @@ function Eliminar_Producto($vConexion, $vIdProducto) {
     }
 }
 
+function Listar_Productos_Ordenados_Stock($vConexion) {
+    $Listado = array();
+
+    // Consulta para obtener los productos ordenados por stock de menor a mayor
+    $SQL = "SELECT nombre, descripcion, stock 
+            FROM productos 
+            ORDER BY stock ASC";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // Recorrer los resultados y almacenarlos en un array
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[] = array(
+            'NOMBRE' => $data['nombre'],
+            'DESCRIPCION' => $data['descripcion'],
+            'STOCK' => $data['stock']
+        );
+    }
+
+    return $Listado;
+}
+
 ?>

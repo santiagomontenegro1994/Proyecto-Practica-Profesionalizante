@@ -1,7 +1,7 @@
 <?php 
 session_start();
 //print_r($_SESSION);
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD();
 
 
@@ -9,7 +9,7 @@ $MiConexion=ConexionBD();
 $Mensaje='';
 if (!empty($_POST['BotonLogin'])) {
 
-    require_once 'funciones/login.php';
+    require_once '../funciones/login.php';
     $UsuarioLogueado = DatosLogin($_POST['user'], $_POST['password'], $MiConexion);
 
     //la consulta con la BD para que encuentre un usuario registrado con el usuario y clave brindados
@@ -86,8 +86,8 @@ if (!empty($_POST['BotonLogin'])) {
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
 
               <div class="d-flex justify-content-center py-4">
-                <a href="index.html" class="logo d-flex align-items-center w-auto">
-                  <img src="assets/img/logon.png" alt="">
+                <a href="index.php" class="logo d-flex align-items-center w-auto">
+                  <img src="../assets/img/logon.png" alt="">
                   <span class="d-none d-lg-block">HACHI</span>
                 </a>
               </div><!-- End Logo -->
@@ -151,17 +151,17 @@ if (!empty($_POST['BotonLogin'])) {
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
-  <script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/chart.js/chart.umd.js"></script>
-  <script src="assets/vendor/echarts/echarts.min.js"></script>
-  <script src="assets/vendor/quill/quill.js"></script>
-  <script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
-  <script src="assets/vendor/tinymce/tinymce.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="../assets/vendor/apexcharts/apexcharts.min.js"></script>
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/vendor/chart.js/chart.umd.js"></script>
+  <script src="../assets/vendor/echarts/echarts.min.js"></script>
+  <script src="../assets/vendor/quill/quill.js"></script>
+  <script src="../assets/vendor/simple-datatables/simple-datatables.js"></script>
+  <script src="../assets/vendor/tinymce/tinymce.min.js"></script>
+  <script src="../assets/vendor/php-email-form/validate.js"></script>
 
   <!-- Template Main JS File -->
-  <script src="assets/js/main.js"></script>
+  <script src="../assets/js/main.js"></script>
 
 </body>
 

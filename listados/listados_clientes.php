@@ -2,23 +2,23 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: cerrarsesion.php');
+  header('Location: ../cerrarsesion.php');
   exit;
 }
 
-require ('encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
+require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
-require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
+require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
 //voy a necesitar la conexion: incluyo la funcion de Conexion.
-require_once 'funciones/conexion.php';
+require_once '../funciones/conexion.php';
 
 //genero una variable para usar mi conexion desde donde me haga falta
 //no envio parametros porque ya los tiene definidos por defecto
 $MiConexion = ConexionBD();
 
 //ahora voy a llamar el script con la funcion que genera mi listado
-require_once 'funciones/select_clientes.php';
+require_once '../funciones/select_clientes.php';
 
 
 //voy a ir listando lo necesario para trabajar en este script: 
@@ -132,14 +132,14 @@ $CantidadClientes = count($ListadoClientes);
                         <td><?php echo $ListadoClientes[$i]['EMAIL']; ?></td>
                         <td>
                           <!-- eliminar la consulta -->
-                          <a href="eliminar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
+                          <a href="../eliminar/eliminar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
                             class="btn btn-success btn-danger" 
                             title="Eliminar" 
                             onclick="return confirm('Confirma eliminar este cliente?');">
                               <i class="fa fa-times"></i>
                           </a>
 
-                          <a href="modificar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
+                          <a href="../modificar/modificar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
                             class="btn btn-success btn-circle btn-warning" 
                             title="Modificar">
                           <i class="bi bi-person-fill-slash"></i>
@@ -161,7 +161,7 @@ $CantidadClientes = count($ListadoClientes);
 
 <?php
   $_SESSION['Mensaje']='';
-  require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+  require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
 ?>
 
 
