@@ -109,7 +109,7 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="../cerrarsesion.php">
+              <a class="dropdown-item d-flex align-items-center" href="../inicio/cerrarsesion.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Cerrar sesion</span>
               </a>

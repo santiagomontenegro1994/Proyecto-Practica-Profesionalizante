@@ -2,7 +2,7 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('../Location: cerrarsesion.php');
+  header('Location: ../inicio/cerrarsesion.php');
   exit;
 }
 
@@ -19,7 +19,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
   <h1>Turnos</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+      <li class="breadcrumb-item"><a href="../inicio/index.php">Home</a></li>
       <li class="breadcrumb-item active">Panel Turnos</li>
     </ol>
   </nav>

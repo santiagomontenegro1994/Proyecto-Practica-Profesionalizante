@@ -3,7 +3,7 @@ ob_start();
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: ../cerrarsesion.php');
+  header('Location: ../inicio/cerrarsesion.php');
   exit;
 }
 
