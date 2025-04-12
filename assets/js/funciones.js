@@ -68,7 +68,7 @@ function cambiarFiltro(filtro, tipo) {
 }
 
 function obtenerDatos(filtro, tipo) {
-    fetch(`ajax.php?accion=obtener_${tipo}&filtro=${filtro}`)
+    fetch(`/Proyecto-Practica-Profesionalizante/ajax.php?accion=obtener_${tipo}&filtro=${filtro}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);

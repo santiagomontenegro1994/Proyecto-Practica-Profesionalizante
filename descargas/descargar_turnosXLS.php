@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx; // Corregido: Usar Xlsx en lugar de Xl
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: ../cerrarsesion.php');
+    header('Location: ../inicio/cerrarsesion.php');
     exit;
 }
 

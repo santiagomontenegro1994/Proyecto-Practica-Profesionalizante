@@ -92,7 +92,7 @@
         </a>
         <ul id="tables-nav1" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="panel_turnos.php">
+            <a href="../panel_control/panel_turnos.php">
               <i class="bi bi-circle"></i><span>Turnos</span>
             </a>
           </li>
