@@ -17,6 +17,9 @@ function Validar_Cliente() {
     if (strlen($_POST['Email']) < 5) {
         $vMensaje.='Debes ingresar un correo con al menos 5 caracteres. <br />';
     }
+    if (strlen($_POST['DNI']) < 8) {
+        $vMensaje.='Debes ingresar un DNI con al menos 8 caracteres. <br />';
+    }
 
     
     //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados

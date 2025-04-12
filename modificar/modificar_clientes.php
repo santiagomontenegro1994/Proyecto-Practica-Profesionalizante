@@ -111,6 +111,13 @@ if (!empty($_POST['BotonModificarCliente'])) {
                     value="<?php echo !empty($DatosClienteActual['EMAIL']) ? $DatosClienteActual['EMAIL'] : ''; ?>">
                   </div>
                 </div>
+                <div class="row mb-3">
+                  <label for="inputEmail3" class="col-sm-2 col-form-label">DNI</label>
+                  <div class="col-sm-10">
+                    <input type="number" class="form-control" name="DNI" id="dni"
+                    value="<?php echo !empty($DatosClienteActual['DNI']) ? $DatosClienteActual['DNI'] : ''; ?>">
+                  </div>
+                </div>
 
                 <div class="text-center">
                   

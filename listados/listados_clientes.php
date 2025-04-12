@@ -103,6 +103,11 @@ $CantidadClientes = count($ListadoClientes);
                       <label class="form-check-label" for="gridRadios4">
                         Email
                     </div>
+                    <div class="form-check form-check-inline small-text">
+                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios4" value="DNI">
+                      <label class="form-check-label" for="gridRadios4">
+                        DNI
+                    </div>
                     
                   </div>
               
@@ -118,6 +123,7 @@ $CantidadClientes = count($ListadoClientes);
                 <th scope="col">Direccion</th>
                 <th scope="col">Telefono</th>
                 <th scope="col">Email</th>
+                <th scope="col">DNI</th>
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
@@ -130,6 +136,7 @@ $CantidadClientes = count($ListadoClientes);
                         <td><?php echo $ListadoClientes[$i]['DIRECCION']; ?></td>
                         <td><?php echo $ListadoClientes[$i]['TELEFONO']; ?></td>
                         <td><?php echo $ListadoClientes[$i]['EMAIL']; ?></td>
+                        <td><?php echo $ListadoClientes[$i]['DNI']; ?></td>
                         <td>
                           <!-- eliminar la consulta -->
                           <a href="../eliminar/eliminar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 

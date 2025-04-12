@@ -1,30 +1,104 @@
 <?php
-// Conectar a la base de datos
-$conexion = new mysqli('localhost', 'root', '', 'proyecto');
+session_start();
+require_once 'funciones/conexion.php';
+$MiConexion = ConexionBD();
 
-// Verificar la conexión
-if ($conexion->connect_error) {
-    die(json_encode(['error' => 'Error de conexión a la base de datos']));
+// Verificar si hay datos en la solicitud
+if (!empty($_POST)) {
+    // Buscar cliente
+    if ($_POST['action'] == 'searchCliente') {
+        $dni = $_POST['cliente'];
+        $query = mysqli_query($MiConexion, "SELECT idCliente, nombre, apellido, telefono FROM clientes WHERE dni = '$dni'");
+        $result = mysqli_num_rows($query);
+        $data = ($result > 0) ? mysqli_fetch_assoc($query) : 0;
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // Crear cliente
+    if ($_POST['action'] == 'addCliente') {
+        $dni = $_POST['dni_cliente'];
+        $nombre = $_POST['nom_cliente'];
+        $apellido = $_POST['ape_cliente'];
+        $telefono = $_POST['tel_cliente'];
+        $query_insert = mysqli_query($MiConexion, "INSERT INTO clientes (nombre, apellido, dni, telefono) VALUES ('$nombre', '$apellido', '$dni', '$telefono')");
+        echo ($query_insert) ? mysqli_insert_id($MiConexion) : 'error';
+        exit;
+    }
+
+    // Buscar producto
+    if ($_POST['action'] == 'infoProducto') {
+        $idProducto = $_POST['producto'];
+        $query = mysqli_query($MiConexion, "SELECT nombre, precio FROM productos WHERE idProducto = '$idProducto'");
+        $result = mysqli_num_rows($query);
+        $data = ($result > 0) ? mysqli_fetch_assoc($query) : 'error';
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // Agregar producto al detalle temporal
+    if ($_POST['action'] == 'agregarProductoDetalle') {
+        $idProducto = $_POST['producto'];
+        $cantidad = $_POST['cantidad'];
+        $query = mysqli_query($MiConexion, "CALL add_detalle_temp($idProducto, $cantidad)");
+        $result = mysqli_num_rows($query);
+        $detalleTabla = '';
+        $subtotal = 0;
+        $total = 0;
+
+        if ($result > 0) {
+            while ($data = mysqli_fetch_assoc($query)) {
+                $precioTotal = $data['cantidad'] * $data['precio'];
+                $subtotal += $precioTotal;
+                $total += $precioTotal;
+                $detalleTabla .= "<tr>
+                                    <td>{$data['idProducto']}</td>
+                                    <td>{$data['nombre']}</td>
+                                    <td>{$data['cantidad']}</td>
+                                    <td>{$data['precio']}</td>
+                                    <td>{$precioTotal}</td>
+                                  </tr>";
+            }
+            $totales = "<tr><td colspan='5'>Total</td><td>{$total}</td></tr>";
+            echo json_encode(['detalle' => $detalleTabla, 'totales' => $totales], JSON_UNESCAPED_UNICODE);
+        } else {
+            echo 'error';
+        }
+        exit;
+    }
+
+    // Procesar venta
+    if ($_POST['action'] == 'procesarVenta') {
+        $codCliente = $_POST['codCliente'];
+        $query = mysqli_query($MiConexion, "CALL procesar_venta($codCliente)");
+        echo ($query) ? 'ok' : 'error';
+        exit;
+    }
 }
 
-// Obtener la acción y el filtro desde la URL
-$accion = $_GET['accion'] ?? '';
-$filtro = $_GET['filtro'] ?? '';
+// Métodos adicionales del archivo externo
+if (!empty($_GET)) {
+    $accion = $_GET['accion'] ?? '';
+    $filtro = $_GET['filtro'] ?? '';
 
-// Ejecutar la acción correspondiente
-switch ($accion) {
-    case 'obtener_turnos':
-        obtenerTurnos($conexion, $filtro);
-        break;
-    case 'obtener_ganancia':
-        obtenerGanancia($conexion, $filtro);
-        break;
-    case 'obtener_reportes':
-        obtenerReportes($conexion, $filtro);
-        break;
-    default:
-        echo json_encode(['error' => 'Acción no válida']);
-        break;
+    switch ($accion) {
+        case 'obtener_turnos':
+            obtenerTurnos($MiConexion, $filtro);
+            break;
+        case 'obtener_ganancia':
+            obtenerGanancia($MiConexion, $filtro);
+            break;
+        case 'obtener_reportes':
+            obtenerReportes($MiConexion, $filtro);
+            break;
+        case 'obtener_horarios_ocupados':
+            $fecha = $_GET['fecha'] ?? '';
+            obtenerHorariosOcupados($MiConexion, $fecha);
+            break;
+        default:
+            echo json_encode(['error' => 'Acción no válida']);
+            break;
+    }
 }
 
 // Método para obtener los turnos
@@ -220,8 +294,4 @@ function obtenerHorariosOcupados($conexion, $fecha) {
 
     echo json_encode($horariosOcupados);
 }
-
-
-// Cerrar la conexión
-$conexion->close();
 ?>

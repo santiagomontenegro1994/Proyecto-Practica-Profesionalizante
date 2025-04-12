@@ -1,8 +1,8 @@
 <?php 
 function InsertarClientes($vConexion){
     
-    $SQL_Insert="INSERT INTO clientes (nombre, apellido, telefono, direccion, email)
-    VALUES ('".$_POST['Nombre']."' , '".$_POST['Apellido']."' , '".$_POST['Telefono']."', '".$_POST['Direccion']."', '".$_POST['Email']."')";
+    $SQL_Insert="INSERT INTO clientes (nombre, apellido, telefono, direccion, email, dni)
+    VALUES ('".$_POST['Nombre']."' , '".$_POST['Apellido']."' , '".$_POST['Telefono']."', '".$_POST['Direccion']."', '".$_POST['Email']."', '".$_POST['DNI']."')";
 
 
     if (!mysqli_query($vConexion, $SQL_Insert)) {

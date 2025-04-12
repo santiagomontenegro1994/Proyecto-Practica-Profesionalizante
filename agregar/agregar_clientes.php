@@ -91,6 +91,13 @@ if (!empty($_POST['BotonRegistrar'])) {
                     value="<?php echo !empty($_POST['Email']) ? $_POST['Email'] : ''; ?>">
                   </div>
                 </div>
+                <div class="row mb-3">
+                  <label for="inputEmail3" class="col-sm-2 col-form-label">DNI</label>
+                  <div class="col-sm-10">
+                    <input type="number" class="form-control" name="DNI" id="dni"
+                    value="<?php echo !empty($_POST['DNI']) ? $_POST['DNI'] : ''; ?>">
+                  </div>
+                </div>
                 <div class="text-center">
                   <button type="submit" class="btn btn-primary" value="Registrar" name="BotonRegistrar">Agregar</button>
                   <button type="reset" class="btn btn-secondary">Reset</button>
