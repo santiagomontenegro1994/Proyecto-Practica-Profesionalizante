@@ -44,7 +44,7 @@ if (!empty($_POST['Registrar'])) {
         <h1>Turnos</h1>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.php">Menu</a></li>
+                <li class="breadcrumb-item"><a href="../inicio/index.php">Menu</a></li>
                 <li class="breadcrumb-item">Turnos</li>
                 <li class="breadcrumb-item active">Agregar Turnos</li>
             </ol>

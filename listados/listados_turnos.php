@@ -44,7 +44,7 @@ if (!empty($_POST['Buscar'])) {
   <h1>Listado Turnos</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Menu</a></li>
+      <li class="breadcrumb-item"><a href="../inicio/index.php">Menu</a></li>
       <li class="breadcrumb-item">Turnos</li>
       <li class="breadcrumb-item active">Listado Turnos</li>
     </ol>
@@ -114,21 +114,21 @@ if (!empty($_POST['Buscar'])) {
                 <!-- Botones de descarga ocultos --> 
                 <div class="row mb-4 btn-hidden" id="downloadButtons"> 
                   <div class="col-sm-3 mt-2">
-                    <a href="descargar_turnosPDF.php" 
+                    <a href="../descargas/descargar_turnosPDF.php" 
                       class="btn btn-danger btn-xs d-inline-block " 
                       title="PDF"> Descargar PDF  </a> 
                   </div>
                   <div class="col-sm-3 mt-2">
-                    <a href="descargar_turnosTXT.php" 
+                    <a href="../descargas/descargar_turnosTXT.php" 
                       class="btn btn-warning btn-xs d-inline-block " 
                       title="PDF"> Descargar TXT  </a> 
                   </div> 
                   <div class="col-sm-3 mt-2"> 
-                  <a href="descargar_turnosXLS.php" 
+                  <a href="../descargas/descargar_turnosXLS.php" 
                       class="btn btn-success btn-xs d-inline-block " 
                       title="PDF"> Descargar XLS </a></div> 
                   <div class="col-sm-3 mt-2"> 
-                  <a href="descargar_turnosCSV.php" 
+                  <a href="../descargas/descargar_turnosCSV.php" 
                       class="btn btn-info btn-xs d-inline-block " 
                       title="PDF"> Descargar CSV </a>
                   </div> 

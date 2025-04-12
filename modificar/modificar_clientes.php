@@ -1,4 +1,5 @@
 <?php
+ob_start();
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
@@ -8,7 +9,7 @@ if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no 
 
 require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
 
-//require ('barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
+require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
 require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD();
@@ -56,7 +57,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
       <h1>Clientes</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.php">Menu</a></li>
+          <li class="breadcrumb-item"><a href="../inicio/index.php">Menu</a></li>
           <li class="breadcrumb-item">Clientes</li>
           <li class="breadcrumb-item active">Modificar Clientes</li>
         </ol>
@@ -129,6 +130,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
 <?php
     $_SESSION['Mensaje']='';
     require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+    ob_end_flush();
 ?>
 
 

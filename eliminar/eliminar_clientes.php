@@ -20,6 +20,6 @@
     }
     
    
-    header('Location: ../listados/listadosClientes.php');
+    header('Location: ../listados/listados_clientes.php');
     exit;
 ?>
