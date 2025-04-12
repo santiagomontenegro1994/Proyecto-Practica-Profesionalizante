@@ -61,6 +61,7 @@ function Datos_Cliente($vConexion , $vIdCliente) {
         $DatosCliente['TELEFONO'] = $data['telefono'];
         $DatosCliente['DIRECCION'] = $data['direccion'];
         $DatosCliente['EMAIL'] = $data['email'];
+        $DatosCliente['DNI'] = $data['dni'];
     }
     return $DatosCliente;
 
@@ -105,6 +106,9 @@ function Validar_Cliente(){
     if (strlen($_POST['Email']) < 5) {
         $_SESSION['Mensaje'].='Debes ingresar un correo con al menos 5 caracteres. <br />';
     }
+    if (strlen($_POST['DNI']) < 8) {
+        $_SESSION['Mensaje'].='Debes ingresar un DNI con al menos 8 caracteres. <br />';
+    }
 
     //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
     foreach($_POST as $Id=>$Valor){
@@ -148,6 +152,7 @@ function Modificar_Cliente($vConexion) {
     $telefono = mysqli_real_escape_string($vConexion, $_POST['Telefono']);
     $direccion = mysqli_real_escape_string($vConexion, $_POST['Direccion']);
     $email = mysqli_real_escape_string($vConexion, $_POST['Email']);
+    $dni = mysqli_real_escape_string($vConexion, $_POST['DNI']);
     $idCliente = mysqli_real_escape_string($vConexion, $_POST['IdCliente']);
 
     $SQL_MiConsulta = "UPDATE clientes 
@@ -156,6 +161,7 @@ function Modificar_Cliente($vConexion) {
     telefono = '$telefono',
     direccion = '$direccion',
     email = '$email'
+    dni = '$dni'
     WHERE Id = '$idCliente'";
 
     if ( mysqli_query($vConexion, $SQL_MiConsulta) != false) {

@@ -18,6 +18,7 @@ function Listar_Clientes($vConexion) {
             $Listado[$i]['TELEFONO'] = $data['telefono'];
             $Listado[$i]['DIRECCION'] = $data['direccion'];
             $Listado[$i]['EMAIL'] = $data['email'];
+            $Listado[$i]['DNI'] = $data['dni'];
             $i++;
         }
 
