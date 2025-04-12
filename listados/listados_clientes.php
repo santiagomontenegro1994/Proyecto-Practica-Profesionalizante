@@ -48,7 +48,7 @@ $CantidadClientes = count($ListadoClientes);
   <h1>Listado Clientes</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Menu</a></li>
+      <li class="breadcrumb-item"><a href="../inicio/index.php">Menu</a></li>
       <li class="breadcrumb-item">Clientes</li>
       <li class="breadcrumb-item active">Listado Clientes</li>
     </ol>
