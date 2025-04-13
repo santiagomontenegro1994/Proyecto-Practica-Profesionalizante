@@ -257,11 +257,59 @@ if (!empty($_POST)) {
         exit;
     }
 
+    // Anular pedido
+    if ($_POST['action'] == 'anularVenta') {
+        // Eliminar todos los registros de la tabla detalle_temp
+        $query_del = mysqli_query($MiConexion, "DELETE FROM detalle_temp");
+
+        // Cerrar la conexión a la base de datos
+        mysqli_close($MiConexion);
+
+        // Verificar si la consulta fue exitosa
+        if ($query_del) {
+            echo 'ok'; // Respuesta exitosa
+        } else {
+            echo 'error'; // Error al ejecutar la consulta
+        }
+        exit;
+    }
+
     // Procesar venta
     if ($_POST['action'] == 'procesarVenta') {
+        // Validar que se envíen los parámetros necesarios
+        if (empty($_POST['codCliente']) || !isset($_POST['senia']) || !isset($_POST['descuento'])) {
+            echo 'error'; // Si faltan parámetros, retorna error
+            exit;
+        }
+
         $codCliente = $_POST['codCliente'];
-        $query = mysqli_query($MiConexion, "CALL procesar_venta($codCliente)");
-        echo ($query) ? 'ok' : 'error';
+        $senia = $_POST['senia'];
+        $descuento = $_POST['descuento'];
+
+        // Llamar al procedimiento almacenado registrar_venta
+        $query = mysqli_query($MiConexion, "CALL registrar_venta($codCliente, $senia, $descuento)");
+
+        if (!$query) {
+            echo json_encode(['error' => mysqli_error($MiConexion)]); // Mostrar error de MySQL
+            exit;
+        }
+
+        // Procesar la respuesta del procedimiento almacenado
+        $result = mysqli_num_rows($query);
+
+        if ($result > 0) {
+            $data = mysqli_fetch_assoc($query); // Obtener los datos de la venta recién creada
+            echo json_encode($data, JSON_UNESCAPED_UNICODE); // Retornar los datos en formato JSON
+        } else {
+            echo 'error'; // Si no se generó la venta, retorna error
+        }
+
+        // Liberar los resultados del procedimiento almacenado
+        while (mysqli_more_results($MiConexion) && mysqli_next_result($MiConexion)) {
+            // Este bucle asegura que todos los resultados sean procesados
+        }
+
+        mysqli_close($MiConexion);
         exit;
     }
 }

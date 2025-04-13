@@ -15,7 +15,6 @@
 
     });
 
-
     //Buscar clientes
     $('#dni_cliente').keyup(function(e){ //cada vez que teclean un valor se activa
         e.preventDefault(); //evito que se recargue
@@ -208,43 +207,31 @@
      
     });
 
-     // Evento keyup para recalcular el total restando el descuento
-     $(document).on('keyup', '#descuentoPedido', function (e) {
+    // Evento keyup para recalcular el total restando el descuento
+    $(document).on('keyup', '#descuentoPedido', function (e) {
         e.preventDefault();
-        
-        var senia = $('#seniaPedido').val();
 
-        if (senia !== null && !isNaN(senia) && parseFloat(senia) > 0) {
+        // Obtener valores de los campos
+        var senia = parseFloat($('#seniaPedido').val()) || 0; // Si no hay valor, se toma como 0
+        var totalOriginal = parseFloat($('#total_pedido_original').html()) || 0; // Si no hay valor, se toma como 0
+        var descuento = parseFloat($(this).val()) || 0; // Si no hay valor, se toma como 0
 
-            var descuentoCalculado = $('#total_pedido_original').html() * ($(this).val() / 100);
-            var totalConDescuento = $('#total_pedido_original').html() - descuentoCalculado;
+        // Calcular el descuento
+        var descuentoCalculado = totalOriginal * (descuento / 100);
+        var totalConDescuento = totalOriginal - descuentoCalculado;
 
-            var precio_total = totalConDescuento - senia;//calculo el precio total
+        // Calcular el total restando la seña
+        var precio_total = totalConDescuento - senia;
 
-            // Actualizar el total restante en el DOM
-            $('#total_pedido').text(precio_total.toFixed(2));
-    
-            // Mostrar u ocultar el botón según el total restante
-            if (precio_total < 0) {
-                $('#btn_new_pedido').hide();
-            } else {
-                $('#btn_new_pedido').show();
-            }
-        }else{
+        // Actualizar el total restante en el DOM
+        $('#total_pedido').text(precio_total.toFixed(2));
 
-            var descuentoCalculado = $('#total_pedido_original').html() * ($(this).val() / 100);
-            var totalConDescuento = $('#total_pedido_original').html() - descuentoCalculado;
-            // Actualizar el total restante en el DOM
-            $('#total_pedido').text(totalConDescuento.toFixed(2));
-    
-            // Mostrar u ocultar el botón según el total restante
-            if (totalConDescuento < 0) {
-                $('#btn_new_pedido').hide();
-            } else {
-                $('#btn_new_pedido').show();
-            }
+        // Mostrar u ocultar el botón según el total restante
+        if (precio_total < 0) {
+            $('#btn_new_pedido').hide();
+        } else {
+            $('#btn_new_pedido').show();
         }
-     
     });
 
     //Agregar producto al detalle temporal
@@ -300,16 +287,16 @@
     });
 
     //Anular pedido
-    $('#btn_anular_pedido').click(function(e){
+    $('#btn_anular_venta').click(function(e){
         e.preventDefault();
-
+        console.log('entre a anular venta');
         var rows =$('#detalleVenta tr').length;//cuantas filas tiene detalle venta
 
         if(rows > 0){// si hay productos en el detalle                                                                                                                                  
             var action = 'anularVenta';
 
             $.ajax({
-                url: 'ajax.php',
+                url: '../ajax.php',
                 type: "POST",
                 async : true,
                 data: {action:action}, 
@@ -329,47 +316,54 @@
     });
 
     //Confirmar venta
-    $('#btn_new_venta').click(function(e){
+    $('#btn_new_venta').click(function(e) {
         e.preventDefault();
-        
-        var rows =$('#detalleVenta tr').length;//cuantas filas tiene detalle venta
 
-        if(rows > 0){// si hay productos en el detalle                                                                                                                                  
-            var action = 'procesarVenta';
-            var codCliente = $('#idCliente').val();
+        var rows = $('#detalleVenta tr').length; // Contar las filas en el detalle de la venta
+        var codCliente = $('#idCliente').val();
+        var senia = parseFloat($('#seniaPedido').val()) || 0; // Obtener la seña, si no hay valor, se toma como 0
+        var descuento = parseFloat($('#descuentoPedido').val()) || 0; // Obtener el descuento, si no hay valor, se toma como 0
 
-            
-            if(codCliente == null || codCliente == ''){
+        if (rows > 0) { // Si hay productos en el detalle
+            if (!codCliente) {
                 alert('Falta agregar cliente');
-            }else{
-
-                $.ajax({
-                    url: '../ajax.php',
-                    type: "POST",
-                    async : true,
-                    data: {action:action,codCliente:codCliente}, 
-        
-                    success: function(response){
-                        
-                        if(response!='error'){// si se genero la venta
-
-                            // var info = JSON.parse(response);
-                            // console.log(info);
-                            alert('Venta procesada correctamente');
-                            location.reload();//refresca toda la pagina
-                        }else{
-                            console.log('no data');
-                        }
-                    },
-                    error: function(error){
-
-                    }
-                });    
-
+                return;
             }
 
+            $.ajax({
+                url: '../ajax.php',
+                type: 'POST',
+                async: true,
+                data: {
+                    action: 'procesarVenta',
+                    codCliente: codCliente,
+                    senia: senia,
+                    descuento: descuento
+                },
+                success: function(response) {
+                    try {
+                        var info = JSON.parse(response); // Analizar la respuesta como JSON
+                        if (info.error) {
+                            alert('Error al procesar la venta: ' + info.error);
+                        } else {
+                            alert('Venta procesada correctamente');
+                            console.log('Datos de la venta:', info);
+                            location.reload(); // Refrescar la página
+                        }
+                    } catch (e) {
+                        console.error('Error al analizar la respuesta:', e);
+                        console.error('Respuesta recibida:', response);
+                        alert('Error al procesar la venta');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error en la solicitud AJAX:', error);
+                    alert('Error al procesar la venta');
+                }
+            });
+        } else {
+            alert('No hay productos en el detalle de la venta');
         }
-
     });
 
     
