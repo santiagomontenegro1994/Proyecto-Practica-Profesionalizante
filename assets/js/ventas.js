@@ -115,8 +115,9 @@
                 data: {action:action,producto:producto}, 
     
                 success: function(response){
-                    if(response!='error'){ //valido que la respuesta no sea error
-                        var info = JSON.parse(response);//guardo la informacion en info
+                    console.log('Respuesta del servidor:', response); // Depuración
+                    try {
+                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                         $('#txt_producto').html(info.nombre); //paso los datos a las casillas
                         $('#txt_categoria').html(info.categoria);
                         $('#txt_precio').html(info.precio);
@@ -128,7 +129,9 @@
 
                         //mostrar boton agregar
                         $('#add_producto_venta').slideDown();
-                    }else{
+                    } catch (e) {
+                        console.error('Error al analizar el JSON:', e);
+                        console.error('Respuesta recibida:', response);
                         $('#txt_producto').html('-'); 
                         $('#txt_categoria').html('-');
                         $('#txt_precio').html('0.00');
@@ -262,15 +265,15 @@
                 data: {action:action,producto:idProducto,cantidad:cantidad}, 
     
                 success: function(response){
-                    if(response != 'error'){//validamos que la respuesta no sea error
-                        var info = JSON.parse(response);//convertimos en JSON a un objeto
+                    console.log('Respuesta del servidor:', response); // Depuración
+                    try {
+                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                         $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
                         $('#detalleTotal').html(info.totales);
 
                         //ponemos todos los valores por defecto
                         $('#txtIdProducto').val('');
                         $('#txt_producto').html('-'); 
-                        $('#txt_categoria').html('-');
                         $('#txt_precio').html('0.00');
                         $('#txt_cantidad_producto').val('0');
                         $('#txt_precio_total').html('0.00');
@@ -280,8 +283,9 @@
 
                         //ocultar boton agregar
                         $('#add_producto_venta').slideUp();
-
-                    }else{
+                    } catch (e) {
+                        console.error('Error al analizar el JSON:', e);
+                        console.error('Respuesta recibida:', response);
                         console.log('no data');
                     }
                     viewProcesar();//llamo la funcion para ver si oculto el boton
@@ -396,8 +400,9 @@ function agregarAVenta(idProducto) {
                 data: {action:action,producto:idProducto,cantidad:cantidad}, 
     
                 success: function(response){
-                    if(response != 'error'){//validamos que la respuesta no sea error
-                        var info = JSON.parse(response);//convertimos en JSON a un objeto
+                    console.log('Respuesta del servidor:', response); // Depuración
+                    try {
+                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                         $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
                         $('#detalleTotal').html(info.totales);
 
@@ -415,7 +420,9 @@ function agregarAVenta(idProducto) {
                         //ocultar boton agregar
                         $('#add_producto_venta').slideUp();
                         alert('Producto agregado a la venta!');
-                    }else{
+                    } catch (e) {
+                        console.error('Error al analizar el JSON:', e);
+                        console.error('Respuesta recibida:', response);
                         console.log('no data');
                     }
                     viewProcesar();//llamo la funcion para ver si oculto el boton
@@ -444,8 +451,9 @@ function del_producto_detalle(correlativo){
         data: {action:action,id_detalle:id_detalle}, 
 
         success: function(response){
-            if(response!='error'){
-                var info = JSON.parse(response);
+            console.log('Respuesta del servidor:', response); // Depuración
+            try {
+                var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                 $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
                 $('#detalleTotal').html(info.totales);
 
@@ -462,8 +470,9 @@ function del_producto_detalle(correlativo){
 
                 //ocultar boton agregar
                 $('#add_producto_venta').slideUp();
-
-            }else{//si trae un error colocamos todo en blanco
+            } catch (e) {
+                console.error('Error al analizar el JSON:', e);
+                console.error('Respuesta recibida:', response);
                 $('#detalleVenta').html('');
                 $('#detalleTotal').html('');
             }
@@ -498,13 +507,14 @@ function searchforDetalle(){
         data: {action:action}, 
 
         success: function(response){
-
-            if(response != 'error'){//validamos que la respuesta no sea error
-                var info = JSON.parse(response);//convertimos en JSON a un objeto
+            console.log('Respuesta del servidor:', response); // Depuración
+            try {
+                var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                 $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
                 $('#detalleTotal').html(info.totales);
-
-            }else{
+            } catch (e) {
+                console.error('Error al analizar el JSON:', e);
+                console.error('Respuesta recibida:', response);
                 console.log('no data');
             }
             viewProcesar();//llamo la funcion para ver si oculto el boton

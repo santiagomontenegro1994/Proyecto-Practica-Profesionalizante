@@ -12,7 +12,7 @@ function Listar_Clientes($vConexion) {
         //3) el resultado deberá organizarse en una matriz, entonces lo recorro
         $i=0;
         while ($data = mysqli_fetch_array($rs)) {
-            $Listado[$i]['ID_CLIENTE'] = $data['id'];
+            $Listado[$i]['ID_CLIENTE'] = $data['idCliente'];
             $Listado[$i]['NOMBRE'] = $data['nombre'];
             $Listado[$i]['APELLIDO'] = $data['apellido'];
             $Listado[$i]['TELEFONO'] = $data['telefono'];

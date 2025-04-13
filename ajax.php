@@ -67,6 +67,78 @@ if (!empty($_POST)) {
         exit;
     }
 
+    // Muestra datos del detalle temp
+    if ($_POST['action'] == 'searchforDetalle') {
+        $query = mysqli_query($MiConexion, "SELECT 
+                                                tmp.correlativo, 
+                                                tmp.idProducto, 
+                                                p.nombre AS nombre,
+                                                p.descripcion AS categoria, -- Usamos 'descripcion' como 'categoria'
+                                                tmp.cantidad, 
+                                                tmp.precio_pedido
+                                            FROM detalle_temp tmp
+                                            LEFT JOIN productos p ON tmp.idProducto = p.idProducto");
+
+        $result = mysqli_num_rows($query);
+
+        // Declaro variables que voy a usar
+        $detalleTabla = '';
+        $subtotal = 0;
+        $total = 0;
+        $arrayData = array();
+
+        if ($result > 0) { // Si tiene algo el result
+            // Recorro todos los detalle_temp
+            while ($data = mysqli_fetch_assoc($query)) {
+                $precioTotal = round($data['cantidad'] * $data['precio_pedido'], 2); // Calculo el precio total con 2 decimales
+                $subtotal = round($subtotal + $precioTotal, 2); // Voy haciendo una sumatoria de totales con 2 decimales
+                $total = round($total + $precioTotal, 2); // Voy haciendo una sumatoria de totales con 2 decimales
+
+                // Concateno cada una de las tablas del detalle con los datos correspondientes
+                $detalleTabla .= '<tr data-bs-toggle="tooltip" data-bs-placement="left">
+                                    <th>' . $data['idProducto'] . '</th>
+                                    <td>' . $data['nombre'] . '</td>
+                                    <td>' . $data['categoria'] . '</td>
+                                    <th>' . $data['cantidad'] . '</th>
+                                    <td>' . number_format($data['precio_pedido'], 2, '.', '') . '</td>
+                                    <td>' . number_format($precioTotal, 2, '.', '') . '</td>
+                                    <td>
+                                        <a href="#" onclick="event.preventDefault();del_producto_detalle(' . $data['correlativo'] . ');">
+                                            <i class="bi bi-trash-fill text-danger fs-5"></i></a>
+                                    </td>   
+                                </tr>';
+            }
+
+            // Genero la tabla con totales
+            $detalleTotales = '<tr>
+                                <td colspan="5" class="text-end">SUBTOTAL</td>
+                                <td colspan="5" class="text-end">' . number_format($subtotal, 2, '.', '') . '</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">DESCUENTO</td>
+                                <td colspan="5" class="text-end"><input type="number" id="descuentoPedido" value="0" min="1"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">SEÑA</td>
+                                <td colspan="5" class="text-end"><input type="text" id="seniaPedido" value="0" min="1"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">TOTAL</td>
+                                <td colspan="5" class="text-end" id="total_pedido">' . number_format($total, 2, '.', '') . '</td>
+                                <td colspan="5" class="text-end" id="total_pedido_original" style="display: none;">' . $total . '</td>
+                            </tr>';
+
+            $arrayData['detalle'] = $detalleTabla;
+            $arrayData['totales'] = $detalleTotales;
+
+            echo json_encode($arrayData, JSON_UNESCAPED_UNICODE); // Retorno en formato JSON
+        } else {
+            echo 'error';
+        }
+        mysqli_close($MiConexion);
+        exit;
+    }
+
     // Procesar venta
     if ($_POST['action'] == 'procesarVenta') {
         $codCliente = $_POST['codCliente'];
