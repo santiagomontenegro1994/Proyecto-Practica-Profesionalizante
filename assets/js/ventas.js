@@ -115,7 +115,6 @@
                 data: {action:action,producto:producto}, 
     
                 success: function(response){
-                    console.log('Respuesta del servidor:', response); // Depuración
                     try {
                         var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                         $('#txt_producto').html(info.nombre); //paso los datos a las casillas
@@ -195,7 +194,6 @@
             }
         }else{
             var precio_total =$('#total_pedido_original').html() - $(this).val();//calculo el precio total
-            console.log("entre");
             console.log(descuento);
             // Actualizar el total restante en el DOM
             $('#total_pedido').text(precio_total.toFixed(2));
@@ -400,7 +398,6 @@ function agregarAVenta(idProducto) {
                 data: {action:action,producto:idProducto,cantidad:cantidad}, 
     
                 success: function(response){
-                    console.log('Respuesta del servidor:', response); // Depuración
                     try {
                         var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                         $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
@@ -507,7 +504,6 @@ function searchforDetalle(){
         data: {action:action}, 
 
         success: function(response){
-            console.log('Respuesta del servidor:', response); // Depuración
             try {
                 var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
                 $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales

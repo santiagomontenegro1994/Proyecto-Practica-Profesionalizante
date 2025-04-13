@@ -43,6 +43,7 @@ if (!empty($_POST)) {
         $query = mysqli_query($MiConexion, "CALL add_detalle_temp($idProducto, $cantidad)");
         $result = mysqli_num_rows($query);
         $detalleTabla = '';
+        $detalleTotales = '';
         $subtotal = 0;
         $total = 0;
 
@@ -51,16 +52,37 @@ if (!empty($_POST)) {
                 $precioTotal = $data['cantidad'] * $data['precio'];
                 $subtotal += $precioTotal;
                 $total += $precioTotal;
-                $detalleTabla .= "<tr>
-                                    <td>{$data['idProducto']}</td>
-                                    <td>{$data['nombre']}</td>
-                                    <td>{$data['cantidad']}</td>
-                                    <td>{$data['precio']}</td>
-                                    <td>{$precioTotal}</td>
-                                  </tr>";
+                $detalleTabla .= '<tr data-bs-toggle="tooltip" data-bs-placement="left">
+                                    <th>' . $data['idProducto'] . '</th>
+                                    <td>' . $data['nombre'] . '</td>
+                                    <td>' . $data['categoria'] . '</td>
+                                    <th>' . $data['cantidad'] . '</th>
+                                    <td>' . number_format($data['precio'], 2, '.', '') . '</td>
+                                    <td>' . number_format($precioTotal, 2, '.', '') . '</td>
+                                    <td>
+                                        <a href="#" onclick="event.preventDefault();del_producto_detalle(' . $data['correlativo'] . ');">
+                                            <i class="bi bi-trash-fill text-danger fs-5"></i></a>
+                                    </td>   
+                                </tr>';
             }
-            $totales = "<tr><td colspan='5'>Total</td><td>{$total}</td></tr>";
-            echo json_encode(['detalle' => $detalleTabla, 'totales' => $totales], JSON_UNESCAPED_UNICODE);
+            $detalleTotales = '<tr>
+                                <td colspan="5" class="text-end">SUBTOTAL</td>
+                                <td colspan="5" class="text-end">' . number_format($subtotal, 2, '.', '') . '</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">DESCUENTO</td>
+                                <td colspan="5" class="text-end"><input type="number" id="descuentoPedido" value="0" min="1"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">SEÑA</td>
+                                <td colspan="5" class="text-end"><input type="text" id="seniaPedido" value="0" min="1"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="text-end">TOTAL</td>
+                                <td colspan="5" class="text-end" id="total_pedido">' . number_format($total, 2, '.', '') . '</td>
+                                <td colspan="5" class="text-end" id="total_pedido_original" style="display: none;">' . $total . '</td>
+                            </tr>';
+            echo json_encode(['detalle' => $detalleTabla, 'totales' => $detalleTotales], JSON_UNESCAPED_UNICODE);
         } else {
             echo 'error';
         }
@@ -136,6 +158,102 @@ if (!empty($_POST)) {
             echo 'error';
         }
         mysqli_close($MiConexion);
+        exit;
+    }
+
+    // Elimina datos del detalle temp
+    if ($_POST['action'] == 'delProductoDetalle') {
+        if (empty($_POST['id_detalle'])) {
+            echo 'error'; // Si el ID del detalle está vacío, retorna error
+        } else {
+            $id_detalle = $_POST['id_detalle'];
+
+            // Llamar al procedimiento almacenado para eliminar un detalle de la tabla detalle_temp
+            $query_detalle_temp = mysqli_query($MiConexion, "CALL del_detalle_temp($id_detalle)");
+
+            if (!$query_detalle_temp) {
+                echo json_encode(['error' => mysqli_error($MiConexion)]); // Mostrar error de MySQL
+                exit;
+            }
+
+            // Liberar todos los resultados del procedimiento almacenado
+            while (mysqli_more_results($MiConexion) && mysqli_next_result($MiConexion)) {
+                // Este bucle asegura que todos los resultados sean procesados
+            }
+
+            $detalleTabla = '';
+            $subtotal = 0;
+            $total = 0;
+
+            // Consultar los registros restantes en detalle_temp
+            $query = mysqli_query($MiConexion, "SELECT 
+                                                    tmp.correlativo, 
+                                                    tmp.idProducto, 
+                                                    p.nombre AS nombre,
+                                                    p.descripcion AS categoria,
+                                                    tmp.cantidad, 
+                                                    tmp.precio_pedido
+                                                FROM detalle_temp tmp
+                                                LEFT JOIN productos p ON tmp.idProducto = p.idProducto");
+
+            if (!$query) {
+                echo json_encode(['error' => mysqli_error($MiConexion)]); // Mostrar error de MySQL
+                exit;
+            }
+
+            $result = mysqli_num_rows($query);
+
+            if ($result > 0) { // Si hay registros en detalle_temp
+                while ($data = mysqli_fetch_assoc($query)) {
+                    $precioTotal = round($data['cantidad'] * $data['precio_pedido'], 2); // Calcular el precio total
+                    $subtotal += $precioTotal;
+                    $total += $precioTotal;
+
+                    // Generar la fila de la tabla con el botón para eliminar
+                    $detalleTabla .= '<tr data-bs-toggle="tooltip" data-bs-placement="left">
+                                        <th>' . $data['idProducto'] . '</th>
+                                        <td>' . $data['nombre'] . '</td>
+                                        <td>' . $data['categoria'] . '</td>
+                                        <th>' . $data['cantidad'] . '</th>
+                                        <td>' . number_format($data['precio_pedido'], 2, '.', '') . '</td>
+                                        <td>' . number_format($precioTotal, 2, '.', '') . '</td>
+                                        <td>
+                                            <a href="#" onclick="event.preventDefault();del_producto_detalle(' . $data['correlativo'] . ');">
+                                                <i class="bi bi-trash-fill text-danger fs-5"></i>
+                                            </a>
+                                        </td>
+                                      </tr>';
+                }
+
+                // Generar los totales
+                $detalleTotales = '<tr>
+                                    <td colspan="5" class="text-end">SUBTOTAL</td>
+                                    <td colspan="5" class="text-end">' . number_format($subtotal, 2, '.', '') . '</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end">DESCUENTO</td>
+                                    <td colspan="5" class="text-end"><input type="text" id="descuentoPedido" value="0" min="1"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end">SEÑA</td>
+                                    <td colspan="5" class="text-end"><input type="number" id="seniaPedido" value="0" min="1"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end">TOTAL</td>
+                                    <td colspan="5" class="text-end" id="total_pedido">' . number_format($total, 2, '.', '') . '</td>
+                                    <td colspan="5" class="text-end" id="total_pedido_original" style="display: none;">' . $total . '</td>
+                                </tr>';
+
+                $arrayData['detalle'] = $detalleTabla;
+                $arrayData['totales'] = $detalleTotales;
+
+                echo json_encode($arrayData, JSON_UNESCAPED_UNICODE); // Retornar en formato JSON
+            } else {
+                echo 'error'; // Si no hay registros en detalle_temp
+            }
+
+            mysqli_close($MiConexion);
+        }
         exit;
     }
 
