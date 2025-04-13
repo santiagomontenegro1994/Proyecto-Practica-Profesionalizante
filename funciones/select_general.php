@@ -3,17 +3,17 @@ function Eliminar_Cliente($vConexion , $vIdConsulta) {
 
 
     //soy admin 
-        $SQL_MiConsulta="SELECT Id FROM clientes 
-                        WHERE Id = $vIdConsulta ";
+        $SQL_MiConsulta="SELECT idCliente FROM clientes 
+                        WHERE idCliente = $vIdConsulta ";
    
     
     $rs = mysqli_query($vConexion, $SQL_MiConsulta);
         
     $data = mysqli_fetch_array($rs);
 
-    if (!empty($data['Id']) ) {
+    if (!empty($data['idCliente']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM clientes WHERE Id = $vIdConsulta");
+        mysqli_query($vConexion, "DELETE FROM clientes WHERE idCliente = $vIdConsulta");
         return true;
 
     }else {
@@ -49,13 +49,13 @@ function Datos_Cliente($vConexion , $vIdCliente) {
     $DatosCliente  =   array();
     //me aseguro que la consulta exista
     $SQL = "SELECT * FROM clientes 
-            WHERE Id = $vIdCliente";
+            WHERE idCliente = $vIdCliente";
 
     $rs = mysqli_query($vConexion, $SQL);
 
     $data = mysqli_fetch_array($rs) ;
     if (!empty($data)) {
-        $DatosCliente['ID_CLIENTE'] = $data['id'];
+        $DatosCliente['ID_CLIENTE'] = $data['idCliente'];
         $DatosCliente['NOMBRE'] = $data['nombre'];
         $DatosCliente['APELLIDO'] = $data['apellido'];
         $DatosCliente['TELEFONO'] = $data['telefono'];
@@ -160,9 +160,9 @@ function Modificar_Cliente($vConexion) {
     apellido = '$apellido',
     telefono = '$telefono',
     direccion = '$direccion',
-    email = '$email'
+    email = '$email',
     dni = '$dni'
-    WHERE Id = '$idCliente'";
+    WHERE idCliente = '$idCliente'";
 
     if ( mysqli_query($vConexion, $SQL_MiConsulta) != false) {
         return true;
@@ -255,7 +255,7 @@ function Listar_Clientes_Turnos($vConexion) {
     $Listado=array();
 
       //1) genero la consulta que deseo
-        $SQL = "SELECT id , apellido , nombre
+        $SQL = "SELECT idCliente , apellido , nombre
         FROM clientes
         ORDER BY Apellido";
 
@@ -265,7 +265,7 @@ function Listar_Clientes_Turnos($vConexion) {
         //3) el resultado deberá organizarse en una matriz, entonces lo recorro
         $i=0;
         while ($data = mysqli_fetch_array($rs)) {
-            $Listado[$i]['ID'] = $data['id'];
+            $Listado[$i]['ID'] = $data['idCliente'];
             $Listado[$i]['APELLIDO'] = $data['apellido'];
             $Listado[$i]['NOMBRE'] = $data['nombre'];
             $i++;
