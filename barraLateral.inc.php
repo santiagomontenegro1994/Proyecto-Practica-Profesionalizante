@@ -74,7 +74,7 @@
             </a>
           </li>
           <li>
-            <a href="charts-apexcharts.html">
+            <a href="../listados/listados_ventas.php">
               <i class="bi bi-circle"></i><span>Listado de Ventas</span>
             </a>
           </li>
