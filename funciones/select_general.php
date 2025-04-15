@@ -662,4 +662,42 @@ function Listar_Productos_Bajo_Stock($conexion) {
     return $productos;
 }
 
+function Listar_Ventas($vConexion) {
+
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    $SQL = "SELECT 
+                v.idVenta, 
+                v.idCliente, 
+                v.fecha, 
+                v.precioTotal, 
+                v.descuento, 
+                v.senia, 
+                c.nombre AS CLIENTE_N, 
+                c.apellido AS CLIENTE_A
+            FROM ventas v
+            LEFT JOIN clientes c ON v.idCliente = c.idCliente
+            ORDER BY v.fecha DESC";
+
+    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_VENTA'] = $data['idVenta'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
+        $Listado[$i]['DESCUENTO'] = $data['descuento'];
+        $Listado[$i]['SENIA'] = $data['senia'];
+        $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
+        $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
 ?>
