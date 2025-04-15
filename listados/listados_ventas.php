@@ -115,7 +115,7 @@ if (!empty($_POST['BotonBuscar'])) {
                   $saldo = ($ListadoVentas[$i]['PRECIO_TOTAL'] - $ListadoVentas[$i]['SENIA']) - $montoDescuento;
                 ?>
                   <tr>
-                    <td><?php echo $ListadoVentas[$i]['ID']; ?></td>
+                    <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['FECHA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['CLIENTE_N']; ?>, <?php echo $ListadoVentas[$i]['CLIENTE_A']; ?></td>
                     <td>$<?php echo number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2); ?></td>
@@ -124,18 +124,18 @@ if (!empty($_POST['BotonBuscar'])) {
                     <td>$<?php echo number_format($saldo, 2); ?></td>
                     <td>
                       <!-- Acciones -->
-                      <a href="eliminar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID']; ?>" 
+                      <a href="eliminar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Anular" 
                         onclick="return confirm('Confirma anular esta Venta?');">
                         <i class="bi bi-trash-fill text-danger fs-5"></i>
                       </a>
 
-                      <a href="modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID']; ?>" 
+                      <a href="modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Modificar">
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
                       </a>
 
-                      <a href="imprimir_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID']; ?>" 
+                      <a href="imprimir_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Imprimir">
                         <i class="bi bi-printer-fill text-primary fs-5"></i>
                       </a>
