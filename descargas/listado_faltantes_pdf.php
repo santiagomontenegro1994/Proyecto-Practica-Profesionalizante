@@ -13,8 +13,8 @@ $MiConexion = ConexionBD();
 // Incluir el archivo con las funciones necesarias
 require_once '../funciones/select_general.php';
 
-// Obtener el listado de productos ordenados por stock (de menor a mayor)
-$ListadoProductos = Listar_Productos_Ordenados_Stock($MiConexion);
+// Obtener el listado de productos con stock menor o igual a 10
+$ListadoProductos = Listar_Productos_Bajo_Stock($MiConexion);
 
 // Iniciar el almacenamiento del contenido HTML
 ob_start();
@@ -44,9 +44,9 @@ ob_start();
                 <?php foreach ($ListadoProductos as $index => $producto) { ?>
                     <tr>
                         <td><?php echo $index + 1; ?></td>
-                        <td><?php echo $producto['NOMBRE']; ?></td>
-                        <td><?php echo $producto['DESCRIPCION']; ?></td>
-                        <td><?php echo $producto['STOCK']; ?></td>
+                        <td><?php echo $producto['nombre']; ?></td>
+                        <td><?php echo $producto['descripcion']; ?></td>
+                        <td><?php echo $producto['stock']; ?></td>
                     </tr>
                 <?php } ?>
             </tbody>
