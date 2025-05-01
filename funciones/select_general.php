@@ -307,7 +307,7 @@ function Listar_Turnos($vConexion) {
 
         $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.IdEstado as estado, ES.Nombre, ES.Apellido, T.IdTipoServicio
         FROM clientes C, estado E, estilista ES, turnos T
-        WHERE T.IdCliente=C.id AND T.IdEstado=E.IdEstado
+        WHERE T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
         AND T.IdEstilista=ES.IdEstilista ";
         
         if($_SESSION['Usuario_Nivel'] == '2'){
