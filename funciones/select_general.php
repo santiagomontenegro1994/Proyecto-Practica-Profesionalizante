@@ -89,6 +89,41 @@ function Datos_Turno($vConexion , $vIdTurno) {
 
 }
 
+function Datos_Turno_Comprobante($vConexion, $vIdTurno) {
+    $DatosTurno = array();
+
+    // Consulta para obtener los datos del turno junto con los valores de las tablas relacionadas
+    $SQL = "SELECT 
+                t.IdTurno, 
+                t.Horario, 
+                t.Fecha, 
+                ts.Denominacion AS TIPO_SERVICIO, 
+                CONCAT(e.Apellido, ', ', e.Nombre) AS ESTILISTA, 
+                es.Denominacion AS ESTADO, 
+                CONCAT(c.apellido, ', ', c.nombre) AS CLIENTE
+            FROM turnos t
+            LEFT JOIN tipo_servicio ts ON t.IdTipoServicio = ts.IdTipoServicio
+            LEFT JOIN estilista e ON t.IdEstilista = e.IdEstilista
+            LEFT JOIN estado es ON t.IdEstado = es.IdEstado
+            LEFT JOIN clientes c ON t.IdCliente = c.idCliente
+            WHERE t.IdTurno = $vIdTurno";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosTurno['ID_TURNO'] = $data['IdTurno'];
+        $DatosTurno['HORARIO'] = $data['Horario'];
+        $DatosTurno['FECHA'] = $data['Fecha'];
+        $DatosTurno['TIPO_SERVICIO'] = $data['TIPO_SERVICIO'];
+        $DatosTurno['ESTILISTA'] = $data['ESTILISTA'];
+        $DatosTurno['ESTADO'] = $data['ESTADO'];
+        $DatosTurno['CLIENTE'] = $data['CLIENTE'];
+    }
+
+    return $DatosTurno;
+}
+
 function Validar_Cliente(){
     $_SESSION['Mensaje']='';
     if (strlen($_POST['Nombre']) < 3) {
