@@ -15,7 +15,7 @@
         $_SESSION['Mensaje'].='Se ha eliminado la venta seleccionada';
         $_SESSION['Estilo']='success';
     }else {
-        $_SESSION['Mensaje'].='No se pudo borrar la venta. <br /> ';
+        $_SESSION['Mensaje'].='No se pudo eliminar la venta. <br /> ';
         $_SESSION['Estilo']='warning';
     }
     
