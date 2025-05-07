@@ -735,4 +735,27 @@ function Listar_Ventas($vConexion) {
     return $Listado;
 }
 
+function Eliminar_Venta($vConexion , $vIdConsulta) {
+
+
+    //soy admin 
+        $SQL_MiConsulta="SELECT idVenta FROM ventas 
+                        WHERE idVenta = $vIdConsulta ";
+   
+    
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idVenta']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM ventas WHERE idVenta = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
 ?>

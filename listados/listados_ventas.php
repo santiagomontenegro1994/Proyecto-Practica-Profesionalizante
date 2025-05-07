@@ -122,13 +122,13 @@ if (!empty($_POST['BotonBuscar'])) {
                     <td>$<?php echo number_format($saldo, 2); ?></td>
                     <td>
                       <!-- Acciones -->
-                      <a href="eliminar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="../eliminar/eliminar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Anular" 
                         onclick="return confirm('Confirma anular esta Venta?');">
                         <i class="bi bi-trash-fill text-danger fs-5"></i>
                       </a>
 
-                      <a href="modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="../modificar/modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Modificar">
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
                       </a>
