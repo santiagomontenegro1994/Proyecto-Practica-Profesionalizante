@@ -697,6 +697,29 @@ function Listar_Productos_Bajo_Stock($conexion) {
     return $productos;
 }
 
+function Eliminar_Venta($vConexion , $vIdConsulta) {
+
+
+    //soy admin 
+        $SQL_MiConsulta="SELECT idVenta FROM ventas 
+                        WHERE idVenta = $vIdConsulta ";
+   
+    
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idVenta']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM ventas WHERE idVenta = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
 function Listar_Ventas($vConexion) {
 
     $Listado = array();
@@ -735,27 +758,80 @@ function Listar_Ventas($vConexion) {
     return $Listado;
 }
 
-function Eliminar_Venta($vConexion , $vIdConsulta) {
+function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
 
+    // Genero la consulta según el criterio
+    switch ($criterio) {
+        case 'Cliente':
+            $SQL = "SELECT 
+                        v.idVenta, 
+                        v.idCliente, 
+                        v.fecha, 
+                        v.precioTotal, 
+                        v.descuento, 
+                        v.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A
+                    FROM ventas v
+                    LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    ORDER BY v.fecha DESC";
+            break;
 
-    //soy admin 
-        $SQL_MiConsulta="SELECT idVenta FROM ventas 
-                        WHERE idVenta = $vIdConsulta ";
-   
-    
-    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
-        
-    $data = mysqli_fetch_array($rs);
+        case 'Fecha':
+            $SQL = "SELECT 
+                        v.idVenta, 
+                        v.idCliente, 
+                        v.fecha, 
+                        v.precioTotal, 
+                        v.descuento, 
+                        v.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A
+                    FROM ventas v
+                    LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    WHERE v.fecha LIKE '%$parametro%'
+                    ORDER BY v.fecha DESC";
+            break;
 
-    if (!empty($data['idVenta']) ) {
-        //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM ventas WHERE idVenta = $vIdConsulta");
-        return true;
+        case 'Id':
+            $SQL = "SELECT 
+                        v.idVenta, 
+                        v.idCliente, 
+                        v.fecha, 
+                        v.precioTotal, 
+                        v.descuento, 
+                        v.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A
+                    FROM ventas v
+                    LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    WHERE v.idVenta = '$parametro'
+                    ORDER BY v.fecha DESC";
+            break;
 
-    }else {
-        return false;
+        default:
+            return $Listado; // Si no hay un criterio válido, devuelvo un listado vacío
     }
-    
-}
 
+    // Ejecuto la consulta
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // Organizo el resultado en un array
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_VENTA'] = $data['idVenta'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
+        $Listado[$i]['DESCUENTO'] = $data['descuento'];
+        $Listado[$i]['SENIA'] = $data['senia'];
+        $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
+        $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
 ?>
