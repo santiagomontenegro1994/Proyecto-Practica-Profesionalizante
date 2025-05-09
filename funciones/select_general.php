@@ -393,7 +393,7 @@ function Listar_Turnos_Parametro($vConexion,$criterio,$parametro) {
             $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.IdEstado as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
         FROM clientes C, estado E, estilista ES, turnos T
         WHERE (C.nombre LIKE '%$parametro%' OR C.apellido LIKE '%$parametro%') 
-        AND T.IdCliente=C.id AND T.IdEstado=E.IdEstado
+        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
         AND T.IdEstilista=ES.IdEstilista
         ORDER BY T.Fecha, T.Horario";
         break;
@@ -401,7 +401,7 @@ function Listar_Turnos_Parametro($vConexion,$criterio,$parametro) {
             $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
         FROM clientes C, estado E, estilista ES, turnos T
         WHERE (ES.Nombre LIKE '%$parametro%' OR ES.Apellido LIKE '%$parametro%') 
-        AND T.IdCliente=C.id AND T.IdEstado=E.IdEstado
+        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
         AND T.IdEstilista=ES.IdEstilista
         ORDER BY T.Fecha, T.Horario";
         break;
@@ -409,7 +409,7 @@ function Listar_Turnos_Parametro($vConexion,$criterio,$parametro) {
             $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
         FROM clientes C, estado E, estilista ES, turnos T
         WHERE T.Fecha LIKE '%$parametro%' 
-        AND T.IdCliente=C.id AND T.IdEstado=E.IdEstado
+        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
         AND T.IdEstilista=ES.IdEstilista
         ORDER BY T.Fecha, T.Horario";
         break;
@@ -417,7 +417,7 @@ function Listar_Turnos_Parametro($vConexion,$criterio,$parametro) {
             $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
         FROM clientes C, estado E, estilista ES, turnos T
         WHERE TP.Denominacion LIKE '%$parametro%' 
-        AND T.IdCliente=C.id AND T.IdEstado=E.IdEstado
+        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
         AND T.IdEstilista=ES.IdEstilista
         ORDER BY T.Fecha, T.Horario";
         break;
