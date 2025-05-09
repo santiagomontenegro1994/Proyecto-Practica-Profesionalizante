@@ -44,6 +44,9 @@ function Listar_Clientes_Parametro($vConexion,$criterio,$parametro) {
         case 'Email':
         $sql = "SELECT * FROM clientes WHERE email LIKE '%$parametro%'";
         break;
+        case 'DNI':
+            $sql = "SELECT * FROM clientes WHERE dni LIKE '%$parametro%'";
+            break;
         }    
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
         $rs = mysqli_query($vConexion, $sql);
@@ -57,6 +60,7 @@ function Listar_Clientes_Parametro($vConexion,$criterio,$parametro) {
             $Listado[$i]['TELEFONO'] = $data['telefono'];
             $Listado[$i]['DIRECCION'] = $data['direccion'];
             $Listado[$i]['EMAIL'] = $data['email'];
+            $Listado[$i]['DNI'] = $data['dni'];
             $i++;
         }
 

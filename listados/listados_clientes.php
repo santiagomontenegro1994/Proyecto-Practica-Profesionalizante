@@ -37,10 +37,7 @@ $CantidadClientes = count($ListadoClientes);
 
 }
 
-
 ?>
-
-
 
 <main id="main" class="main">
 
