@@ -834,4 +834,74 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
     // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
     return $Listado;
 }
+
+function Datos_Venta($vConexion, $vIdVenta) {
+    $DatosVenta = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT 
+                v.idVenta, 
+                v.idCliente, 
+                v.fecha, 
+                v.precioTotal, 
+                v.senia, 
+                v.descuento, 
+                v.idEstado, 
+                c.nombre AS CLIENTE_N, 
+                c.apellido AS CLIENTE_A
+            FROM ventas v
+            LEFT JOIN clientes c ON v.idCliente = c.idCliente
+            WHERE v.idVenta = $vIdVenta";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosVenta['ID_VENTA'] = $data['idVenta'];
+        $DatosVenta['ID_CLIENTE'] = $data['idCliente'];
+        $DatosVenta['FECHA'] = $data['fecha'];
+        $DatosVenta['PRECIO_TOTAL'] = $data['precioTotal'];
+        $DatosVenta['SENIA'] = $data['senia'];
+        $DatosVenta['DESCUENTO'] = $data['descuento'];
+        $DatosVenta['ID_ESTADO'] = $data['idEstado'];
+        $DatosVenta['CLIENTE_N'] = $data['CLIENTE_N'];
+        $DatosVenta['CLIENTE_A'] = $data['CLIENTE_A'];
+    }
+    return $DatosVenta;
+}
+
+function Detalles_Venta($vConexion, $vIdVenta) {
+    $DetallesVenta = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT 
+                dv.idDetalleVenta, 
+                dv.idVenta, 
+                dv.idProducto, 
+                p.nombre AS PRODUCTO, 
+                dv.precio_venta AS PRECIO_VENTA, 
+                dv.cantidad AS CANTIDAD, 
+                dv.idVendedor AS VENDEDOR, 
+                dv.idEstado AS ID_ESTADO, 
+                e.Denominacion AS ESTADO
+            FROM detalle_venta dv
+            LEFT JOIN productos p ON dv.idProducto = p.idProducto
+            LEFT JOIN estado e ON dv.idEstado = e.IdEstado
+            WHERE dv.idVenta = $vIdVenta";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $DetallesVenta[$i]['ID_DETALLE'] = $data['idDetalleVenta'];
+        $DetallesVenta[$i]['ID_VENTA'] = $data['idVenta'];
+        $DetallesVenta[$i]['ID_PRODUCTO'] = $data['idProducto'];
+        $DetallesVenta[$i]['PRODUCTO'] = $data['PRODUCTO'];
+        $DetallesVenta[$i]['PRECIO_VENTA'] = $data['PRECIO_VENTA'];
+        $DetallesVenta[$i]['CANTIDAD'] = $data['CANTIDAD'];
+        $DetallesVenta[$i]['VENDEDOR'] = $data['VENDEDOR'];
+        $DetallesVenta[$i]['ID_ESTADO'] = $data['ID_ESTADO'];
+        $DetallesVenta[$i]['ESTADO'] = $data['ESTADO'];
+        $i++;
+    }
+    return $DetallesVenta;
+}
 ?>
