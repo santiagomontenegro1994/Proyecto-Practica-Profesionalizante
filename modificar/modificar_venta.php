@@ -40,12 +40,12 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
 
 <main id="main" class="main">
     <div class="pagetitle">
-        <h1>Modificar Venta</h1>
+        <h1>Detalles Venta</h1>
         <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="index.php">Menú</a></li>
                 <li class="breadcrumb-item">Ventas</li>
-                <li class="breadcrumb-item active">Modificar Venta</li>
+                <li class="breadcrumb-item active">Detalles Venta</li>
             </ol>
         </nav>
     </div><!-- End Page Title -->
@@ -62,6 +62,7 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-end w-100">
                     <div class="card-title">Cliente: <span id="nombreCliente" class="text-dark fs-5"><?php echo $DatosVentaActual['CLIENTE_N'] ?>, <?php echo $DatosVentaActual['CLIENTE_A'] ?></span></div>
+                    <div class="card-title">Vendedor: <span id="nombreVendedor" class="text-dark fs-5"><?php echo $DatosVentaActual['VENDEDOR'] ?></span></div>
                     <div class="card-title">Fecha de Venta: <span id="fecha" class="text-dark fs-5"><?php echo $DatosVentaActual['FECHA'] ?></span></div>
                 </div>
             </div>
@@ -82,8 +83,7 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                                 <th>Producto</th>
                                 <th>Precio</th>
                                 <th>Cantidad</th>
-                                <th>Estado</th>
-                                <th>Vendedor</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,36 +92,15 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                                     <td><?php echo $detalle['PRODUCTO']; ?></td>
                                     <td><?php echo $detalle['PRECIO_VENTA']; ?></td>
                                     <td><?php echo $detalle['CANTIDAD']; ?></td>
-                                    <td>
-                                        <select name="estado_detalle[<?php echo $detalle['ID_DETALLE']; ?>]" class="form-control">
-                                            <?php foreach ($estados as $estado) { ?>
-                                                <option value="<?php echo $estado['ID_ESTADO']; ?>" 
-                                                    <?php echo ($detalle['ID_ESTADO'] == $estado['ID_ESTADO']) ? 'selected' : ''; ?>>
-                                                    <?php echo $estado['DENOMINACION']; ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                    </td>
-                                    <td><?php echo $detalle['VENDEDOR']; ?></td>
+                                    <td><?php echo number_format($detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'], 2, ',', '.'); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
                     </table>
 
-                    <!-- Campo para agregar más seña -->
-                    <div class="text-end">
-                        <div class="mb-2">
-                            <label for="nueva_senia" class="fw-bold fs-6">Agregar más seña:</label>
-                        </div>
-                        <div class="mb-2 d-flex justify-content-end">
-                            <input type="number" id="nueva_senia" name="nueva_senia" class="form-control w-25" min="0" step="0.01" placeholder="Monto de la seña" value="0">
-                        </div>
-                    </div>
-
                     <!-- Botones de acción -->
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-sm" value="Modificar" name="BotonModificarVenta">Guardar Cambios</button>
-                        <a href="listados_ventas.php" class="btn btn-success btn-info btn-sm">Volver al Listado</a>
+                        <a href="listados/listados_ventas.php" class="btn btn-success btn-info btn-sm">Volver al Listado</a>
                     </div>
                 </form><!-- End Horizontal Form -->
             </div>
@@ -134,7 +113,7 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                 <div class="details">
                     <table class="table w-auto ms-auto"> <!-- w-auto ajusta el ancho -->
                         <tr>
-                            <td class="card-title">Precio Total:</td>
+                            <td class="card-title">Sub Total:</td>
                             <td class="text-dark fs-5">$<?php echo $DatosVentaActual['PRECIO_TOTAL'] ?></td>
                         </tr>
                         <tr>
@@ -142,16 +121,12 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                             <td class="text-dark fs-5">%<?php echo $DatosVentaActual['DESCUENTO'] ?></td>
                         </tr>
                         <tr>
-                            <td class="card-title">Seña:</td>
-                            <td class="text-dark fs-5">$<?php echo $DatosVentaActual['SENIA'] ?></td>
-                        </tr>
-                        <tr>
                             <?php
                             // Calcula el monto del descuento
                             $monto_descuento = ($DatosVentaActual['PRECIO_TOTAL'] * $DatosVentaActual['DESCUENTO']) / 100;
-                            $saldo = ($DatosVentaActual['PRECIO_TOTAL'] - $monto_descuento) - $DatosVentaActual['SENIA'];
+                            $saldo = ($DatosVentaActual['PRECIO_TOTAL'] - $monto_descuento);
                             ?>
-                            <td class="card-title">Saldo:</td>
+                            <td class="card-title">Total:</td>
                             <td class="text-dark fs-5">$<?php echo $saldo ?></td>
                         </tr>
                     </table>

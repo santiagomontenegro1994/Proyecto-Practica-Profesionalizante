@@ -101,6 +101,7 @@ if (!empty($_POST['BotonBuscar'])) {
                   <th scope="col">Cliente</th>
                   <th scope="col">Total</th>
                   <th scope="col">%Desc.</th>
+                  <th scope="col">Seña</th>
                   <th scope="col">Saldo</th>
                   <th scope="col">Acciones</th>
                 </tr>
@@ -109,7 +110,7 @@ if (!empty($_POST['BotonBuscar'])) {
                 <?php for ($i = 0; $i < $CantidadVentas; $i++) { 
                   // Calcular el saldo
                   $montoDescuento = $ListadoVentas[$i]['PRECIO_TOTAL'] * ($ListadoVentas[$i]['DESCUENTO'] / 100);
-                  $saldo = ($ListadoVentas[$i]['PRECIO_TOTAL']) - $montoDescuento;
+                  $saldo = ($ListadoVentas[$i]['PRECIO_TOTAL'] - $ListadoVentas[$i]['SENIA']) - $montoDescuento;
                 ?>
                   <tr>
                     <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
@@ -117,6 +118,7 @@ if (!empty($_POST['BotonBuscar'])) {
                     <td><?php echo $ListadoVentas[$i]['CLIENTE_N']; ?>, <?php echo $ListadoVentas[$i]['CLIENTE_A']; ?></td>
                     <td>$<?php echo number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2); ?></td>
                     <td class="text-center">%<?php echo $ListadoVentas[$i]['DESCUENTO']; ?></td>
+                    <td>$<?php echo number_format($ListadoVentas[$i]['SENIA'], 2); ?></td>
                     <td>$<?php echo number_format($saldo, 2); ?></td>
                     <td>
                       <!-- Acciones -->
@@ -131,7 +133,7 @@ if (!empty($_POST['BotonBuscar'])) {
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
                       </a>
 
-                      <a href="../descargas/descargar_comp_ventaPDF.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="imprimir_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Imprimir">
                         <i class="bi bi-printer-fill text-primary fs-5"></i>
                       </a>
