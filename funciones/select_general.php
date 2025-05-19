@@ -731,7 +731,6 @@ function Listar_Ventas($vConexion) {
                 v.fecha, 
                 v.precioTotal, 
                 v.descuento, 
-                v.senia, 
                 c.nombre AS CLIENTE_N, 
                 c.apellido AS CLIENTE_A
             FROM ventas v
@@ -748,7 +747,6 @@ function Listar_Ventas($vConexion) {
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
-        $Listado[$i]['SENIA'] = $data['senia'];
         $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
         $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
         $i++;
@@ -770,7 +768,6 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.fecha, 
                         v.precioTotal, 
                         v.descuento, 
-                        v.senia, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A
                     FROM ventas v
@@ -786,7 +783,6 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.fecha, 
                         v.precioTotal, 
                         v.descuento, 
-                        v.senia, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A
                     FROM ventas v
@@ -802,7 +798,6 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.fecha, 
                         v.precioTotal, 
                         v.descuento, 
-                        v.senia, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A
                     FROM ventas v
@@ -825,7 +820,6 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
-        $Listado[$i]['SENIA'] = $data['senia'];
         $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
         $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
         $i++;
@@ -843,13 +837,14 @@ function Datos_Venta($vConexion, $vIdVenta) {
                 v.idCliente, 
                 v.fecha, 
                 v.precioTotal, 
-                v.senia, 
                 v.descuento, 
                 v.idEstado, 
                 c.nombre AS CLIENTE_N, 
-                c.apellido AS CLIENTE_A
+                c.apellido AS CLIENTE_A,
+                CONCAT(u.nombre, ' ', u.apellido) AS vendedor
             FROM ventas v
             LEFT JOIN clientes c ON v.idCliente = c.idCliente
+            LEFT JOIN usuarios u ON v.idUsuario = u.id
             WHERE v.idVenta = $vIdVenta";
 
     $rs = mysqli_query($vConexion, $SQL);
@@ -860,9 +855,9 @@ function Datos_Venta($vConexion, $vIdVenta) {
         $DatosVenta['ID_CLIENTE'] = $data['idCliente'];
         $DatosVenta['FECHA'] = $data['fecha'];
         $DatosVenta['PRECIO_TOTAL'] = $data['precioTotal'];
-        $DatosVenta['SENIA'] = $data['senia'];
         $DatosVenta['DESCUENTO'] = $data['descuento'];
         $DatosVenta['ID_ESTADO'] = $data['idEstado'];
+        $DatosVenta['VENDEDOR'] = $data['vendedor'];
         $DatosVenta['CLIENTE_N'] = $data['CLIENTE_N'];
         $DatosVenta['CLIENTE_A'] = $data['CLIENTE_A'];
     }
@@ -879,7 +874,6 @@ function Detalles_Venta($vConexion, $vIdVenta) {
                 p.nombre AS PRODUCTO, 
                 dv.precio_venta AS PRECIO_VENTA, 
                 dv.cantidad AS CANTIDAD, 
-                dv.idVendedor AS VENDEDOR, 
                 dv.idEstado AS ID_ESTADO, 
                 e.Denominacion AS ESTADO
             FROM detalle_venta dv
@@ -897,7 +891,6 @@ function Detalles_Venta($vConexion, $vIdVenta) {
         $DetallesVenta[$i]['PRODUCTO'] = $data['PRODUCTO'];
         $DetallesVenta[$i]['PRECIO_VENTA'] = $data['PRECIO_VENTA'];
         $DetallesVenta[$i]['CANTIDAD'] = $data['CANTIDAD'];
-        $DetallesVenta[$i]['VENDEDOR'] = $data['VENDEDOR'];
         $DetallesVenta[$i]['ID_ESTADO'] = $data['ID_ESTADO'];
         $DetallesVenta[$i]['ESTADO'] = $data['ESTADO'];
         $i++;
