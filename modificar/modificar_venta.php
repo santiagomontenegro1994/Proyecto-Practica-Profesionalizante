@@ -43,7 +43,7 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
         <h1>Detalles Venta</h1>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.php">Menú</a></li>
+                <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
                 <li class="breadcrumb-item">Ventas</li>
                 <li class="breadcrumb-item active">Detalles Venta</li>
             </ol>
@@ -100,7 +100,7 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
 
                     <!-- Botones de acción -->
                     <div class="text-center">
-                        <a href="listados/listados_ventas.php" class="btn btn-success btn-info btn-sm">Volver al Listado</a>
+                        <a href="../listados/listados_ventas.php" class="btn btn-success btn-info btn-sm">Volver al Listado</a>
                     </div>
                 </form><!-- End Horizontal Form -->
             </div>

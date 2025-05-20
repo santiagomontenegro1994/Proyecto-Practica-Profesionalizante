@@ -40,7 +40,9 @@ if (!empty($_POST)) {
     if ($_POST['action'] == 'agregarProductoDetalle') {
         $idProducto = $_POST['producto'];
         $cantidad = $_POST['cantidad'];
-        $query = mysqli_query($MiConexion, "CALL add_detalle_temp($idProducto, $cantidad)");
+        $usuario = $_SESSION['Usuario_Id'];
+
+        $query = mysqli_query($MiConexion, "CALL add_detalle_temp($idProducto, $cantidad, $usuario)");
         $result = mysqli_num_rows($query);
         $detalleTabla = '';
         $detalleTotales = '';
@@ -140,15 +142,18 @@ if (!empty($_POST)) {
 
     // Muestra datos del detalle temp Venta
     if ($_POST['action'] == 'searchforDetalle') {
+        $usuario = $_SESSION['Usuario_Id'];
         $query = mysqli_query($MiConexion, "SELECT 
-                                                tmp.correlativo, 
-                                                tmp.idProducto, 
+                                                tmp.idProducto AS idProducto, 
+                                                tmp.correlativo,
                                                 p.nombre AS nombre,
-                                                p.descripcion AS categoria, -- Usamos 'descripcion' como 'categoria'
-                                                tmp.cantidad, 
-                                                tmp.precio_pedido
+                                                p.descripcion AS categoria,
+                                                tmp.cantidad AS cantidad, 
+                                                tmp.precio_pedido AS precio
                                             FROM detalle_temp tmp
-                                            LEFT JOIN productos p ON tmp.idProducto = p.idProducto");
+                                            JOIN productos p ON tmp.idProducto = p.idProducto
+                                            WHERE tmp.idUsuario = $usuario
+                                            ORDER BY tmp.correlativo;");
 
         $result = mysqli_num_rows($query);
 
@@ -161,7 +166,7 @@ if (!empty($_POST)) {
         if ($result > 0) { // Si tiene algo el result
             // Recorro todos los detalle_temp
             while ($data = mysqli_fetch_assoc($query)) {
-                $precioTotal = round($data['cantidad'] * $data['precio_pedido'], 2); // Calculo el precio total con 2 decimales
+                $precioTotal = round($data['cantidad'] * $data['precio'], 2); // Calculo el precio total con 2 decimales
                 $subtotal = round($subtotal + $precioTotal, 2); // Voy haciendo una sumatoria de totales con 2 decimales
                 $total = round($total + $precioTotal, 2); // Voy haciendo una sumatoria de totales con 2 decimales
 
@@ -171,7 +176,7 @@ if (!empty($_POST)) {
                                     <td>' . $data['nombre'] . '</td>
                                     <td>' . $data['categoria'] . '</td>
                                     <th>' . $data['cantidad'] . '</th>
-                                    <td>' . number_format($data['precio_pedido'], 2, '.', '') . '</td>
+                                    <td>' . number_format($data['precio'], 2, '.', '') . '</td>
                                     <td>' . number_format($precioTotal, 2, '.', '') . '</td>
                                     <td>
                                         <a href="#" onclick="event.preventDefault();del_producto_detalle(' . $data['correlativo'] . ');">
@@ -284,9 +289,10 @@ if (!empty($_POST)) {
             echo 'error'; // Si el ID del detalle está vacío, retorna error
         } else {
             $id_detalle = $_POST['id_detalle'];
+            $usuario = $_SESSION['Usuario_Id'];
 
             // Llamar al procedimiento almacenado para eliminar un detalle de la tabla detalle_temp
-            $query_detalle_temp = mysqli_query($MiConexion, "CALL del_detalle_temp($id_detalle)");
+            $query_detalle_temp = mysqli_query($MiConexion, "CALL del_detalle_temp($id_detalle, $usuario)");
 
             if (!$query_detalle_temp) {
                 echo json_encode(['error' => mysqli_error($MiConexion)]); // Mostrar error de MySQL
@@ -311,7 +317,8 @@ if (!empty($_POST)) {
                                                     tmp.cantidad, 
                                                     tmp.precio_pedido
                                                 FROM detalle_temp tmp
-                                                LEFT JOIN productos p ON tmp.idProducto = p.idProducto");
+                                                LEFT JOIN productos p ON tmp.idProducto = p.idProducto
+                                                WHERE tmp.idUsuario = $usuario");
 
             if (!$query) {
                 echo json_encode(['error' => mysqli_error($MiConexion)]); // Mostrar error de MySQL

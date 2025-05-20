@@ -2,7 +2,7 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: cerrarsesion.php');
+    header('Location: ../inicio/cerrarsesion.php');
     exit;
 }
 
@@ -64,7 +64,10 @@ if (!empty($_POST['BotonBuscar'])) {
               <div class="col-sm-3 mt-2">
                 <button type="submit" class="btn btn-success btn-xs d-inline-block" value="buscar" name="BotonBuscar">Buscar</button>
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
-                <button type="submit" class="btn btn-primary btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Imprimir</button>
+                <a href="../descargas/descargar_ventasPDF.php" 
+                  class="btn btn-primary btn-xs d-inline-block " 
+                  title="PDF"> Descargar </a> 
+                  
               </div>
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
@@ -99,22 +102,37 @@ if (!empty($_POST['BotonBuscar'])) {
                   <th scope="col">ID</th>
                   <th scope="col">Fecha</th>
                   <th scope="col">Cliente</th>
-                  <th scope="col">Total</th>
+                  <th scope="col">Vendedor</th>
+                  <th scope="col">SubTotal</th>
                   <th scope="col">%Desc.</th>
-                  <th scope="col">Saldo</th>
+                  <th scope="col">Total</th>
                   <th scope="col">Acciones</th>
                 </tr>
               </thead>
-              <tbody>
-                <?php for ($i = 0; $i < $CantidadVentas; $i++) { 
+              <?php 
+                //BORRAR EL CONTENIDO ANTERIOR ANTES DE CARGAR NUEVO
+                $_SESSION['Descarga'] = "";
+
+                for ($i = 0; $i < $CantidadVentas; $i++) { 
                   // Calcular el saldo
                   $montoDescuento = $ListadoVentas[$i]['PRECIO_TOTAL'] * ($ListadoVentas[$i]['DESCUENTO'] / 100);
                   $saldo = ($ListadoVentas[$i]['PRECIO_TOTAL']) - $montoDescuento;
+
+                  //Metodo para descargar
+                  $_SESSION['Descarga'] .= "Id Venta: {$ListadoVentas[$i]['ID_VENTA']}|" . 
+                  "Fecha: {$ListadoVentas[$i]['FECHA']}|" . 
+                  "Cliente: {$ListadoVentas[$i]['CLIENTE_N']}, {$ListadoVentas[$i]['CLIENTE_A']}|" . 
+                  "Vendedor: {$ListadoVentas[$i]['VENDEDOR']}|" . 
+                  "SubTotal: " . number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2) . "|" .
+                  "Descuento: {$ListadoVentas[$i]['DESCUENTO']}%|" .
+                  "Total: " . number_format($saldo, 2) . "\n";
+
                 ?>
                   <tr>
                     <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['FECHA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['CLIENTE_N']; ?>, <?php echo $ListadoVentas[$i]['CLIENTE_A']; ?></td>
+                    <td><?php echo $ListadoVentas[$i]['VENDEDOR']; ?></td>
                     <td>$<?php echo number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2); ?></td>
                     <td class="text-center">%<?php echo $ListadoVentas[$i]['DESCUENTO']; ?></td>
                     <td>$<?php echo number_format($saldo, 2); ?></td>
@@ -137,7 +155,11 @@ if (!empty($_POST['BotonBuscar'])) {
                       </a>
                     </td>
                   </tr>
-                <?php } ?>
+                <?php 
+                } 
+                //le agrego un espacio cuando termino de cargar
+                $_SESSION['Descarga'] .= "\n";
+                ?>
               </tbody>
             </table>
           </div>

@@ -732,9 +732,11 @@ function Listar_Ventas($vConexion) {
                 v.precioTotal, 
                 v.descuento, 
                 c.nombre AS CLIENTE_N, 
-                c.apellido AS CLIENTE_A
+                c.apellido AS CLIENTE_A,
+                CONCAT(u.nombre, ' ', u.apellido) AS vendedor
             FROM ventas v
             LEFT JOIN clientes c ON v.idCliente = c.idCliente
+            LEFT JOIN usuarios u ON v.idUsuario = u.id
             ORDER BY v.fecha DESC";
 
     // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
@@ -749,6 +751,7 @@ function Listar_Ventas($vConexion) {
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
         $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
         $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $Listado[$i]['VENDEDOR'] = $data['vendedor'];
         $i++;
     }
 
@@ -769,9 +772,11 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
-                        c.apellido AS CLIENTE_A
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON v.idUsuario = u.id
                     WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
                     ORDER BY v.fecha DESC";
             break;
@@ -784,9 +789,11 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
-                        c.apellido AS CLIENTE_A
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON v.idUsuario = u.id
                     WHERE v.fecha LIKE '%$parametro%'
                     ORDER BY v.fecha DESC";
             break;
@@ -799,9 +806,11 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
-                        c.apellido AS CLIENTE_A
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON v.idUsuario = u.id
                     WHERE v.idVenta = '$parametro'
                     ORDER BY v.fecha DESC";
             break;
@@ -822,6 +831,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
         $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
         $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $Listado[$i]['VENDEDOR'] = $data['vendedor'];
         $i++;
     }
 
