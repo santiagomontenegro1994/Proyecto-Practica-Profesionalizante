@@ -15,12 +15,12 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Ventas</h1>
+  <h1>Pedidos</h1>
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="index.php">Menu</a></li>
-      <li class="breadcrumb-item">Ventas</li>
-      <li class="breadcrumb-item active">Agregar Venta</li>
+      <li class="breadcrumb-item">Pedidos</li>
+      <li class="breadcrumb-item active">Agregar Pedido</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -69,7 +69,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
     <!-- Table with stripped rows -->
     <div class="card">
     <div class="card-body">
-        <h5 class="card-title mr-2">Datos de la Venta</h5>
+        <h5 class="card-title mr-2">Datos del Pedido</h5>
     <table class="table table-striped">
         <thead>
             <tr class="table-primary">
@@ -114,7 +114,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
     </div>
     <div class="d-flex justify-content-center align-items-center"> 
         <a href="#" class="btn btn-danger btn-sm m-2" id="btn_anular_venta">Anular</a> 
-        <a href="#" class="btn btn-primary btn-sm m-2" id="btn_new_venta" style="display: none;">Crear Venta</a>
+        <a href="#" class="btn btn-primary btn-sm m-2" id="btn_new_venta" style="display: none;">Crear Pedido</a>
     </div>
           <!-- End Table with stripped rows -->
 

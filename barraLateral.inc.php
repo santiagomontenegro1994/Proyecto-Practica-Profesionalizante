@@ -63,6 +63,24 @@
         </ul>
       </li><!-- End Deposito Nav -->
 
+            <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#pedidos-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-tag"></i><span>Pedidos</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="pedidos-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="../agregar/agregar_pedidos.php">
+              <i class="bi bi-circle"></i><span>Agregar Pedido</span>
+            </a>
+          </li>
+          <li>
+            <a href="../listados/listados_pedidos.php">
+              <i class="bi bi-circle"></i><span>Listado de Pedidos</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Pedidos Nav -->
+
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
           <i class="bi bi-tag"></i><span>Ventas</span><i class="bi bi-chevron-down ms-auto"></i>
