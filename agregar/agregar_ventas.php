@@ -75,7 +75,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
             <tr class="table-primary">
             <th scope="col" class="col-2 text-truncate" style="max-width: 50px;">ID</th>
             <th scope="col" class="col-5">Producto</th>
-            <th scope="col" class="col-3">Categoría</th>
+            <th scope="col" class="col-3">Descripcion</th>
             <th scope="col" class="col-2">Cantidad</th>
             <th scope="col" class="col-2">Precio</th>
             <th scope="col" class="col-5">Precio Total</th>
@@ -86,7 +86,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
                 <th><input type="text" name="txtIdProducto" id="txtIdProducto" class="form-control form-control-sm w-75"></th>
                 <td id="txt_producto">-</td>
                 <td id="txt_categoria">-</td>
-                <th><input type="text" name="txt_cantidad_producto" id="txt_cantidad_producto" value="0" min="1" class="form-control form-control-sm w-50" disabled></th>
+                <th><input type="number" name="txt_cantidad_producto" id="txt_cantidad_producto" value="0" min="0" class="form-control form-control-sm w-50" disabled></th>
                 <td id="txt_precio">0.00</td>
                 <td id="txt_precio_total">0.00</td>
                 <td><a href="#" id="add_producto_venta" class="text-primary fw-bold" style="display: none;"><i class="bi bi-bag-plus-fill text-primary fs-5"></i> Agregar</a></td>   
@@ -95,7 +95,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
             <tr class="table-primary">
                 <th scope="col">ID</th>
                 <th scope="col">Producto</th>
-                <th scope="col">Categoría</th>
+                <th scope="col">Descripcion</th>
                 <th scope="col" class="col-2">Cantidad</th>
                 <th scope="col">Precio</th>
                 <th scope="col">Precio Total</th>

@@ -99,58 +99,75 @@
     });
 
     //Buscar producto
-    $('#txtIdProducto').keyup(function(e){
-        e.preventDefault();
+    $('#txtIdProducto').keyup(function(e) {
+    e.preventDefault();
 
-        var producto  = $(this).val(); //capturo lo que se teclea en producto
-        var action = 'infoProducto';
+    var producto = $(this).val();
+    var action = 'infoProducto';
 
-        if(producto!= ''){ //si la variable es diferente de vacio ejecuto el ajax
+    // Resetear valores ANTES de la llamada AJAX
+    $('#txt_producto').html('-'); 
+    $('#txt_categoria').html('-');
+    $('#txt_precio').html('0.00');
+    $('#txt_cantidad_producto').val(0).attr('disabled', true);
+    $('#txt_precio_total').html('0.00');
+    $('#add_producto_venta').slideUp();
+    $('#add_producto_pedido').slideUp();
 
-            $.ajax({
-                url: '../ajax.php',
-                type: "POST",
-                async : true,
-                data: {action:action,producto:producto}, 
-    
-                success: function(response){
-                    try {
-                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
-                        $('#txt_producto').html(info.nombre); //paso los datos a las casillas
-                        $('#txt_categoria').html(info.categoria);
-                        $('#txt_precio').html(info.precio);
-                        $('#txt_cantidad_producto').val('1');
-                        $('#txt_precio_total').html(info.precio);
+    if(producto != '') {
+        $.ajax({
+            url: '../ajax.php',
+            type: "POST",
+            dataType: 'text', // se espera texto para poder parsear y validar
+            data: { action: action, producto: producto },
+            success: function(response) {
+                try {
+                    var data = JSON.parse(response);
 
-                        //activar Cantidad
-                        $('#txt_cantidad_producto').removeAttr('disabled');
-
-                        //mostrar boton agregar
-                        $('#add_producto_venta').slideDown();
-                    } catch (e) {
-                        console.error('Error al analizar el JSON:', e);
-                        console.error('Respuesta recibida:', response);
+                    if (data === 'error' || data == null || data.nombre === undefined) {
+                        // Producto no encontrado → resetear campos
                         $('#txt_producto').html('-'); 
                         $('#txt_categoria').html('-');
                         $('#txt_precio').html('0.00');
-                        $('#txt_cantidad_producto').val('0');
+                        $('#txt_cantidad_producto').val(0).attr('disabled', true);
                         $('#txt_precio_total').html('0.00');
-
-                        //bloquear Cantidad
-                        $('#txt_cantidad_producto').attr('disabled','disabled');
-
-                        //ocultar boton agregar
                         $('#add_producto_venta').slideUp();
+                        $('#add_producto_pedido').slideUp();
+                    } else {
+                        // Producto encontrado → mostrar info
+                        $('#txt_producto').html(data.nombre);
+                        $('#txt_categoria').html(data.descripcion);
+                        $('#txt_precio').html(data.precio);
+                        $('#txt_cantidad_producto').val(1).removeAttr('disabled');
+                        $('#txt_precio_total').html(data.precio);
+                        $('#add_producto_venta').slideDown();
+                        $('#add_producto_pedido').slideDown();
                     }
-                },
-                error: function(error){
-                    console.log('Error:', error);
+                } catch (e) {
+                    console.error('Error al parsear JSON:', e);
+                    // En caso de error al parsear, resetear campos
+                    $('#txt_producto').html('-'); 
+                    $('#txt_categoria').html('-');
+                    $('#txt_precio').html('0.00');
+                    $('#txt_cantidad_producto').val(0).attr('disabled', true);
+                    $('#txt_precio_total').html('0.00');
+                    $('#add_producto_venta').slideUp();
+                    $('#add_producto_pedido').slideUp();
                 }
-    
-            });
-        }
-       
-
+            },
+            error: function(xhr, status, error) {
+                console.error('Error AJAX:', error);
+                // Reset por seguridad
+                $('#txt_producto').html('-'); 
+                $('#txt_categoria').html('-');
+                $('#txt_precio').html('0.00');
+                $('#txt_cantidad_producto').val(0).attr('disabled', true);
+                $('#txt_precio_total').html('0.00');
+                $('#add_producto_venta').slideUp();
+                $('#add_producto_pedido').slideUp();
+            }
+        });
+    }
     });
 
     //Validar cantidad de producto antes de agregar
@@ -164,8 +181,10 @@
         //Oculta el boton agregar si es menor que 1
         if($(this).val() < 1 || isNaN($(this).val()) ){
             $('#add_producto_venta').slideUp();
+            $('#add_producto_pedido').slideUp();
         }else{
             $('#add_producto_venta').slideDown();
+            $('#add_producto_pedido').slideDown();
         }
     });
 
@@ -258,9 +277,10 @@
 
                         //ponemos todos los valores por defecto
                         $('#txtIdProducto').val('');
-                        $('#txt_producto').html('-'); 
+                        $('#txt_producto').html('-');
+                        $('#txt_categoria').html('-'); 
                         $('#txt_precio').html('0.00');
-                        $('#txt_cantidad_producto').val('0');
+                        $('#txt_cantidad_producto').val(0);
                         $('#txt_precio_total').html('0.00');
 
                         //bloquear Cantidad
@@ -286,8 +306,90 @@
         }
     });
 
-    //Anular pedido
+    //Agregar producto al detalle temporal
+    $('#add_producto_pedido').click(function(e){
+        e.preventDefault();
+        if($('#txt_cantidad_producto').val() > 0){
+
+            var idProducto = $('#txtIdProducto').val();
+            var cantidad = $('#txt_cantidad_producto').val();
+            var action = 'agregarProductoDetallePedido';
+
+            $.ajax({
+                url: '../ajax.php',
+                type: "POST",
+                async : true,
+                data: {action:action,producto:idProducto,cantidad:cantidad}, 
+    
+                success: function(response){
+                    console.log('Respuesta del servidor:', response); // Depuración
+                    try {
+                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
+                        $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
+                        $('#detalleTotal').html(info.totales);
+
+                        //ponemos todos los valores por defecto
+                        $('#txtIdProducto').val('');
+                        $('#txt_producto').html('-');
+                        $('#txt_categoria').html('-'); 
+                        $('#txt_precio').html('0.00');
+                        $('#txt_cantidad_producto').val(0);
+                        $('#txt_precio_total').html('0.00');
+
+                        //bloquear Cantidad
+                        $('#txt_cantidad_producto').attr('disabled','disabled');
+
+                        //ocultar boton agregar
+                        $('#add_producto_pedido').slideUp();
+                    } catch (e) {
+                        console.error('Error al analizar el JSON:', e);
+                        console.error('Respuesta recibida:', response);
+                        console.log('no data');
+                    }
+                    viewProcesar();//llamo la funcion para ver si oculto el boton
+
+                },
+                error: function(error){
+                    console.log('Error:', error);
+                }
+    
+            });
+
+
+        }
+    });
+
+    //Anular venta
     $('#btn_anular_venta').click(function(e){
+        e.preventDefault();
+        console.log('entre a anular venta');
+        var rows =$('#detalleVenta tr').length;//cuantas filas tiene detalle venta
+
+        if(rows > 0){// si hay productos en el detalle                                                                                                                                  
+            var action = 'anularVenta';
+
+            $.ajax({
+                url: '../ajax.php',
+                type: "POST",
+                async : true,
+                data: {action:action}, 
+    
+                success: function(response){
+                    if(response!='error'){// si elimino todo el detalle
+                        location.reload();//refresca toda la pagina
+                    }
+                },
+                error: function(error){
+
+                }
+            });    
+
+        }
+
+    });
+
+    //Anular pedido
+    $('#btn_anular_pedido').click(function(e){
         e.preventDefault();
         console.log('entre a anular venta');
         var rows =$('#detalleVenta tr').length;//cuantas filas tiene detalle venta
@@ -366,7 +468,56 @@
         }
     });
 
-    
+    //Confirmar pedido
+    $('#btn_new_pedido').click(function(e) {
+        e.preventDefault();
+
+        var rows = $('#detalleVenta tr').length; // Contar las filas en el detalle de la venta
+        var codCliente = $('#idCliente').val();
+        var senia = parseFloat($('#seniaPedido').val()) || 0; // Obtener la seña, si no hay valor, se toma como 0
+        var descuento = parseFloat($('#descuentoPedido').val()) || 0; // Obtener el descuento, si no hay valor, se toma como 0
+
+        if (rows > 0) { // Si hay productos en el detalle
+            if (!codCliente) {
+                alert('Falta agregar cliente');
+                return;
+            }
+
+            $.ajax({
+                url: '../ajax.php',
+                type: 'POST',
+                async: true,
+                data: {
+                    action: 'procesarPedido',
+                    codCliente: codCliente,
+                    senia: senia,
+                    descuento: descuento
+                },
+                success: function(response) {
+                    try {
+                        var info = JSON.parse(response); // Analizar la respuesta como JSON
+                        if (info.error) {
+                            alert('Error al procesar el pedido: ' + info.error);
+                        } else {
+                            alert('Pedido procesada correctamente');
+                            console.log('Datos del pedido:', info);
+                            location.reload(); // Refrescar la página
+                        }
+                    } catch (e) {
+                        console.error('Error al analizar la respuesta:', e);
+                        console.error('Respuesta recibida:', response);
+                        alert('Error al procesar el pedido');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error en la solicitud AJAX:', error);
+                    alert('Error al procesar el pedido');
+                }
+            });
+        } else {
+            alert('No hay productos en el detalle del pedido');
+        }
+    }); 
 
 });
 
@@ -402,7 +553,7 @@ function agregarAVenta(idProducto) {
                         $('#txt_producto').html('-'); 
                         $('#txt_categoria').html('-');
                         $('#txt_precio').html('0.00');
-                        $('#txt_cantidad_producto').val('0');
+                        $('#txt_cantidad_producto').val(0);
                         $('#txt_precio_total').html('0.00');
 
                         //bloquear Cantidad
@@ -453,14 +604,61 @@ function del_producto_detalle(correlativo){
                 $('#txt_producto').html('-'); 
                 $('#txt_categoria').html('-');
                 $('#txt_precio').html('0.00');
-                $('#txt_cantidad_producto').val('0');
+                $('#txt_cantidad_producto').val(0);
                 $('#txt_precio_total').html('0.00');
 
                 //bloquear Cantidad
                 $('#txt_cantidad_producto').attr('disabled','disabled');
 
                 //ocultar boton agregar
-                $('#add_producto_venta').slideUp();
+                $('#add_producto_pedido').slideUp();
+            } catch (e) {
+                console.error('Error al analizar el JSON:', e);
+                console.error('Respuesta recibida:', response);
+                $('#detalleVenta').html('');
+                $('#detalleTotal').html('');
+            }
+            viewProcesar();//llamo la funcion para ver si oculto el boton
+        },
+        error: function(error){
+            console.log('Error:', error);
+        }
+
+    });
+
+}
+
+//funcion para eliminar el detalle de la venta(fuera del ready)
+function del_producto_detalle_pedido(correlativo){
+    var action ='delProductoDetallePedido';
+    var id_detalle =correlativo;
+
+    $.ajax({
+        url: '../ajax.php',
+        type: "POST",
+        async : true,
+        data: {action:action,id_detalle:id_detalle}, 
+
+        success: function(response){
+            console.log('Respuesta del servidor:', response); // Depuración
+            try {
+                var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
+                $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
+                $('#detalleTotal').html(info.totales);
+
+                //ponemos todos los valores por defecto
+                $('#txtIdProducto').val('');
+                $('#txt_producto').html('-'); 
+                $('#txt_categoria').html('-');
+                $('#txt_precio').html('0.00');
+                $('#txt_cantidad_producto').val(0);
+                $('#txt_precio_total').html('0.00');
+
+                //bloquear Cantidad
+                $('#txt_cantidad_producto').attr('disabled','disabled');
+
+                //ocultar boton agregar
+                $('#add_producto_pedido').slideUp();
             } catch (e) {
                 console.error('Error al analizar el JSON:', e);
                 console.error('Respuesta recibida:', response);
@@ -488,34 +686,61 @@ function viewProcesar(){
 }
 
 //funcion para mostrar siempre el detalle de la venta(fuera del ready)
-function searchforDetalle(){
+function searchforDetalle() {
     var action = 'searchforDetalle';
 
     $.ajax({
         url: '../ajax.php',
         type: "POST",
-        async : true,
-        data: {action:action}, 
-
-        success: function(response){
-            try {
-                var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
-                $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
-                $('#detalleTotal').html(info.totales);
-            } catch (e) {
-                console.error('Error al analizar el JSON:', e);
-                console.error('Respuesta recibida:', response);
-                console.log('no data');
+        dataType: 'json', // Esperamos JSON
+        data: {action: action},
+        success: function(response) {
+            if (response.success) {
+                $('#detalleVenta').html(response.detalle);
+                $('#detalleTotal').html(response.totales);
+            } else {
+                $('#detalleVenta').html(response.detalle);
+                $('#detalleTotal').html(response.totales);
+                console.log(response.message);
             }
-            viewProcesar();//llamo la funcion para ver si oculto el boton
-
+            viewProcesar();
         },
-        error: function(error){
-            console.log('Error:', error);
+        error: function(xhr, status, error) {
+            console.error('Error en la solicitud:', status, error);
+            $('#detalleVenta').html('<tr><td colspan="7" class="text-center">Error al cargar los productos</td></tr>');
+            $('#detalleTotal').html('');
+            viewProcesar();
         }
-
     });
-    
+}
+
+//funcion para mostrar siempre el detalle del pedido(fuera del ready)
+function searchforDetallePedido() {
+    var action = 'searchforDetallePedido';
+
+    $.ajax({
+        url: '../ajax.php',
+        type: "POST",
+        dataType: 'json', // Esperamos JSON
+        data: {action: action},
+        success: function(response) {
+            if (response.success) {
+                $('#detalleVenta').html(response.detalle);
+                $('#detalleTotal').html(response.totales);
+            } else {
+                $('#detalleVenta').html(response.detalle);
+                $('#detalleTotal').html(response.totales);
+                console.log(response.message);
+            }
+            viewProcesar();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error en la solicitud:', status, error);
+            $('#detalleVenta').html('<tr><td colspan="7" class="text-center">Error al cargar los productos</td></tr>');
+            $('#detalleTotal').html('');
+            viewProcesar();
+        }
+    });
 }
 
 
