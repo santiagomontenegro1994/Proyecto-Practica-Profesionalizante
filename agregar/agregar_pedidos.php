@@ -86,10 +86,10 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
                 <th><input type="text" name="txtIdProducto" id="txtIdProducto" class="form-control form-control-sm w-75"></th>
                 <td id="txt_producto">-</td>
                 <td id="txt_categoria">-</td>
-                <th><input type="text" name="txt_cantidad_producto" id="txt_cantidad_producto" value="0" min="1" class="form-control form-control-sm w-50" disabled></th>
+                <th><input type="number" name="txt_cantidad_producto" id="txt_cantidad_producto" value="0" min="0" class="form-control form-control-sm w-50" disabled></th>
                 <td id="txt_precio">0.00</td>
                 <td id="txt_precio_total">0.00</td>
-                <td><a href="#" id="add_producto_venta" class="text-primary fw-bold" style="display: none;"><i class="bi bi-bag-plus-fill text-primary fs-5"></i> Agregar</a></td>   
+                <td><a href="#" id="add_producto_pedido" class="text-primary fw-bold" style="display: none;"><i class="bi bi-bag-plus-fill text-primary fs-5"></i> Agregar</a></td>   
             </tr>
 
             <tr class="table-primary">
@@ -113,8 +113,8 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
     </div>
     </div>
     <div class="d-flex justify-content-center align-items-center"> 
-        <a href="#" class="btn btn-danger btn-sm m-2" id="btn_anular_venta">Anular</a> 
-        <a href="#" class="btn btn-primary btn-sm m-2" id="btn_new_venta" style="display: none;">Crear Pedido</a>
+        <a href="#" class="btn btn-danger btn-sm m-2" id="btn_anular_pedido">Anular</a> 
+        <a href="#" class="btn btn-primary btn-sm m-2" id="btn_new_pedido" style="display: none;">Crear Pedido</a>
     </div>
           <!-- End Table with stripped rows -->
 
@@ -131,7 +131,7 @@ require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro 
 
 <script type="text/javascript">//script para traer el detalle de la venta
     $(document).ready(function(){ //se ejecuta después que se cargue todo el documento
-        searchforDetalle();
+        searchforDetallePedido();
     });
 
 </script>
