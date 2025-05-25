@@ -907,4 +907,219 @@ function Detalles_Venta($vConexion, $vIdVenta) {
     }
     return $DetallesVenta;
 }
-?>
+
+function Listar_Pedidos($vConexion) {
+
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    $SQL = "SELECT 
+                p.idPedido, 
+                p.idCliente, 
+                p.fecha, 
+                p.precioTotal, 
+                p.descuento,
+                p.senia, 
+                c.nombre AS CLIENTE_N, 
+                c.apellido AS CLIENTE_A,
+                CONCAT(u.nombre, ' ', u.apellido) AS vendedor
+            FROM pedidos p
+            LEFT JOIN clientes c ON p.idCliente = c.idCliente
+            LEFT JOIN usuarios u ON p.idUsuario = u.id
+            ORDER BY p.fecha DESC";
+
+    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
+        $Listado[$i]['DESCUENTO'] = $data['descuento'];
+        $Listado[$i]['SENIA'] = $data['senia'];
+        $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
+        $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $Listado[$i]['VENDEDOR'] = $data['vendedor'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
+function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+
+    // Genero la consulta según el criterio
+    switch ($criterio) {
+        case 'Cliente':
+            $SQL = "SELECT 
+                        p.idPedido, 
+                        p.idCliente, 
+                        p.fecha, 
+                        p.precioTotal, 
+                        p.descuento,
+                        p.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
+                    FROM pedidos p
+                    LEFT JOIN clientes c ON p.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    ORDER BY p.fecha DESC";
+            break;
+
+        case 'Fecha':
+            $SQL = "SELECT 
+                        p.idPedido, 
+                        p.idCliente, 
+                        p.fecha, 
+                        p.precioTotal, 
+                        p.descuento,
+                        p.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
+                    FROM pedidos p
+                    LEFT JOIN clientes c ON p.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    WHERE p.fecha LIKE '%$parametro%'
+                    ORDER BY p.fecha DESC";
+            break;
+
+        case 'Id':
+            $SQL = "SELECT 
+                        p.idPedido, 
+                        p.idCliente, 
+                        p.fecha, 
+                        p.precioTotal, 
+                        p.descuento,
+                        p.senia, 
+                        c.nombre AS CLIENTE_N, 
+                        c.apellido AS CLIENTE_A,
+                        CONCAT(u.nombre, ' ', u.apellido) AS vendedor
+                    FROM pedidos p
+                    LEFT JOIN clientes c ON p.idCliente = c.idCliente
+                    LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    WHERE p.idPedido = '$parametro'
+                    ORDER BY p.fecha DESC";
+            break;
+
+        default:
+            return $Listado; // Si no hay un criterio válido, devuelvo un listado vacío
+    }
+
+    // Ejecuto la consulta
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // Organizo el resultado en un array
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
+        $Listado[$i]['DESCUENTO'] = $data['descuento'];
+        $Listado[$i]['SENIA'] = $data['senia'];
+        $Listado[$i]['CLIENTE_N'] = $data['CLIENTE_N'];
+        $Listado[$i]['CLIENTE_A'] = $data['CLIENTE_A'];
+        $Listado[$i]['VENDEDOR'] = $data['vendedor'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
+function Eliminar_Pedido($vConexion , $vIdConsulta) {
+
+        $SQL_MiConsulta="SELECT idPedido FROM pedidos 
+                        WHERE idPedido = $vIdConsulta "; 
+    
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idPedido']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM pedidos WHERE idPedido = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
+function Datos_Pedido($vConexion, $vIdPedido) {
+    $DatosPedido = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT 
+                p.idPedido, 
+                p.idCliente, 
+                p.fecha, 
+                p.precioTotal, 
+                p.descuento, 
+                p.senia,
+                p.idEstado, 
+                c.nombre AS CLIENTE_N, 
+                c.apellido AS CLIENTE_A,
+                CONCAT(u.nombre, ' ', u.apellido) AS vendedor
+            FROM pedidos p
+            LEFT JOIN clientes c ON p.idCliente = c.idCliente
+            LEFT JOIN usuarios u ON p.idUsuario = u.id
+            WHERE p.idPedido = $vIdPedido";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosPedido['ID_PEDIDO'] = $data['idPedido'];
+        $DatosPedido['ID_CLIENTE'] = $data['idCliente'];
+        $DatosPedido['FECHA'] = $data['fecha'];
+        $DatosPedido['PRECIO_TOTAL'] = $data['precioTotal'];
+        $DatosPedido['DESCUENTO'] = $data['descuento'];
+        $DatosPedido['SENIA'] = $data['senia'];
+        $DatosPedido['ID_ESTADO'] = $data['idEstado'];
+        $DatosPedido['VENDEDOR'] = $data['vendedor'];
+        $DatosPedido['CLIENTE_N'] = $data['CLIENTE_N'];
+        $DatosPedido['CLIENTE_A'] = $data['CLIENTE_A'];
+    }
+    return $DatosPedido;
+}
+
+function Detalles_Pedido($vConexion, $vIdPedido) {
+    $DetallesPedido = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT 
+                dp.idDetallePedido, 
+                dp.idPedido, 
+                dp.idProducto, 
+                p.nombre AS PRODUCTO, 
+                dp.precio_venta AS PRECIO_VENTA, 
+                dp.cantidad AS CANTIDAD, 
+                dp.IdEstado AS ID_ESTADO, 
+                e.Denominacion AS ESTADO
+            FROM detalle_pedido dp
+            LEFT JOIN productos p ON dp.idProducto = p.idProducto
+            LEFT JOIN estado e ON dp.IdEstado = e.IdEstado
+            WHERE dp.idPedido = $vIdPedido";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $DetallesPedido[$i]['ID_DETALLE'] = $data['idDetallePedido'];
+        $DetallesPedido[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $DetallesPedido[$i]['ID_PRODUCTO'] = $data['idProducto'];
+        $DetallesPedido[$i]['PRODUCTO'] = $data['PRODUCTO'];
+        $DetallesPedido[$i]['PRECIO_VENTA'] = $data['PRECIO_VENTA'];
+        $DetallesPedido[$i]['CANTIDAD'] = $data['CANTIDAD'];
+        $DetallesPedido[$i]['ID_ESTADO'] = $data['ID_ESTADO'];
+        $DetallesPedido[$i]['ESTADO'] = $data['ESTADO'];
+        $i++;
+    }
+    return $DetallesPedido;
+}
