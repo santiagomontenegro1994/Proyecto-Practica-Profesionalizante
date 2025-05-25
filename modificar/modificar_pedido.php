@@ -1,145 +1,243 @@
 <?php
-ob_start(); // Inicia el búfer de salida
+ob_start();
 session_start();
 
-if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, redirigir
+if (empty($_SESSION['Usuario_Nombre'])) {
     header('Location: ../inicio/cerrarsesion.php');
     exit;
 }
 
-require('../encabezado.inc.php'); // Incluir encabezado
-require('../barraLateral.inc.php'); // Incluir barra lateral
+require('../encabezado.inc.php');
+require('../barraLateral.inc.php');
 
 require_once '../funciones/conexion.php';
 require_once '../funciones/select_general.php';
 $MiConexion = ConexionBD();
 
-// Array para almacenar los datos de la venta y sus detalles
-$DatosVentaActual = array();
-$DetallesVenta = array();
-//$estados = Listar_Estados($MiConexion);
+$DatosPedidoActual = array();
+$DetallesPedido = array();
 
-if (!empty($_POST['BotonModificarVenta'])) {
-    // Validar y procesar la modificación de la venta
-    if (Modificar_Detalles_Venta($MiConexion, $_POST)) {
-        $_SESSION['Mensaje'] = "La venta se ha modificado correctamente!";
+// Procesar eliminación de detalle
+if (!empty($_GET['eliminar_detalle'])) {
+    if (Eliminar_Detalle_Pedido($MiConexion, $_GET['eliminar_detalle'])) {
+        $_SESSION['Mensaje'] = "Detalle eliminado correctamente";
         $_SESSION['Estilo'] = 'success';
-        header('Location: listados_ventas.php');
+        header("Location: modificar_pedido.php?ID_PEDIDO=".$_GET['ID_PEDIDO']);
         exit;
     } else {
-        $_SESSION['Mensaje'] = "Error al modificar la venta.";
+        $_SESSION['Mensaje'] = "Error al eliminar el detalle";
         $_SESSION['Estilo'] = 'danger';
     }
-} else if (!empty($_GET['ID_VENTA'])) {
-    // Obtener los datos de la venta y sus detalles si se pasa el ID por GET
-    $DatosVentaActual = Datos_Venta($MiConexion, $_GET['ID_VENTA']);
-    $DetallesVenta = Detalles_Venta($MiConexion, $_GET['ID_VENTA']);
 }
-ob_end_flush(); // Envía el contenido del búfer al navegador
+
+// Procesar actualización de seña
+if (!empty($_POST['BotonActualizarSenia'])) {
+    if (Actualizar_Senia_Pedido($MiConexion, $_POST['IdPedido'], $_POST['senia'])) {
+        $_SESSION['Mensaje'] = "Seña actualizada correctamente";
+        $_SESSION['Estilo'] = 'success';
+    } else {
+        $_SESSION['Mensaje'] = "Error al actualizar la seña";
+        $_SESSION['Estilo'] = 'danger';
+    }
+    header("Location: modificar_pedido.php?ID_PEDIDO=".$_POST['IdPedido']);
+    exit;
+}
+
+// Procesar actualización de cantidad
+if (!empty($_POST['BotonActualizarCantidad'])) {
+    $id_detalle = $_POST['BotonActualizarCantidad'];
+    
+    if (!isset($_POST['cantidad'][$id_detalle])) {
+        $_SESSION['Mensaje'] = "No se recibió la cantidad";
+        $_SESSION['Estilo'] = 'danger';
+    } else {
+        $cant = $_POST['cantidad'][$id_detalle];
+        
+        if (!is_numeric($cant) || $cant < 1 || !ctype_digit((string)$cant)) {
+            $_SESSION['Mensaje'] = "Cantidad debe ser entero mayor a 0";
+            $_SESSION['Estilo'] = 'danger';
+        } else {
+            $cantidad = (int)$cant;
+            if (Actualizar_Cantidad_Detalle($MiConexion, $id_detalle, $cantidad)) {
+                $_SESSION['Mensaje'] = "Cantidad actualizada correctamente";
+                $_SESSION['Estilo'] = 'success';
+            } else {
+                $_SESSION['Mensaje'] = "Error al actualizar cantidad";
+                $_SESSION['Estilo'] = 'danger';
+            }
+        }
+    }
+    header("Location: modificar_pedido.php?ID_PEDIDO=".$_POST['IdPedido']);
+    exit;
+}
+
+// Obtener datos del pedido
+if (!empty($_GET['ID_PEDIDO'])) {
+    $DatosPedidoActual = Datos_Pedido($MiConexion, $_GET['ID_PEDIDO']);
+    $DetallesPedido = Detalles_Pedido($MiConexion, $_GET['ID_PEDIDO']);
+}
+
+ob_end_flush();
 ?>
 
-<main id="main" class="main">
-    <div class="pagetitle">
-        <h1>Detalles Venta</h1>
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
-                <li class="breadcrumb-item">Ventas</li>
-                <li class="breadcrumb-item active">Detalles Venta</li>
-            </ol>
-        </nav>
-    </div><!-- End Page Title -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Pedido</title>
+</head>
+<body>
 
-    <!-- Mostrar mensajes de éxito o error -->
-    <?php if (!empty($_SESSION['Mensaje'])) { ?>
-        <div class="alert alert-<?php echo $_SESSION['Estilo']; ?> alert-dismissable">
-            <?php echo $_SESSION['Mensaje']; ?>
+    <main id="main" class="main">
+        <div class="pagetitle">
+            <h1>Detalles Pedido</h1>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
+                    <li class="breadcrumb-item">Pedidos</li>
+                    <li class="breadcrumb-item active">Detalles Pedido</li>
+                </ol>
+            </nav>
         </div>
-    <?php } ?>
 
-    <div class="section">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-end w-100">
-                    <div class="card-title">Cliente: <span id="nombreCliente" class="text-dark fs-5"><?php echo $DatosVentaActual['CLIENTE_N'] ?>, <?php echo $DatosVentaActual['CLIENTE_A'] ?></span></div>
-                    <div class="card-title">Vendedor: <span id="nombreVendedor" class="text-dark fs-5"><?php echo $DatosVentaActual['VENDEDOR'] ?></span></div>
-                    <div class="card-title">Fecha de Venta: <span id="fecha" class="text-dark fs-5"><?php echo $DatosVentaActual['FECHA'] ?></span></div>
-                </div>
+        <?php if (!empty($_SESSION['Mensaje'])) { ?>
+            <div class="alert alert-<?= $_SESSION['Estilo'] ?> alert-dismissible fade show">
+                <?= $_SESSION['Mensaje'] ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-    </div>
+        <?php } ?>
 
-    <section class="section">
-        <div class="card">
-            <div class="card-body">
-                <!-- Formulario para modificar la venta -->
-                <form method='post'>
-                    <input type='hidden' name="IdVenta" value="<?php echo $DatosVentaActual['ID_VENTA']; ?>" />
-                    <!-- Detalles de la venta -->
-                    <h5 class="card-title">Detalles de la Venta</h5>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Precio</th>
-                                <th>Cantidad</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($DetallesVenta as $detalle) { ?>
-                                <tr>
-                                    <td><?php echo $detalle['PRODUCTO']; ?></td>
-                                    <td><?php echo $detalle['PRECIO_VENTA']; ?></td>
-                                    <td><?php echo $detalle['CANTIDAD']; ?></td>
-                                    <td><?php echo number_format($detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'], 2, ',', '.'); ?></td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-
-                    <!-- Botones de acción -->
-                    <div class="text-center">
-                        <a href="../listados/listados_ventas.php" class="btn btn-success btn-info btn-sm">Volver al Listado</a>
+        <div class="section">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-end w-100">
+                        <div class="card-title">Cliente: <span class="text-dark fs-5"><?= $DatosPedidoActual['CLIENTE_N'] ?>, <?= $DatosPedidoActual['CLIENTE_A'] ?></span></div>
+                        <div class="card-title">Vendedor: <span class="text-dark fs-5"><?= $DatosPedidoActual['VENDEDOR'] ?></span></div>
+                        <div class="card-title">Fecha: <span class="text-dark fs-5"><?= $DatosPedidoActual['FECHA'] ?></span></div>
                     </div>
-                </form><!-- End Horizontal Form -->
-            </div>
-        </div>
-    </section>
-
-    <div class="section">
-        <div class="card">
-            <div class="card-footer text-end">
-                <div class="details">
-                    <table class="table w-auto ms-auto"> <!-- w-auto ajusta el ancho -->
-                        <tr>
-                            <td class="card-title">Sub Total:</td>
-                            <td class="text-dark fs-5">$<?php echo $DatosVentaActual['PRECIO_TOTAL'] ?></td>
-                        </tr>
-                        <tr>
-                            <td class="card-title">Descuento:</td>
-                            <td class="text-dark fs-5">%<?php echo $DatosVentaActual['DESCUENTO'] ?></td>
-                        </tr>
-                        <tr>
-                            <?php
-                            // Calcula el monto del descuento
-                            $monto_descuento = ($DatosVentaActual['PRECIO_TOTAL'] * $DatosVentaActual['DESCUENTO']) / 100;
-                            $saldo = ($DatosVentaActual['PRECIO_TOTAL'] - $monto_descuento);
-                            ?>
-                            <td class="card-title">Total:</td>
-                            <td class="text-dark fs-5">$<?php echo $saldo ?></td>
-                        </tr>
-                    </table>
                 </div>
             </div>
         </div>
-    </div>
-</main><!-- End #main -->
 
-<?php
-$_SESSION['Mensaje'] = '';
-require('../footer.inc.php'); // Incluir footer
-?>
+        <section class="section">
+            <!-- Formulario para cantidades -->
+            <form method="post">
+                <input type="hidden" name="IdPedido" value="<?= $DatosPedidoActual['ID_PEDIDO'] ?>">
+                
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Detalles del Pedido</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Precio Unitario</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    $subtotal = 0;
+                                    foreach ($DetallesPedido as $detalle) { 
+                                        $total_detalle = $detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'];
+                                        $subtotal += $total_detalle;
+                                    ?>
+                                    <tr>
+                                        <td><?= $detalle['PRODUCTO'] ?></td>
+                                        <td>$<?= number_format($detalle['PRECIO_VENTA'], 2, ',', '.') ?></td>
+                                        <td>
+                                            <div class="input-group">
+                                                <input type="number" 
+                                                    name="cantidad[<?= $detalle['ID_DETALLE'] ?>]" 
+                                                    value="<?= $detalle['CANTIDAD'] ?>" 
+                                                    min="1" 
+                                                    class="form-control" 
+                                                    style="width: 80px;">
+                                                <button type="submit" 
+                                                    name="BotonActualizarCantidad" 
+                                                    value="<?= $detalle['ID_DETALLE'] ?>" 
+                                                    class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>$<?= number_format($total_detalle, 2, ',', '.') ?></td>
+                                        <td>
+                                            <a href="modificar_pedido.php?ID_PEDIDO=<?= $DatosPedidoActual['ID_PEDIDO'] ?>&eliminar_detalle=<?= $detalle['ID_DETALLE'] ?>" 
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('¿Eliminar este producto del pedido?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </form>
 
+            <!-- Formulario separado para la seña -->
+            <form method="post" class="mt-4">
+                <input type="hidden" name="IdPedido" value="<?= $DatosPedidoActual['ID_PEDIDO'] ?>">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Seña actual:</label>
+                                <div class="h4 text-primary">$<?= number_format($DatosPedidoActual['SENIA'], 2, ',', '.') ?></div>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" 
+                                    class="form-control" 
+                                    name="senia" 
+                                    value="<?= $DatosPedidoActual['SENIA'] ?>" 
+                                    step="0.01" 
+                                    min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" name="BotonActualizarSenia" value="actualizar" class="btn btn-primary w-100">
+                                    <i class="bi bi-pencil-square"></i> Actualizar Seña
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <table class="table">
+                                    <tr class="table-primary">
+                                        <th>Saldo a pagar:</th>
+                                        <td>$<?= number_format(
+                                            ($subtotal - ($subtotal * $DatosPedidoActual['DESCUENTO']/100)) - $DatosPedidoActual['SENIA'], 
+                                            2, 
+                                            ',', 
+                                            '.'
+                                        ) ?></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="../listados/listados_pedidos.php" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Listado
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <?php
+    $_SESSION['Mensaje'] = '';
+    require('../footer.inc.php');
+    ?>
+    
 </body>
 </html>

@@ -926,7 +926,7 @@ function Listar_Pedidos($vConexion) {
             FROM pedidos p
             LEFT JOIN clientes c ON p.idCliente = c.idCliente
             LEFT JOIN usuarios u ON p.idUsuario = u.id
-            ORDER BY p.fecha DESC";
+            ORDER BY p.idPedido DESC";
 
     // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
     $rs = mysqli_query($vConexion, $SQL);
@@ -969,7 +969,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
-                    ORDER BY p.fecha DESC";
+                    ORDER BY p.idPedido DESC";
             break;
 
         case 'Fecha':
@@ -987,7 +987,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     WHERE p.fecha LIKE '%$parametro%'
-                    ORDER BY p.fecha DESC";
+                    ORDER BY p.idPedido DESC";
             break;
 
         case 'Id':
@@ -1005,7 +1005,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     WHERE p.idPedido = '$parametro'
-                    ORDER BY p.fecha DESC";
+                    ORDER BY p.idPedido DESC";
             break;
 
         default:
@@ -1053,6 +1053,40 @@ function Eliminar_Pedido($vConexion , $vIdConsulta) {
     
 }
 
+function Detalles_Pedido($vConexion, $vIdPedido) {
+    $DetallesPedido = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT 
+                dp.idDetallePedido, 
+                dp.idPedido, 
+                dp.idProducto, 
+                p.nombre AS PRODUCTO, 
+                dp.precio_venta AS PRECIO_VENTA, 
+                dp.cantidad AS CANTIDAD, 
+                dp.IdEstado AS ID_ESTADO, 
+                e.Denominacion AS ESTADO
+            FROM detalle_pedido dp
+            LEFT JOIN productos p ON dp.idProducto = p.idProducto
+            LEFT JOIN estado e ON dp.IdEstado = e.IdEstado
+            WHERE dp.idPedido = $vIdPedido";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $DetallesPedido[$i]['ID_DETALLE'] = $data['idDetallePedido'];
+        $DetallesPedido[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $DetallesPedido[$i]['ID_PRODUCTO'] = $data['idProducto'];
+        $DetallesPedido[$i]['PRODUCTO'] = $data['PRODUCTO'];
+        $DetallesPedido[$i]['PRECIO_VENTA'] = $data['PRECIO_VENTA'];
+        $DetallesPedido[$i]['CANTIDAD'] = $data['CANTIDAD'];
+        $DetallesPedido[$i]['ID_ESTADO'] = $data['ID_ESTADO'];
+        $DetallesPedido[$i]['ESTADO'] = $data['ESTADO'];
+        $i++;
+    }
+    return $DetallesPedido;
+}
+
 function Datos_Pedido($vConexion, $vIdPedido) {
     $DatosPedido = array();
     // Me aseguro que la consulta exista
@@ -1090,36 +1124,202 @@ function Datos_Pedido($vConexion, $vIdPedido) {
     return $DatosPedido;
 }
 
-function Detalles_Pedido($vConexion, $vIdPedido) {
-    $DetallesPedido = array();
-    // Me aseguro que la consulta exista
-    $SQL = "SELECT 
-                dp.idDetallePedido, 
-                dp.idPedido, 
-                dp.idProducto, 
-                p.nombre AS PRODUCTO, 
-                dp.precio_venta AS PRECIO_VENTA, 
-                dp.cantidad AS CANTIDAD, 
-                dp.IdEstado AS ID_ESTADO, 
-                e.Denominacion AS ESTADO
-            FROM detalle_pedido dp
-            LEFT JOIN productos p ON dp.idProducto = p.idProducto
-            LEFT JOIN estado e ON dp.IdEstado = e.IdEstado
-            WHERE dp.idPedido = $vIdPedido";
+function Eliminar_Detalle_Pedido($conexion, $idDetalle) {
+    // Desactivar autocommit para iniciar transacción
+    $conexion->autocommit(false);
 
-    $rs = mysqli_query($vConexion, $SQL);
+    try {
+        // Verificar que el ID recibido sea numérico
+        if (!is_numeric($idDetalle)) {
+            throw new Exception("ID de detalle inválido");
+        }
 
-    $i = 0;
-    while ($data = mysqli_fetch_array($rs)) {
-        $DetallesPedido[$i]['ID_DETALLE'] = $data['idDetallePedido'];
-        $DetallesPedido[$i]['ID_PEDIDO'] = $data['idPedido'];
-        $DetallesPedido[$i]['ID_PRODUCTO'] = $data['idProducto'];
-        $DetallesPedido[$i]['PRODUCTO'] = $data['PRODUCTO'];
-        $DetallesPedido[$i]['PRECIO_VENTA'] = $data['PRECIO_VENTA'];
-        $DetallesPedido[$i]['CANTIDAD'] = $data['CANTIDAD'];
-        $DetallesPedido[$i]['ID_ESTADO'] = $data['ID_ESTADO'];
-        $DetallesPedido[$i]['ESTADO'] = $data['ESTADO'];
-        $i++;
+        // 1. Obtener información del detalle con JOIN al pedido
+        $sql_select = "SELECT dp.idPedido, dp.precio_venta, dp.cantidad, p.precioTotal as precio_actual 
+                       FROM detalle_pedido dp
+                       LEFT JOIN pedidos p ON dp.idPedido = p.idPedido
+                       WHERE dp.idDetallePedido = ?";
+
+        $stmt_select = $conexion->prepare($sql_select);
+        if (!$stmt_select) {
+            throw new Exception("Error preparando SELECT: " . $conexion->error);
+        }
+
+        if (!$stmt_select->bind_param("i", $idDetalle)) {
+            throw new Exception("Error en bind_param SELECT: " . $stmt_select->error);
+        }
+
+        if (!$stmt_select->execute()) {
+            throw new Exception("Error ejecutando SELECT: " . $stmt_select->error);
+        }
+
+        $result = $stmt_select->get_result();
+        $detalle = $result->fetch_assoc();
+
+        if (!$detalle) {
+            throw new Exception("No se encontró el detalle con ID: $idDetalle");
+        }
+
+        // Si no hay pedido asociado
+        if (is_null($detalle['precio_actual'])) {
+            $sql_delete = "DELETE FROM detalle_pedido WHERE idDetallePedido = ?";
+            $stmt_delete = $conexion->prepare($sql_delete);
+
+            if (!$stmt_delete) {
+                throw new Exception("Error preparando DELETE huérfano: " . $conexion->error);
+            }
+
+            if (!$stmt_delete->bind_param("i", $idDetalle) || !$stmt_delete->execute()) {
+                throw new Exception("Error ejecutando DELETE huérfano: " . $stmt_delete->error);
+            }
+
+            $conexion->commit();
+            $_SESSION['Mensaje'] = "Detalle eliminado (no tenía pedido asociado)";
+            $_SESSION['Estilo'] = 'warning';
+            return true;
+        }
+
+        $idPedido = $detalle['idPedido'];
+        $montoDetalle = $detalle['precio_venta'] * $detalle['cantidad'];
+        $nuevoTotal = max(0, $detalle['precio_actual'] - $montoDetalle);
+
+        // 2. Eliminar el detalle
+        $sql_delete = "DELETE FROM detalle_pedido WHERE idDetallePedido = ?";
+        $stmt_delete = $conexion->prepare($sql_delete);
+
+        if (!$stmt_delete) {
+            throw new Exception("Error preparando DELETE: " . $conexion->error);
+        }
+
+        if (!$stmt_delete->bind_param("i", $idDetalle) || !$stmt_delete->execute()) {
+            throw new Exception("Error ejecutando DELETE: " . $stmt_delete->error);
+        }
+
+        // 3. Actualizar el total del pedido
+        $sql_update = "UPDATE pedidos SET precioTotal = ? WHERE idPedido = ?";
+        $stmt_update = $conexion->prepare($sql_update);
+
+        if (!$stmt_update) {
+            throw new Exception("Error preparando UPDATE pedido: " . $conexion->error);
+        }
+
+        if (!$stmt_update->bind_param("di", $nuevoTotal, $idPedido) || !$stmt_update->execute()) {
+            throw new Exception("Error ejecutando UPDATE pedido: " . $stmt_update->error);
+        }
+
+        // Todo correcto, confirmar
+        $conexion->commit();
+        $_SESSION['Mensaje'] = "Detalle eliminado y total actualizado";
+        $_SESSION['Estilo'] = 'success';
+        return true;
+
+    } catch (Exception $e) {
+        $conexion->rollback();
+        $_SESSION['Mensaje'] = "Error al eliminar: " . $e->getMessage();
+        $_SESSION['Estilo'] = 'danger';
+
+        // MOSTRAR error en pantalla para debug (solo en desarrollo)
+        echo "<div class='alert alert-danger'><strong>Error técnico:</strong> " . $e->getMessage() . "</div>";
+
+        return false;
+    } finally {
+        $conexion->autocommit(true);
     }
-    return $DetallesPedido;
 }
+
+function Actualizar_Senia_Pedido($conexion, $idPedido, $nuevaSenia) {
+    try {
+        // Validar entrada
+        if (!is_numeric($nuevaSenia)) {
+            throw new Exception("La seña debe ser un valor numérico");
+        }
+        
+        // Convertir a float
+        $nuevaSenia = (float)$nuevaSenia;
+        
+        $sql = "UPDATE pedidos SET senia = ? WHERE idPedido = ?";
+        $stmt = $conexion->prepare($sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error preparando consulta: " . $conexion->error);
+        }
+        
+        // Usar "di" (double, integer)
+        if (!$stmt->bind_param("di", $nuevaSenia, $idPedido)) {
+            throw new Exception("Error vinculando parámetros: " . $stmt->error);
+        }
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error ejecutando consulta: " . $stmt->error);
+        }
+        
+        // Considerar que puede actualizarse a mismo valor
+        return true;
+        
+    } catch (Exception $e) {
+        error_log("Error en Actualizar_Senia_Pedido: " . $e->getMessage());
+        return false;
+    }
+}
+
+function Actualizar_Cantidad_Detalle($conexion, $idDetalle, $nuevaCantidad) {
+    $conexion->autocommit(false);
+
+    try {
+        // Cast to integer at the very beginning for consistent handling
+        $nuevaCantidad = (int)$nuevaCantidad; // Ensures $nuevaCantidad is an actual integer type
+
+        // Validation improved: Now checking if the integer value is valid
+        if ($nuevaCantidad < 1) { // is_numeric and is_int are implicitly handled by the cast and check
+            throw new Exception("La cantidad debe ser un número entero mayor a 0");
+        }
+
+        $sql_select = "SELECT idPedido, precio_venta, cantidad FROM detalle_pedido WHERE idDetallePedido = ?";
+        $stmt_select = $conexion->prepare($sql_select);
+        if (!$stmt_select) throw new Exception("Error preparando SELECT: " . $conexion->error);
+
+        $stmt_select->bind_param("i", $idDetalle);
+        if (!$stmt_select->execute()) throw new Exception("Error ejecutando SELECT: " . $stmt_select->error);
+
+        $result = $stmt_select->get_result();
+        $detalle = $result->fetch_assoc();
+
+        if (!$detalle) throw new Exception("No se encontró el detalle con ID: $idDetalle");
+
+        $idPedido = $detalle['idPedido'];
+        $precioVenta = $detalle['precio_venta'];
+        $cantidadAnterior = $detalle['cantidad'];
+
+        $diferencia = ($nuevaCantidad - $cantidadAnterior) * $precioVenta;
+
+        // Actualizar cantidad
+        $sql_update = "UPDATE detalle_pedido SET cantidad = ? WHERE idDetallePedido = ?";
+        $stmt_update = $conexion->prepare($sql_update);
+        if (!$stmt_update) throw new Exception("Error preparando UPDATE: " . $conexion->error);
+        if (!$stmt_update->bind_param("ii", $nuevaCantidad, $idDetalle) || !$stmt_update->execute()) {
+            throw new Exception("Error ejecutando UPDATE: " . $stmt_update->error);
+        }
+
+        // Actualizar total del pedido
+        $sql_update_pedido = "UPDATE pedidos SET precioTotal = precioTotal + ? WHERE idPedido = ?";
+        $stmt_update_pedido = $conexion->prepare($sql_update_pedido);
+        if (!$stmt_update_pedido) throw new Exception("Error preparando UPDATE pedido: " . $conexion->error);
+        if (!$stmt_update_pedido->bind_param("di", $diferencia, $idPedido) || !$stmt_update_pedido->execute()) {
+            throw new Exception("Error ejecutando UPDATE pedido: " . $stmt_update_pedido->error);
+        }
+
+        $conexion->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $conexion->rollback();
+        error_log("Error en Actualizar_Cantidad_Detalle: " . $e->getMessage());
+        $_SESSION['Mensaje'] = $e->getMessage();
+        $_SESSION['Estilo'] = 'danger';
+        return false;
+    } finally {
+        $conexion->autocommit(true);
+    }
+}
+
+?>
