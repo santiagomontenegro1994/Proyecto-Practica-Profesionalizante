@@ -137,16 +137,14 @@ $CantidadClientes = count($ListadoClientes);
                         <td>
                           <!-- eliminar la consulta -->
                           <a href="../eliminar/eliminar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
-                            class="btn btn-success btn-danger" 
                             title="Eliminar" 
                             onclick="return confirm('Confirma eliminar este cliente?');">
-                              <i class="fa fa-times"></i>
+                              <i class="bi bi-trash-fill text-danger fs-5"></i>
                           </a>
 
                           <a href="../modificar/modificar_clientes.php?ID_CLIENTE=<?php echo $ListadoClientes[$i]['ID_CLIENTE']; ?>" 
-                            class="btn btn-success btn-circle btn-warning" 
                             title="Modificar">
-                          <i class="bi bi-person-fill-slash"></i>
+                          <i class="bi bi-pencil-fill text-warning fs-5"></i>
                           </a>
                       
                         </td>

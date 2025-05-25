@@ -67,6 +67,236 @@ function Datos_Cliente($vConexion , $vIdCliente) {
 
 }
 
+function Validar_Cliente(){
+    $_SESSION['Mensaje']='';
+    if (strlen($_POST['Nombre']) < 3) {
+        $_SESSION['Mensaje'].='Debes ingresar un nombre con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['Apellido']) < 3) {
+        $_SESSION['Mensaje'].='Debes ingresar un apellido con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['Direccion']) < 3) {
+        $_SESSION['Mensaje'].='Debes ingresar una direccion con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['Telefono']) < 3) {
+        $_SESSION['Mensaje'].='Debes ingresar un telefono con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['Email']) < 5) {
+        $_SESSION['Mensaje'].='Debes ingresar un correo con al menos 5 caracteres. <br />';
+    }
+    if (strlen($_POST['DNI']) < 8) {
+        $_SESSION['Mensaje'].='Debes ingresar un DNI con al menos 8 caracteres. <br />';
+    }
+
+    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
+    foreach($_POST as $Id=>$Valor){
+        $_POST[$Id] = trim($_POST[$Id]);
+        $_POST[$Id] = strip_tags($_POST[$Id]);
+    }
+
+    return $_SESSION['Mensaje'];
+}
+
+function Modificar_Cliente($vConexion) {
+    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
+    $apellido = mysqli_real_escape_string($vConexion, $_POST['Apellido']);
+    $telefono = mysqli_real_escape_string($vConexion, $_POST['Telefono']);
+    $direccion = mysqli_real_escape_string($vConexion, $_POST['Direccion']);
+    $email = mysqli_real_escape_string($vConexion, $_POST['Email']);
+    $dni = mysqli_real_escape_string($vConexion, $_POST['DNI']);
+    $idCliente = mysqli_real_escape_string($vConexion, $_POST['IdCliente']);
+
+    $SQL_MiConsulta = "UPDATE clientes 
+    SET nombre = '$nombre',
+    apellido = '$apellido',
+    telefono = '$telefono',
+    direccion = '$direccion',
+    email = '$email',
+    dni = '$dni'
+    WHERE idCliente = '$idCliente'";
+
+    if ( mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+        return true;
+    }else {
+        return false;
+    }
+    
+}
+
+function InsertarProveedor($vConexion) {
+    // Prevenir SQL Injection usando consultas preparadas
+    $SQL_Insert = "INSERT INTO proveedores (razon_social, cuit, telefono, email) 
+                   VALUES (?, ?, ?, ?)";
+    
+    $stmt = $vConexion->prepare($SQL_Insert);
+    
+    if (!$stmt) {
+        die('<h4>Error al preparar la consulta: ' . $vConexion->error . '</h4>');
+    }
+
+    // Vincular parámetros (s=string, i=entero)
+    $stmt->bind_param(
+        "siis", 
+        $_POST['RazonSocial'], 
+        $_POST['CUIT'], 
+        $_POST['Telefono'], 
+        $_POST['Email']
+    );
+
+    if (!$stmt->execute()) {
+        die('<h4>Error al insertar el registro: ' . $stmt->error . '</h4>');
+    }
+
+    return true;
+}
+
+function Validar_Proveedor(){
+    $_SESSION['Mensaje']='';
+    if (strlen($_POST['RazonSocial']) < 3) {
+        $_SESSION['Mensaje'].='Debes ingresar una razon social con al menos 3 caracteres. <br />';
+    }
+    if (strlen($_POST['CUIT']) < 8) {
+        $_SESSION['Mensaje'].='Debes ingresar una CUIT con al menos 8 caracteres. <br />';
+    }
+    if (strlen($_POST['Telefono']) < 8) {
+        $_SESSION['Mensaje'].='Debes ingresar un telefono con al menos 8 caracteres. <br />';
+    }
+    if (strlen($_POST['Email']) < 8) {
+        $_SESSION['Mensaje'].='Debes ingresar un correo con al menos 8 caracteres. <br />';
+    }
+
+    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
+    foreach($_POST as $Id=>$Valor){
+        $_POST[$Id] = trim($_POST[$Id]);
+        $_POST[$Id] = strip_tags($_POST[$Id]);
+    }
+
+    return $_SESSION['Mensaje'];
+}
+
+function Listar_Proveedores($vConexion) {
+
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    $SQL = "SELECT * FROM proveedores";
+
+    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a variable $rs
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_PROVEEDOR'] = $data['idProveedor'];
+        $Listado[$i]['RAZON_SOCIAL'] = $data['razon_social'];
+        $Listado[$i]['CUIT'] = $data['cuit'];
+        $Listado[$i]['TELEFONO'] = $data['telefono'];
+        $Listado[$i]['EMAIL'] = $data['email'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
+function Listar_Proveedores_Parametro($vConexion,$criterio,$parametro) {
+    $Listado=array();
+
+      //1) genero la consulta que deseo segun el parametro
+        $sql = "SELECT * FROM proveedores";
+        switch ($criterio) { 
+        case 'RazonSocial': 
+        $sql = "SELECT * FROM proveedores WHERE razon_social LIKE '%$parametro%'";
+        break;
+        case 'CUIT':
+        $sql = "SELECT * FROM proveedores WHERE cuit LIKE '%$parametro%'";
+        break;
+        case 'Telefono':
+        $sql = "SELECT * FROM proveedores WHERE telefono LIKE '%$parametro%'";
+        break;
+        case 'Email':
+        $sql = "SELECT * FROM proveedores WHERE email LIKE '%$parametro%'";
+        break;
+        }    
+        //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
+        $rs = mysqli_query($vConexion, $sql);
+        
+        //3) el resultado deberá organizarse en una matriz, entonces lo recorro
+        $i=0;
+        while ($data = mysqli_fetch_array($rs)) {
+            $Listado[$i]['ID_PROVEEDOR'] = $data['idProveedor'];
+            $Listado[$i]['RAZON_SOCIAL'] = $data['razon_social'];
+            $Listado[$i]['CUIT'] = $data['cuit'];
+            $Listado[$i]['TELEFONO'] = $data['telefono'];
+            $Listado[$i]['EMAIL'] = $data['email'];
+            $i++;
+        }
+
+    //devuelvo el listado generado en el array $Listado. (Podra salir vacio o con datos)..
+    return $Listado;
+}
+
+function Eliminar_Proveedor($vConexion , $vIdConsulta) {
+
+    //soy admin 
+        $SQL_MiConsulta="SELECT idProveedor FROM proveedores 
+                        WHERE idProveedor = $vIdConsulta "; 
+     
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idProveedor']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM proveedores WHERE idProveedor = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
+function Datos_Proveedor($vConexion, $vIdProveedor) {
+    $DatosProveedor = array();
+    // Me aseguro que la consulta exista
+    $SQL = "SELECT * FROM proveedores 
+            WHERE idProveedor = $vIdProveedor";
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosProveedor['ID_PROVEEDOR'] = $data['idProveedor'];
+        $DatosProveedor['RAZON_SOCIAL'] = $data['razon_social'];
+        $DatosProveedor['CUIT'] = $data['cuit'];
+        $DatosProveedor['TELEFONO'] = $data['telefono'];
+        $DatosProveedor['EMAIL'] = $data['email'];
+    }
+    return $DatosProveedor;
+}
+
+function Modificar_Proveedor($vConexion) {
+    $razon_social = mysqli_real_escape_string($vConexion, $_POST['RazonSocial']);
+    $cuit = mysqli_real_escape_string($vConexion, $_POST['CUIT']);
+    $telefono = mysqli_real_escape_string($vConexion, $_POST['Telefono']);
+    $email = mysqli_real_escape_string($vConexion, $_POST['Email']);
+    $idProveedor = mysqli_real_escape_string($vConexion, $_POST['IdProveedor']);
+
+    $SQL_MiConsulta = "UPDATE proveedores 
+    SET razon_social = '$razon_social',
+        cuit = '$cuit',
+        telefono = '$telefono',
+        email = '$email'
+    WHERE idProveedor = '$idProveedor'";
+
+    if (mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function Datos_Turno($vConexion , $vIdTurno) {
     $DatosTurno  =   array();
     //me aseguro que la consulta exista
@@ -87,6 +317,33 @@ function Datos_Turno($vConexion , $vIdTurno) {
     }
     return $DatosTurno;
 
+}
+
+function Validar_Turno(){
+    $_SESSION['Mensaje']='';
+    if (strlen($_POST['Fecha']) < 4) {
+        $_SESSION['Mensaje'].='Debes seleccionar una fecha. <br />';
+    }
+    if (strlen($_POST['Horario']) < 4) {
+        $_SESSION['Mensaje'].='Debes seleccionar un horario. <br />';
+    }
+    if ($_POST['TipoServicio'] == 'Selecciona una opcion') {
+        $_SESSION['Mensaje'].='Debes seleccionar un Tipo de Servicio. <br />';
+    }
+    if ($_POST['Estilista'] == 'Selecciona una opcion') {
+        $_SESSION['Mensaje'].='Debes seleccionar un Estilista. <br />';
+    }
+    if ($_POST['Cliente'] == 'Selecciona una opcion') {
+        $_SESSION['Mensaje'].='Debes seleccionar un Cliente. <br />';
+    }
+
+    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
+    //foreach($_POST as $Id=>$Valor){
+    //    $_POST[$Id] = trim($_POST[$Id]);
+    //    $_POST[$Id] = strip_tags($_POST[$Id]);
+    //}
+
+    return $_SESSION['Mensaje'];
 }
 
 function Datos_Turno_Comprobante($vConexion, $vIdTurno) {
@@ -122,89 +379,6 @@ function Datos_Turno_Comprobante($vConexion, $vIdTurno) {
     }
 
     return $DatosTurno;
-}
-
-function Validar_Cliente(){
-    $_SESSION['Mensaje']='';
-    if (strlen($_POST['Nombre']) < 3) {
-        $_SESSION['Mensaje'].='Debes ingresar un nombre con al menos 3 caracteres. <br />';
-    }
-    if (strlen($_POST['Apellido']) < 3) {
-        $_SESSION['Mensaje'].='Debes ingresar un apellido con al menos 3 caracteres. <br />';
-    }
-    if (strlen($_POST['Direccion']) < 3) {
-        $_SESSION['Mensaje'].='Debes ingresar una direccion con al menos 3 caracteres. <br />';
-    }
-    if (strlen($_POST['Telefono']) < 3) {
-        $_SESSION['Mensaje'].='Debes ingresar un telefono con al menos 3 caracteres. <br />';
-    }
-    if (strlen($_POST['Email']) < 5) {
-        $_SESSION['Mensaje'].='Debes ingresar un correo con al menos 5 caracteres. <br />';
-    }
-    if (strlen($_POST['DNI']) < 8) {
-        $_SESSION['Mensaje'].='Debes ingresar un DNI con al menos 8 caracteres. <br />';
-    }
-
-    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
-    foreach($_POST as $Id=>$Valor){
-        $_POST[$Id] = trim($_POST[$Id]);
-        $_POST[$Id] = strip_tags($_POST[$Id]);
-    }
-
-    return $_SESSION['Mensaje'];
-}
-
-function Validar_Turno(){
-    $_SESSION['Mensaje']='';
-    if (strlen($_POST['Fecha']) < 4) {
-        $_SESSION['Mensaje'].='Debes seleccionar una fecha. <br />';
-    }
-    if (strlen($_POST['Horario']) < 4) {
-        $_SESSION['Mensaje'].='Debes seleccionar un horario. <br />';
-    }
-    if ($_POST['TipoServicio'] == 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Tipo de Servicio. <br />';
-    }
-    if ($_POST['Estilista'] == 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Estilista. <br />';
-    }
-    if ($_POST['Cliente'] == 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Cliente. <br />';
-    }
-
-    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
-    //foreach($_POST as $Id=>$Valor){
-    //    $_POST[$Id] = trim($_POST[$Id]);
-    //    $_POST[$Id] = strip_tags($_POST[$Id]);
-    //}
-
-    return $_SESSION['Mensaje'];
-}
-
-function Modificar_Cliente($vConexion) {
-    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
-    $apellido = mysqli_real_escape_string($vConexion, $_POST['Apellido']);
-    $telefono = mysqli_real_escape_string($vConexion, $_POST['Telefono']);
-    $direccion = mysqli_real_escape_string($vConexion, $_POST['Direccion']);
-    $email = mysqli_real_escape_string($vConexion, $_POST['Email']);
-    $dni = mysqli_real_escape_string($vConexion, $_POST['DNI']);
-    $idCliente = mysqli_real_escape_string($vConexion, $_POST['IdCliente']);
-
-    $SQL_MiConsulta = "UPDATE clientes 
-    SET nombre = '$nombre',
-    apellido = '$apellido',
-    telefono = '$telefono',
-    direccion = '$direccion',
-    email = '$email',
-    dni = '$dni'
-    WHERE idCliente = '$idCliente'";
-
-    if ( mysqli_query($vConexion, $SQL_MiConsulta) != false) {
-        return true;
-    }else {
-        return false;
-    }
-    
 }
 
 function Modificar_Turno($vConexion) {
