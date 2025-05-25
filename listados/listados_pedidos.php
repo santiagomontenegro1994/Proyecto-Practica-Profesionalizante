@@ -2,7 +2,7 @@
 session_start();
 
 if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
-    header('Location: cerrarsesion.php');
+    header('Location: ../inicio/cerrarsesion.php');
     exit;
 }
 
@@ -17,15 +17,15 @@ $MiConexion = ConexionBD();
 require_once '../funciones/select_general.php';
 
 // Obtener el listado de ventas
-$ListadoVentas = Listar_Ventas($MiConexion);
-$CantidadVentas = count($ListadoVentas);
+$ListadoPedidos = Listar_Pedidos($MiConexion);
+$CantidadPedidos = count($ListadoPedidos);
 
 // Buscar ventas según un parámetro
 if (!empty($_POST['BotonBuscar'])) {
     $parametro = $_POST['parametro'];
     $criterio = $_POST['gridRadios'];
-    $ListadoVentas = Listar_Ventas_Parametro($MiConexion, $criterio, $parametro);
-    $CantidadVentas = count($ListadoVentas);
+    $ListadoPedidos = Listar_Pedidos_Parametro($MiConexion, $criterio, $parametro);
+    $CantidadPedidos = count($ListadoPedidos);
 }
 ?>
 
@@ -35,7 +35,7 @@ if (!empty($_POST['BotonBuscar'])) {
   <h1>Listado Ventas</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="index.php">Menú</a></li>
+      <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
       <li class="breadcrumb-item">Ventas</li>
       <li class="breadcrumb-item active">Listado Ventas</li>
     </ol>
@@ -45,7 +45,7 @@ if (!empty($_POST['BotonBuscar'])) {
 <section class="section">
     <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Listado Ventas</h5>
+          <h5 class="card-title">Listado Pedidos</h5>
           <?php if (!empty($_SESSION['Mensaje'])) { ?>
             <div class="alert alert-<?php echo $_SESSION['Estilo']; ?> alert-dismissable">
               <?php echo $_SESSION['Mensaje'] ?>
@@ -64,8 +64,10 @@ if (!empty($_POST['BotonBuscar'])) {
               <div class="col-sm-3 mt-2">
                 <button type="submit" class="btn btn-success btn-xs d-inline-block" value="buscar" name="BotonBuscar">Buscar</button>
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
-                <button type="submit" class="btn btn-primary btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Imprimir</button>
-              </div>
+                <a href="../descargas/descargar_pedidosPDF.php" 
+                  class="btn btn-primary btn-xs d-inline-block " 
+                  title="PDF"> Descargar </a>
+              </div>    
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
                       <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Fecha" checked>
@@ -99,6 +101,7 @@ if (!empty($_POST['BotonBuscar'])) {
                   <th scope="col">ID</th>
                   <th scope="col">Fecha</th>
                   <th scope="col">Cliente</th>
+                  <th scope="col">Vendedor</th>
                   <th scope="col">Total</th>
                   <th scope="col">%Desc.</th>
                   <th scope="col">Seña</th>
@@ -107,39 +110,59 @@ if (!empty($_POST['BotonBuscar'])) {
                 </tr>
               </thead>
               <tbody>
-                <?php for ($i = 0; $i < $CantidadVentas; $i++) { 
+                <?php 
+                //BORRAR EL CONTENIDO ANTERIOR ANTES DE CARGAR NUEVO
+                $_SESSION['Descarga'] = "";
+
+                for ($i = 0; $i < $CantidadPedidos; $i++) { 
                   // Calcular el saldo
-                  $montoDescuento = $ListadoVentas[$i]['PRECIO_TOTAL'] * ($ListadoVentas[$i]['DESCUENTO'] / 100);
-                  $saldo = ($ListadoVentas[$i]['PRECIO_TOTAL'] - $ListadoVentas[$i]['SENIA']) - $montoDescuento;
+                  $montoDescuento = $ListadoPedidos[$i]['PRECIO_TOTAL'] * ($ListadoPedidos[$i]['DESCUENTO'] / 100);
+                  $saldo = ($ListadoPedidos[$i]['PRECIO_TOTAL'] - $ListadoPedidos[$i]['SENIA']) - $montoDescuento;
+
+                  // Método para descargar
+                  $_SESSION['Descarga'] .= "ID Pedido: {$ListadoPedidos[$i]['ID_PEDIDO']}|" . 
+                      "Fecha: {$ListadoPedidos[$i]['FECHA']}|" . 
+                      "Cliente: {$ListadoPedidos[$i]['CLIENTE_N']}, {$ListadoPedidos[$i]['CLIENTE_A']}|" . 
+                      "Vendedor: {$ListadoPedidos[$i]['VENDEDOR']}|" . 
+                      "SubTotal: " . number_format($ListadoPedidos[$i]['PRECIO_TOTAL'], 2) . "|" .
+                      "Descuento: {$ListadoPedidos[$i]['DESCUENTO']}%|" .
+                      "Seña: " . number_format($ListadoPedidos[$i]['SENIA'], 2) . "|" .  // Añadido la seña
+                      "Total: " . number_format($saldo, 2) . "\n";
                 ?>
+
                   <tr>
-                    <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
-                    <td><?php echo $ListadoVentas[$i]['FECHA']; ?></td>
-                    <td><?php echo $ListadoVentas[$i]['CLIENTE_N']; ?>, <?php echo $ListadoVentas[$i]['CLIENTE_A']; ?></td>
-                    <td>$<?php echo number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2); ?></td>
-                    <td class="text-center">%<?php echo $ListadoVentas[$i]['DESCUENTO']; ?></td>
-                    <td>$<?php echo number_format($ListadoVentas[$i]['SENIA'], 2); ?></td>
+                    <td><?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?></td>
+                    <td><?php echo $ListadoPedidos[$i]['FECHA']; ?></td>
+                    <td><?php echo $ListadoPedidos[$i]['CLIENTE_N']; ?>, <?php echo $ListadoPedidos[$i]['CLIENTE_A']; ?></td>
+                    <td><?php echo $ListadoPedidos[$i]['VENDEDOR']; ?></td>
+                    <td>$<?php echo number_format($ListadoPedidos[$i]['PRECIO_TOTAL'], 2); ?></td>
+                    <td class="text-center">%<?php echo $ListadoPedidos[$i]['DESCUENTO']; ?></td>
+                    <td>$<?php echo number_format($ListadoPedidos[$i]['SENIA'], 2); ?></td>
                     <td>$<?php echo number_format($saldo, 2); ?></td>
                     <td>
                       <!-- Acciones -->
-                      <a href="../eliminar/eliminar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="../eliminar/eliminar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
                         title="Anular" 
-                        onclick="return confirm('Confirma anular esta Venta?');">
+                        onclick="return confirm('Confirma anular este Pedido?');">
                         <i class="bi bi-trash-fill text-danger fs-5"></i>
                       </a>
 
-                      <a href="../modificar/modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="../modificar/modificar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
                         title="Modificar">
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
                       </a>
 
-                      <a href="imprimir_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
+                      <a href="../descargas/descargar_comp_pedidoPDF.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
                         title="Imprimir">
                         <i class="bi bi-printer-fill text-primary fs-5"></i>
                       </a>
                     </td>
                   </tr>
-                <?php } ?>
+                <?php 
+                } 
+                //le agrego un espacio cuando termino de cargar
+                $_SESSION['Descarga'] .= "\n";
+                ?>
               </tbody>
             </table>
           </div>

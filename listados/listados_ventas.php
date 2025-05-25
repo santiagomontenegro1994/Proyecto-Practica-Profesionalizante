@@ -109,6 +109,7 @@ if (!empty($_POST['BotonBuscar'])) {
                   <th scope="col">Acciones</th>
                 </tr>
               </thead>
+              <tbody>
               <?php 
                 //BORRAR EL CONTENIDO ANTERIOR ANTES DE CARGAR NUEVO
                 $_SESSION['Descarga'] = "";
@@ -126,8 +127,8 @@ if (!empty($_POST['BotonBuscar'])) {
                   "SubTotal: " . number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2) . "|" .
                   "Descuento: {$ListadoVentas[$i]['DESCUENTO']}%|" .
                   "Total: " . number_format($saldo, 2) . "\n";
-
                 ?>
+                
                   <tr>
                     <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['FECHA']; ?></td>

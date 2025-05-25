@@ -10,13 +10,14 @@ require_once '../funciones/conexion.php';
 require_once '../funciones/select_general.php';
 $MiConexion = ConexionBD();
 
-// Obtener datos de la venta
-$DatosVentaActual = Datos_Venta($MiConexion, $_GET['ID_PEDIDO']);
-$DetallesVenta = Detalles_Venta($MiConexion, $_GET['ID_PEDIDO']);
+// Obtener datos del pedido
+$DatosPedidoActual = Datos_Pedido($MiConexion, $_GET['ID_PEDIDO']);
+$DetallesPedido = Detalles_Pedido($MiConexion, $_GET['ID_PEDIDO']);
 
 // Calcular montos
 $monto_descuento = ($DatosPedidoActual['PRECIO_TOTAL'] * $DatosPedidoActual['DESCUENTO']) / 100;
 $total = $DatosPedidoActual['PRECIO_TOTAL'] - $monto_descuento;
+$saldo = $total - $DatosPedidoActual['SENIA'];
 
 ob_start();
 ?>
@@ -106,13 +107,13 @@ ob_start();
                 <p><?php echo $DatosPedidoActual['VENDEDOR'] ?></p>
             </div>
             <div class="info-item">
-                <h3>N° Venta</h3>
+                <h3>N° Pedido</h3>
                 <p><?php echo $DatosPedidoActual['ID_PEDIDO'] ?></p>
             </div>
         </div>
 
         <div class="details">
-            <h3>Detalles del pedido</h3>
+            <h3>Detalles del Pedido</h3>
             <table>
                 <thead>
                     <tr>
@@ -126,9 +127,9 @@ ob_start();
                     <?php foreach ($DetallesPedido as $detalle) { ?>
                         <tr>
                             <td><?php echo $detalle['PRODUCTO'] ?></td>
-                            <td class="text-right">$<?php echo number_format($detalle['PRECIO_PEDIDO'], 2) ?></td>
+                            <td class="text-right">$<?php echo number_format($detalle['PRECIO_VENTA'], 2) ?></td>
                             <td class="text-right"><?php echo $detalle['CANTIDAD'] ?></td>
-                            <td class="text-right">$<?php echo number_format($detalle['CANTIDAD'] * $detalle['PRECIO_PEDIDO'], 2) ?></td>
+                            <td class="text-right">$<?php echo number_format($detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'], 2) ?></td>
                         </tr>
                     <?php } ?>
                 </tbody>
@@ -136,24 +137,32 @@ ob_start();
         </div>
 
         <div class="details">
-            <table class="text-right" style="width: 300px; margin-left: auto;">
+            <table class="text-right" style="width: 350px; margin-left: auto;">
                 <tr>
                     <td>Subtotal:</td>
-                    <td>$<?php echo number_format($DatosVentaActual['PRECIO_TOTAL'], 2) ?></td>
+                    <td>$<?php echo number_format($DatosPedidoActual['PRECIO_TOTAL'], 2) ?></td>
                 </tr>
                 <tr>
-                    <td>Descuento (<?php echo $DatosVentaActual['DESCUENTO'] ?>%):</td>
+                    <td>Descuento (<?php echo $DatosPedidoActual['DESCUENTO'] ?>%):</td>
                     <td>$<?php echo number_format($monto_descuento, 2) ?></td>
                 </tr>
                 <tr>
-                    <td><strong>Total:</strong></td>
-                    <td><strong>$<?php echo number_format($total, 2) ?></strong></td>
+                    <td>Total:</td>
+                    <td>$<?php echo number_format($total, 2) ?></td>
+                </tr>
+                <tr>
+                    <td>Seña:</td>
+                    <td>$<?php echo number_format($DatosPedidoActual['SENIA'], 2) ?></td>
+                </tr>
+                <tr>
+                    <td><strong>Saldo:</strong></td>
+                    <td><strong>$<?php echo number_format($saldo, 2) ?></strong></td>
                 </tr>
             </table>
         </div>
 
         <div class="footer">
-            <p>Gracias por su compra</p>
+            <p>Gracias por su pedido</p>
         </div>
     </div>
 </body>
@@ -174,5 +183,5 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-$dompdf->stream("comprobante_venta_".$DatosPedidoActual['ID_PEDIDO'].".pdf", array("Attachment" => true));
+$dompdf->stream("comprobante_pedido_".$DatosPedidoActual['ID_PEDIDO'].".pdf", array("Attachment" => true));
 ?>
