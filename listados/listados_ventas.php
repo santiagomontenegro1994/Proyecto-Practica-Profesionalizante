@@ -147,7 +147,7 @@ if (!empty($_POST['BotonBuscar'])) {
 
                       <a href="../modificar/modificar_venta.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
                         title="Modificar">
-                        <i class="bi bi-pencil-fill text-warning fs-5"></i>
+                        <i class="bi bi-eye-fill text-warning fs-5"></i>
                       </a>
 
                       <a href="../descargas/descargar_comp_ventaPDF.php?ID_VENTA=<?php echo $ListadoVentas[$i]['ID_VENTA']; ?>" 
