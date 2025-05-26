@@ -509,128 +509,169 @@ function Listar_Estados_Turnos($vConexion) {
 }
 
 function Listar_Turnos($vConexion) {
+    $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.Nombre AS NOMBRE_E, e.Apellido AS APELLIDO_E, 
+                   c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.Denominacion AS ESTADO
+            FROM turnos t
+            INNER JOIN estilista e ON t.IdEstilista = e.IdEstilista
+            INNER JOIN clientes c ON t.IdCliente = c.idCliente
+            INNER JOIN estado es ON t.IdEstado = es.IdEstado
+            ORDER BY t.Fecha DESC, t.Horario DESC";
 
-    $Listado=array();
-
-      //1) genero la consulta que deseo
-
-        $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.IdEstado as estado, ES.Nombre, ES.Apellido, T.IdTipoServicio
-        FROM clientes C, estado E, estilista ES, turnos T
-        WHERE T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
-        AND T.IdEstilista=ES.IdEstilista ";
-        
-        if($_SESSION['Usuario_Nivel'] == '2'){
-            //si soy estilista solo veo mis consultas
-            if($_SESSION['Usuario_Id'] == 3){
-                //Listo lo de Lorena
-                $SQL .="AND T.IdEstilista=2 ";
-            }elseif($_SESSION['Usuario_Id'] == 4){
-                //Listo lo de Natalia
-                $SQL .="AND T.IdEstilista=1 ";
-            }    
-
+    $resultado = mysqli_query($vConexion, $SQL);
+    
+    $Listado = array();
+    if ($resultado) {
+        while ($fila = mysqli_fetch_assoc($resultado)) {
+            $Listado[] = $fila;
         }
-
-        $SQL .= "ORDER BY T.Fecha DESC, T.Horario";
-
-        //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
-        $rs = mysqli_query($vConexion, $SQL);
-        
-        //3) el resultado deberá organizarse en una matriz, entonces lo recorro
-        $i=0;
-        while ($data = mysqli_fetch_array($rs)) {
-            //paso el contenido del tipo de servicio a un array
-
-            $Listado[$i]['ID_TURNO'] = $data['IdTurno'];
-            $Listado[$i]['FECHA'] = $data['Fecha'];
-            $Listado[$i]['HORARIO'] = $data['Horario'];
-            $Listado[$i]['NOMBRE_C'] = $data['nombre'];
-            $Listado[$i]['APELLIDO_C'] = $data['apellido'];
-            $Listado[$i]['ESTADO'] = $data['estado'];
-            $Listado[$i]['NOMBRE_E'] = $data['Nombre'];
-            $Listado[$i]['APELLIDO_E'] = $data['Apellido'];
-            $Listado[$i]['TIPO_SERVICIO'] = $data['IdTipoServicio'];
-            $i++;
-        }
-
-    //devuelvo el listado generado en el array $Listado. (Podra salir vacio o con datos)..
+    }
     return $Listado;
 }
 
-function Listar_Turnos_Parametro($vConexion,$criterio,$parametro) {
-    $Listado=array();
+function Listar_Servicios_Por_Turno($vConexion, $idTurno) {
+    $SQL = "SELECT ts.Denominacion 
+            FROM detalle_turno dt
+            INNER JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
+            WHERE dt.idTurno = $idTurno";
 
-      //1) genero la consulta que deseo
+    $resultado = mysqli_query($vConexion, $SQL);
+    $servicios = array();
+    if ($resultado) {
+        while ($fila = mysqli_fetch_assoc($resultado)) {
+            $servicios[] = $fila['Denominacion'];
+        }
+    }
+    return $servicios;
+}
 
-        switch ($criterio) { 
-        case 'Cliente': 
-            $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.IdEstado as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
-        FROM clientes C, estado E, estilista ES, turnos T
-        WHERE (C.nombre LIKE '%$parametro%' OR C.apellido LIKE '%$parametro%') 
-        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
-        AND T.IdEstilista=ES.IdEstilista
-        ORDER BY T.Fecha, T.Horario";
-        break;
+function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+
+    switch ($criterio) {
+        case 'Cliente':
+            $SQL = "SELECT 
+                        t.IdTurno,
+                        t.Fecha,
+                        t.Horario,
+                        e.Nombre AS ESTILISTA_N,
+                        e.Apellido AS ESTILISTA_A,
+                        c.Nombre AS CLIENTE_N, 
+                        c.Apellido AS CLIENTE_A,
+                        es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+
         case 'Estilista':
-            $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
-        FROM clientes C, estado E, estilista ES, turnos T
-        WHERE (ES.Nombre LIKE '%$parametro%' OR ES.Apellido LIKE '%$parametro%') 
-        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
-        AND T.IdEstilista=ES.IdEstilista
-        ORDER BY T.Fecha, T.Horario";
-        break;
+            $SQL = "SELECT 
+                        t.IdTurno,
+                        t.Fecha,
+                        t.Horario,
+                        e.Nombre AS ESTILISTA_N,
+                        e.Apellido AS ESTILISTA_A,
+                        c.Nombre AS CLIENTE_N, 
+                        c.Apellido AS CLIENTE_A,
+                        es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE CONCAT(e.Apellido, ' ', e.Nombre) LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+
         case 'Fecha':
-            $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
-        FROM clientes C, estado E, estilista ES, turnos T
-        WHERE T.Fecha LIKE '%$parametro%' 
-        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
-        AND T.IdEstilista=ES.IdEstilista
-        ORDER BY T.Fecha, T.Horario";
-        break;
+            $SQL = "SELECT 
+                        t.IdTurno,
+                        t.Fecha,
+                        t.Horario,
+                        e.Nombre AS ESTILISTA_N,
+                        e.Apellido AS ESTILISTA_A,
+                        c.Nombre AS CLIENTE_N, 
+                        c.Apellido AS CLIENTE_A,
+                        es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE t.Fecha LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+
         case 'TipoServicio':
-            $SQL = "SELECT T.IdTurno, T.Fecha, T.Horario, C.nombre, C.apellido, E.denominacion as estado, ES.Nombre, ES.Apellido,T.IdTipoServicio
-        FROM clientes C, estado E, estilista ES, turnos T
-        WHERE TP.Denominacion LIKE '%$parametro%' 
-        AND T.IdCliente=C.idCliente AND T.IdEstado=E.IdEstado
-        AND T.IdEstilista=ES.IdEstilista
-        ORDER BY T.Fecha, T.Horario";
-        break;
-        }    
+            $SQL = "SELECT 
+                        t.IdTurno,
+                        t.Fecha,
+                        t.Horario,
+                        e.Nombre AS ESTILISTA_N,
+                        e.Apellido AS ESTILISTA_A,
+                        c.Nombre AS CLIENTE_N, 
+                        c.Apellido AS CLIENTE_A,
+                        es.Denominacion AS ESTADO,
+                        GROUP_CONCAT(ts.Denominacion SEPARATOR ', ') AS SERVICIOS
+                    FROM turnos t
+                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    LEFT JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
+                    LEFT JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
+                    WHERE ts.Denominacion LIKE '%$parametro%'
+                    GROUP BY t.IdTurno
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
 
-        //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
-        $rs = mysqli_query($vConexion, $SQL);
-        
-        //3) el resultado deberá organizarse en una matriz, entonces lo recorro
-        $i=0;
-        while ($data = mysqli_fetch_array($rs)) {
-            $Listado[$i]['ID_TURNO'] = $data['IdTurno'];
-            $Listado[$i]['FECHA'] = $data['Fecha'];
-            $Listado[$i]['HORARIO'] = $data['Horario'];
-            $Listado[$i]['NOMBRE_C'] = $data['nombre'];
-            $Listado[$i]['APELLIDO_C'] = $data['apellido'];
-            $Listado[$i]['ESTADO'] = $data['estado'];
-            $Listado[$i]['NOMBRE_E'] = $data['Nombre'];
-            $Listado[$i]['APELLIDO_E'] = $data['Apellido'];
-            $Listado[$i]['TIPO_SERVICIO'] = $data['IdTipoServicio'];
-            $i++;
-        }
+        default:
+            return $Listado;
+    }
 
-    //devuelvo el listado generado en el array $Listado. (Podra salir vacio o con datos)..
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['IdTurno'] = $data['IdTurno'];
+        $Listado[$i]['Fecha'] = $data['Fecha'];
+        $Listado[$i]['Horario'] = $data['Horario'];
+        $Listado[$i]['NOMBRE_E'] = $data['ESTILISTA_N'];
+        $Listado[$i]['APELLIDO_E'] = $data['ESTILISTA_A'];
+        $Listado[$i]['NOMBRE_C'] = $data['CLIENTE_N'];
+        $Listado[$i]['APELLIDO_C'] = $data['CLIENTE_A'];
+        $Listado[$i]['ESTADO'] = $data['ESTADO'];
+        $i++;
+    }
+
     return $Listado;
-
 }
 
-function InsertarTurnos($vConexion){
-    //divido el array a una cadena separada por coma para guardar
-    $string = implode(',', $_POST['TipoServicio']);
-
-    $SQL_Insert="INSERT INTO turnos ( Horario, Fecha, IdTipoServicio, IdEstilista, IdEstado, IdCliente)
-    VALUES ('".$_POST['Horario']."' , '".$_POST['Fecha']."' , '".$string."', '".$_POST['Estilista']."', '1', '".$_POST['Cliente']."')";
-
+function InsertarTurnos($vConexion) {
+    // Insertar el turno en la tabla TURNOS (sin IdTipoServicio)
+    $SQL_Insert = "INSERT INTO turnos (Horario, Fecha, IdEstilista, IdEstado, IdCliente)
+                   VALUES (
+                       '" . $_POST['Horario'] . "',
+                       '" . $_POST['Fecha'] . "',
+                       '" . $_POST['Estilista'] . "',
+                       '1',
+                       '" . $_POST['Cliente'] . "'
+                   )";
 
     if (!mysqli_query($vConexion, $SQL_Insert)) {
-        //si surge un error, finalizo la ejecucion del script con un mensaje
-        die('<h4>Error al intentar insertar el registro.</h4>');
+        die('<h4>Error al insertar el turno.</h4>');
+    }
+
+    // Obtener el ID del turno recién creado
+    $idTurno = mysqli_insert_id($vConexion);
+
+    // Insertar cada tipo de servicio en DETALLE_TURNO
+    foreach ($_POST['TipoServicio'] as $idTipoServicio) {
+        $SQL_Detalle = "INSERT INTO detalle_turno (idTurno, idTipoServicio)
+                        VALUES ('$idTurno', '$idTipoServicio')";
+
+        if (!mysqli_query($vConexion, $SQL_Detalle)) {
+            die('<h4>Error al insertar el detalle del turno.</h4>');
+        }
     }
 
     return true;

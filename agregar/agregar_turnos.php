@@ -79,8 +79,7 @@ if (!empty($_POST['Registrar'])) {
                     <!-- Campo de Tipo de Servicio -->
                     <div class="col-12">
                         <label for="selector" class="form-label">Tipo de Servicio</label>
-                        <select class="js-example-basic-single form-select" aria-label="Selector" multiple="multiple" name="TipoServicio[]">
-                            <option selected>Selecciona una opción</option>
+                        <select class="js-example-basic-multiple form-select" multiple="multiple" name="TipoServicio[]">
                             <?php for ($i = 0; $i < $CantidadTipos; $i++) { ?>
                                 <option value="<?php echo $ListadoTipos[$i]['ID']; ?>">
                                     <?php echo $ListadoTipos[$i]['DENOMINACION']; ?>
@@ -140,7 +139,7 @@ require('../footer.inc.php'); // Footer
 <script>
     // Inicializar Select2
     $(document).ready(function() {
-        $('.js-example-basic-single').select2();
+        $('.js-example-basic-multiple').select2();
     });
 
     // Configuración de Flatpickr para la Fecha
