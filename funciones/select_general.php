@@ -1496,4 +1496,128 @@ function Actualizar_Cantidad_Detalle($conexion, $idDetalle, $nuevaCantidad) {
     }
 }
 
+function Listado_Proveedores($conexion) {
+    $sql = "SELECT idProveedor, razon_social FROM proveedores";
+    return mysqli_query($conexion, $sql);
+}
+
+function Listado_Productos($conexion) {
+    $sql = "SELECT idProducto, nombre FROM productos ORDER BY nombre";
+    return mysqli_query($conexion, $sql);
+}
+
+function Validar_Compra() {
+    $errores = [];
+    
+    if (empty($_POST['idProveedor'])) {
+        $errores[] = "Seleccione un proveedor";
+    }
+    
+    if (empty($_POST['idArticulo']) || !is_array($_POST['idArticulo'])) {
+        $errores[] = "Debe agregar al menos un artículo";
+    } else {
+        foreach($_POST['idArticulo'] as $index => $idArticulo) {
+            if (empty($idArticulo)) {
+                $errores[] = "Artículo no seleccionado en la fila " . ($index + 1);
+            }
+            if (empty($_POST['cantidad'][$index]) || $_POST['cantidad'][$index] < 1) {
+                $errores[] = "Cantidad inválida en la fila " . ($index + 1);
+            }
+        }
+    }
+    
+    return implode("<br>", $errores);
+}
+
+function Insertar_Compra($conexion) {
+    try {
+        $conexion->autocommit(false);
+
+        // Insertar cabecera
+        $sql_cabecera = "INSERT INTO compras (idProveedor, fecha, idUsuario, descripcion) 
+                        VALUES (?, ?, ?, ?)";
+        $stmt_cabecera = $conexion->prepare($sql_cabecera);
+        
+        if (!$stmt_cabecera) {
+            throw new Exception("Error preparando cabecera: " . $conexion->error);
+        }
+
+        $idProveedor = (int)$_POST['idProveedor'];
+        $fecha = $_POST['fecha'];
+        $idUsuario = (int)$_SESSION['Usuario_Id'];
+        $descripcion = $_POST['descripcion'] ?? '';
+
+        $stmt_cabecera->bind_param("isis", $idProveedor, $fecha, $idUsuario, $descripcion);
+        
+        if (!$stmt_cabecera->execute()) {
+            throw new Exception("Error ejecutando cabecera: " . $stmt_cabecera->error);
+        }
+
+        $idCompra = $conexion->insert_id;
+
+        // Insertar detalles
+        $sql_detalle = "INSERT INTO detalle_compra (idCompra, idArticulo, cantidad) 
+                        VALUES (?, ?, ?)";
+        $stmt_detalle = $conexion->prepare($sql_detalle);
+        
+        if (!$stmt_detalle) {
+            throw new Exception("Error preparando detalle: " . $conexion->error);
+        }
+
+        foreach ($_POST['idArticulo'] as $index => $idArticulo) {
+            $cantidad = (int)$_POST['cantidad'][$index];
+            
+            $stmt_detalle->bind_param("iii", $idCompra, $idArticulo, $cantidad);
+            
+            if (!$stmt_detalle->execute()) {
+                throw new Exception("Error ejecutando detalle: " . $stmt_detalle->error);
+            }
+        }
+
+        $conexion->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $conexion->rollback();
+        error_log("Error en compra: " . $e->getMessage());
+        $GLOBALS['error_compra'] = $e->getMessage(); // Almacenar error en variable global
+        return false; // Retornar false explícitamente
+    } finally {
+        $conexion->autocommit(true);
+    }
+}
+
+function Listar_Compras($vConexion) {
+    $Listado = array();
+
+    // 1) Genero la consulta que deseo
+    $SQL = "SELECT 
+                c.idCompra, 
+                c.fecha, 
+                c.descripcion,
+                p.razon_social AS PROVEEDOR,
+                CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+            FROM compras c
+            LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
+            LEFT JOIN usuarios u ON c.idUsuario = u.id
+            ORDER BY c.idCompra DESC";
+
+    // 2) Ejecuto la consulta
+    $rs = mysqli_query($vConexion, $SQL);
+
+    // 3) Organizo el resultado en un array
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_COMPRA'] = $data['idCompra'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
+        $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
+        $Listado[$i]['USUARIO'] = $data['USUARIO'];
+        $i++;
+    }
+
+    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
+    return $Listado;
+}
+
 ?>
