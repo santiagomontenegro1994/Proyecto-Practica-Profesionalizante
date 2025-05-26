@@ -297,26 +297,32 @@ function Modificar_Proveedor($vConexion) {
     }
 }
 
-function Datos_Turno($vConexion , $vIdTurno) {
-    $DatosTurno  =   array();
-    //me aseguro que la consulta exista
-    $SQL = "SELECT * FROM turnos 
-            WHERE IdTurno = $vIdTurno";
+function Datos_Turno($vConexion, $vIdTurno) {
+    $DatosTurno = array();
+    
+    $SQL = "SELECT t.*, 
+                   GROUP_CONCAT(dt.idTipoServicio) AS servicios_seleccionados
+            FROM turnos t
+            LEFT JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
+            WHERE t.IdTurno = $vIdTurno
+            GROUP BY t.IdTurno";
 
     $rs = mysqli_query($vConexion, $SQL);
-
-    $data = mysqli_fetch_array($rs) ;
-    if (!empty($data)) {
+    
+    if ($rs && mysqli_num_rows($rs) > 0) {
+        $data = mysqli_fetch_assoc($rs);
+        
+        // Mantener la estructura original del array
         $DatosTurno['ID_TURNO'] = $data['IdTurno'];
         $DatosTurno['HORARIO'] = $data['Horario'];
         $DatosTurno['FECHA'] = $data['Fecha'];
-        $DatosTurno['TIPO_SERVICIO'] = $data['IdTipoServicio'];
+        $DatosTurno['servicios_seleccionados'] = $data['servicios_seleccionados']; // Ahora viene de detalle_turno
         $DatosTurno['ESTILISTA'] = $data['IdEstilista'];
         $DatosTurno['ESTADO'] = $data['IdEstado'];
         $DatosTurno['CLIENTE'] = $data['IdCliente'];
     }
+    
     return $DatosTurno;
-
 }
 
 function Validar_Turno(){
@@ -327,10 +333,10 @@ function Validar_Turno(){
     if (strlen($_POST['Horario']) < 4) {
         $_SESSION['Mensaje'].='Debes seleccionar un horario. <br />';
     }
-    if ($_POST['TipoServicio'] == 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Tipo de Servicio. <br />';
+    if (empty($_POST['TipoServicio']) || in_array('', $_POST['TipoServicio'])) {
+        $_SESSION['Mensaje'] .= 'Debes seleccionar al menos un Tipo de Servicio válido.<br />';
     }
-    if ($_POST['Estilista'] == 'Selecciona una opcion') {
+    if ($_POST['Estilista'] === 'Selecciona una opcion') {
         $_SESSION['Mensaje'].='Debes seleccionar un Estilista. <br />';
     }
     if ($_POST['Cliente'] == 'Selecciona una opcion') {
@@ -382,32 +388,34 @@ function Datos_Turno_Comprobante($vConexion, $vIdTurno) {
 }
 
 function Modificar_Turno($vConexion) {
-    //divido el array a una cadena separada por coma para guardar
-    $string = implode(',', $_POST['TipoServicio']);
+    // 1. Actualizar datos principales del turno
+    $SQL_Update = "UPDATE turnos SET
+                    Fecha = '".$_POST['Fecha']."',
+                    Horario = '".$_POST['Horario']."',
+                    IdEstilista = '".$_POST['Estilista']."',
+                    IdCliente = '".$_POST['Cliente']."',
+                    IdEstado = '".$_POST['Estado']."'
+                   WHERE IdTurno = ".$_POST['IdTurno'];
 
-    $fecha = mysqli_real_escape_string($vConexion, $_POST['Fecha']);
-    $horario = mysqli_real_escape_string($vConexion, $_POST['Horario']);
-    $tipoServicio = mysqli_real_escape_string($vConexion, $string);
-    $estilista = mysqli_real_escape_string($vConexion, $_POST['Estilista']);
-    $cliente = mysqli_real_escape_string($vConexion, $_POST['Cliente']);
-    $estado = mysqli_real_escape_string($vConexion, $_POST['Estado']);
-    $idTurno = mysqli_real_escape_string($vConexion, $_POST['IdTurno']);
+    if (!mysqli_query($vConexion, $SQL_Update)) {
+        die('<h4>Error al actualizar el turno.</h4>');
+    }
 
-    $SQL_MiConsulta = "UPDATE turnos 
-    SET Fecha = '$fecha',
-    Horario = '$horario',
-    IdTipoServicio = '$tipoServicio',
-    IdEstilista = '$estilista',
-    IdCliente = '$cliente',
-    IdEstado = '$estado'
-    WHERE IdTurno = '$idTurno'";
+    // 2. Actualizar servicios
+    // Eliminar servicios anteriores
+    $SQL_Delete = "DELETE FROM detalle_turno WHERE idTurno = ".$_POST['IdTurno'];
+    mysqli_query($vConexion, $SQL_Delete);
 
-    if ( mysqli_query($vConexion, $SQL_MiConsulta) != false) {
-        return true;
-    }else {
-        return false;
+    // Insertar nuevos servicios
+    if (!empty($_POST['TipoServicio'])) {
+        foreach ($_POST['TipoServicio'] as $idTipoServicio) {
+            $SQL_Insert = "INSERT INTO detalle_turno (idTurno, idTipoServicio)
+                           VALUES (".$_POST['IdTurno'].", $idTipoServicio)";
+            mysqli_query($vConexion, $SQL_Insert);
+        }
     }
     
+    return true;
 }
 
 function Listar_Tipos($vConexion) {
@@ -510,7 +518,7 @@ function Listar_Estados_Turnos($vConexion) {
 
 function Listar_Turnos($vConexion) {
     $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.Nombre AS NOMBRE_E, e.Apellido AS APELLIDO_E, 
-                   c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.Denominacion AS ESTADO
+                   c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
             FROM turnos t
             INNER JOIN estilista e ON t.IdEstilista = e.IdEstilista
             INNER JOIN clientes c ON t.IdCliente = c.idCliente

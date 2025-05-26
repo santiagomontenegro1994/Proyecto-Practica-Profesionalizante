@@ -59,6 +59,11 @@ if (!empty($_POST['ModificarTurno'])) {
     //verifico que traigo el nro de consulta por GET si todabia no toque el boton de Modificar
     //busco los datos de esta consulta y los muestro
     $DatosTurnoActual = Datos_Turno($MiConexion , $_GET['ID_TURNO']);
+
+    // Convertir los servicios en array
+    $serviciosSeleccionados = !empty($DatosTurnoActual['servicios_seleccionados']) ? 
+                            explode(',', $DatosTurnoActual['servicios_seleccionados']) : 
+                            [];
 }
 ?>
 
@@ -101,16 +106,9 @@ if (!empty($_POST['ModificarTurno'])) {
 
                     <div class="col-12">
                         <label for="selector" class="form-label">Tipo de Servicio</label>
-                        <select class="js-example-basic-single form-select" aria-label="Selector" multiple="multiple" name="TipoServicio[]">
-                            <option value="">Selecciona una opción</option>
-                            <?php
-                            // Convertir el string de opciones seleccionadas en un array
-                            $opcionesSeleccionadas = !empty($DatosTurnoActual['TIPO_SERVICIO']) ? explode(',', $DatosTurnoActual['TIPO_SERVICIO']) : [];
-
-                            // Recorrer la lista de tipos de servicio
-                            for ($i = 0; $i < $CantidadTipos; $i++) {
-                                // Verificar si la opción actual está en el array de seleccionados
-                                $selected = in_array($ListadoTipos[$i]['ID'], $opcionesSeleccionadas) ? 'selected' : '';
+                        <select class="js-example-basic-multiple form-select" multiple="multiple" name="TipoServicio[]">
+                            <?php for ($i = 0; $i < $CantidadTipos; $i++) { 
+                                $selected = in_array($ListadoTipos[$i]['ID'], $serviciosSeleccionados) ? 'selected' : '';
                             ?>
                                 <option value="<?php echo $ListadoTipos[$i]['ID']; ?>" <?php echo $selected; ?>>
                                     <?php echo $ListadoTipos[$i]['DENOMINACION']; ?>
@@ -197,8 +195,11 @@ ob_end_flush(); // Envía la salida al navegador
 <script>
   // In your Javascript (external .js resource or <script> tag) SELECT 2
   $(document).ready(function() {
-  $('.js-example-basic-single').select2();
-  });
+        $('.js-example-basic-multiple').select2({
+            placeholder: "Seleccione los servicios",
+            allowClear: true
+        });
+    });
 </script>
 
 </body>

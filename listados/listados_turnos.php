@@ -176,7 +176,7 @@ if (!empty($_POST['Buscar'])) {
                     $_SESSION['Descarga'] .= "Estilista: {$ListadoTurnos[$i]['NOMBRE_E']}, {$ListadoTurnos[$i]['APELLIDO_E']}\n";
 
                     // Color de fila según estado
-                    list($Title, $Color) = ColorDeFila($ListadoTurnos[$i]['Fecha'], $ListadoTurnos[$i]['ESTADO']); 
+                    list($Title, $Color) = ColorDeFila($ListadoTurnos[$i]['Fecha'], $ListadoTurnos[$i]['IdEstado']); 
                 ?>
                     <tr class="<?php echo $Color; ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo $Title; ?>">
                         <th scope="row"><?php echo $i+1; ?></th>
