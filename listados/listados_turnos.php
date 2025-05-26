@@ -151,72 +151,64 @@ if (!empty($_POST['Buscar'])) {
           <!-- Table with stripped rows -->
           <table class="table table-striped">
             <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Fecha</th>
-                <th scope="col">Horario</th>
-                <th scope="col">Tipo de Servicio</th>
-                <th scope="col">Estilista</th>
-                <th scope="col">Cliente</th>
-                <th scope="col">Acciones</th>
-              </tr>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Horario</th>
+                    <th scope="col">Tipo de Servicio</th>
+                    <th scope="col">Estilista</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Acciones</th>
+                </tr>
             </thead>
             <tbody>
                 <?php 
-                //borro la variable anterior de descarga
-                $_SESSION['Descarga']="";
+                $_SESSION['Descarga'] = "";
                 for ($i=0; $i<$CantidadTurnos; $i++) { 
+                    
+                    // Obtener servicios del turno
+                    $servicios = Listar_Servicios_Por_Turno($MiConexion, $ListadoTurnos[$i]['IdTurno']);
+                    
+                    // Preparar datos para descarga
+                    $_SESSION['Descarga'] .= "Cliente: {$ListadoTurnos[$i]['NOMBRE_C']}, {$ListadoTurnos[$i]['APELLIDO_C']} - ";
+                    $_SESSION['Descarga'] .= "Fecha: {$ListadoTurnos[$i]['Fecha']} - Horario: {$ListadoTurnos[$i]['Horario']} - ";
+                    $_SESSION['Descarga'] .= "Servicios: " . implode(", ", $servicios) . " - ";
+                    $_SESSION['Descarga'] .= "Estilista: {$ListadoTurnos[$i]['NOMBRE_E']}, {$ListadoTurnos[$i]['APELLIDO_E']}\n";
 
-                  //Metodo para buscar los Tipos de Servicio por el ID
-                  $array_ids = explode(',', $ListadoTurnos[$i]['TIPO_SERVICIO']);
-                  $cantidadIds = count($array_ids);
-
-                  //Metodo para descargar
-                  $_SESSION['Descarga'] .= "Cliente: {$ListadoTurnos[$i]['NOMBRE_C']}, {$ListadoTurnos[$i]['APELLIDO_C']} - Fecha: {$ListadoTurnos[$i]['FECHA']} - Horario: {$ListadoTurnos[$i]['HORARIO']} - Tipo de Servicio: {$ListadoTurnos[$i]['TIPO_SERVICIO']} - Estilista: {$ListadoTurnos[$i]['NOMBRE_E']}, {$ListadoTurnos[$i]['APELLIDO_E']} \n";
-
-                  //Metodo para pintar las filas
-                  list($Title, $Color) = ColorDeFila($ListadoTurnos[$i]['FECHA'],$ListadoTurnos[$i]['ESTADO']); 
+                    // Color de fila según estado
+                    list($Title, $Color) = ColorDeFila($ListadoTurnos[$i]['Fecha'], $ListadoTurnos[$i]['ESTADO']); 
                 ?>
-                    <tr class="<?php echo $Color; ?>"  data-bs-toggle="tooltip" data-bs-placement="left" data-bs-original-title="<?php echo $Title; ?>">
+                    <tr class="<?php echo $Color; ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo $Title; ?>">
                         <th scope="row"><?php echo $i+1; ?></th>
-                        <td><?php echo $ListadoTurnos[$i]['FECHA']; ?></td>
-                        <td><?php echo $ListadoTurnos[$i]['HORARIO']; ?></td>
-                        <td><?php for ($j = 0; $j<$cantidadIds; $j++) {
-                          $indice = (int)$array_ids[$j] - 1;
-                          echo $ListadoTiposTurnos[$indice]['DENOMINACION'];
-                          if ($j < $cantidadIds - 1){
-                            echo ", ";}
-                          } 
-                          ?></td>
-                        <td><?php echo $ListadoTurnos[$i]['NOMBRE_E']?>, <?php echo $ListadoTurnos[$i]['APELLIDO_E']?></td>
-                        <td><?php echo $ListadoTurnos[$i]['NOMBRE_C']?>, <?php echo $ListadoTurnos[$i]['APELLIDO_C']?></td>
+                        <td><?php echo $ListadoTurnos[$i]['Fecha']; ?></td>
+                        <td><?php echo $ListadoTurnos[$i]['Horario']; ?></td>
+                        <td><?php echo implode(", ", $servicios); ?></td>
+                        <td><?php echo $ListadoTurnos[$i]['APELLIDO_E'] ?>, <?php echo $ListadoTurnos[$i]['NOMBRE_E'] ?></td>
+                        <td><?php echo $ListadoTurnos[$i]['APELLIDO_C'] ?>, <?php echo $ListadoTurnos[$i]['NOMBRE_C'] ?></td>
                         <td>
-                          <!-- eliminar la consulta -->
-                          <a href="../eliminar/eliminar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['ID_TURNO']; ?>" 
-                            title="Eliminar" 
-                            onclick="return confirm('Confirma eliminar este turno?');">
-                            <i class="bi bi-trash-fill text-danger fs-5"></i>
-                          </a>
+                            <a href="../eliminar/eliminar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
+                              title="Eliminar" 
+                              onclick="return confirm('¿Confirma eliminar este turno?');">
+                                <i class="bi bi-trash-fill text-danger fs-5"></i>
+                            </a>
 
-                          <a href="../modificar/modificar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['ID_TURNO']; ?>" 
-                            title="Modificar">
-                            <i class="bi bi-pencil-fill text-warning fs-5"></i>
-                          </a>
+                            <a href="../modificar/modificar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
+                              title="Modificar">
+                                <i class="bi bi-pencil-fill text-warning fs-5"></i>
+                            </a>
 
-                          <a href="../descargas/descargar_comp_turnosPDF.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['ID_TURNO']; ?>" 
-                            title="Imprimir">
-                            <i class="bi bi-printer-fill text-primary fs-5"></i>
-                          </a>
-                      
+                            <a href="../descargas/descargar_comp_turnosPDF.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
+                              title="Imprimir">
+                                <i class="bi bi-printer-fill text-primary fs-5"></i>
+                            </a>
                         </td>
                     </tr>
                 <?php 
                 } 
-                //le agrego un espacio cuando termino de cargar
                 $_SESSION['Descarga'] .= "\n";
                 ?>
             </tbody>
-          </table>
+        </table>
           <!-- End Table with stripped rows -->
 
         </div>

@@ -32,12 +32,12 @@ if (!empty($_POST['BotonBuscar'])) {
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Listado Ventas</h1>
+  <h1>Listado Pedidos</h1>
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
-      <li class="breadcrumb-item">Ventas</li>
-      <li class="breadcrumb-item active">Listado Ventas</li>
+      <li class="breadcrumb-item">Pedidos</li>
+      <li class="breadcrumb-item active">Listado Pedidos</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
