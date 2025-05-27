@@ -70,7 +70,7 @@ try {
 
     $_SESSION['Mensaje'] = "Orden de compra generada exitosamente!";
     $_SESSION['Estilo'] = 'success';
-    header("Location: ../listados/listados_compras.php");
+    header("Location: ../listados/listados_ordenes_compra.php");
     exit;
 
 } catch(PDOException $e) {

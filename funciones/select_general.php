@@ -1797,4 +1797,184 @@ function Actualizar_Cantidad_Detalle_Compra($vConexion, $idDetalle, $cantidad) {
             WHERE idDetalleCompra = $idDetalle";
     return mysqli_query($vConexion, $SQL);
 }
+
+function Listar_Ordenes_Compra($MiConexion) {
+    $Listado = array();
+
+    $SQL = "SELECT 
+                o.idOrdenCompra, 
+                o.fecha, 
+                p.razon_social AS PROVEEDOR,
+                CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+            FROM orden_compra o
+            LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+            LEFT JOIN usuarios u ON o.idUsuario = u.id
+            LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+            GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
+            ORDER BY o.idOrdenCompra DESC";
+
+    $rs = mysqli_query($MiConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_ORDEN'] = $data['idOrdenCompra'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
+        $Listado[$i]['USUARIO'] = $data['USUARIO'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['PRECIO_TOTAL'];
+        $i++;
+    }
+
+    return $Listado;
+}
+
+function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
+    $Listado = array();
+
+    switch ($criterio) {
+        case 'Proveedor':
+            $SQL = "SELECT 
+                        o.idOrdenCompra, 
+                        o.fecha, 
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                        IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+                    FROM orden_compra o
+                    LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON o.idUsuario = u.id
+                    LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+                    WHERE p.razon_social LIKE '%$parametro%'
+                    GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
+                    ORDER BY o.idOrdenCompra DESC";
+            break;
+
+        case 'Fecha':
+            $SQL = "SELECT 
+                        o.idOrdenCompra, 
+                        o.fecha, 
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                        IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+                    FROM orden_compra o
+                    LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON o.idUsuario = u.id
+                    LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+                    WHERE o.fecha LIKE '%$parametro%'
+                    GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
+                   
+                    ORDER BY o.idOrdenCompra DESC";
+            break;
+
+        case 'Id':
+            $SQL = "SELECT 
+                        o.idOrdenCompra, 
+                        o.fecha, 
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                        IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+                    FROM orden_compra o
+                    LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON o.idUsuario = u.id
+                    LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+                    WHERE o.idOrdenCompra = '$parametro'
+                    GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
+                    ORDER BY o.idOrdenCompra DESC";
+            break;
+
+        default:
+            return $Listado;
+    }
+
+    $rs = mysqli_query($MiConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_ORDEN'] = $data['idOrdenCompra'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
+        $Listado[$i]['USUARIO'] = $data['USUARIO'];
+        $Listado[$i]['PRECIO_TOTAL'] = $data['PRECIO_TOTAL'];
+        $i++;
+    }
+
+    return $Listado;
+}
+
+function Eliminar_Orden_Compra($vConexion , $vIdConsulta) {
+
+        $SQL_MiConsulta="SELECT idOrdenCompra FROM orden_compra 
+                        WHERE idOrdenCompra = $vIdConsulta "; 
+    
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idOrdenCompra']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM orden_compra WHERE idOrdenCompra = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
+function Datos_Orden_Compra($conexion, $id_orden) {
+    $sql = "SELECT 
+                o.idOrdenCompra, 
+                o.fecha, 
+                p.razon_social AS PROVEEDOR,
+                p.telefono,
+                CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+            FROM orden_compra o
+            LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+            LEFT JOIN usuarios u ON o.idUsuario = u.id
+            LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+            WHERE o.idOrdenCompra = ?
+            GROUP BY o.idOrdenCompra";
+
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("i", $id_orden);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc();
+}
+
+function Detalles_Orden_Compra($conexion, $id_orden) {
+    $sql = "SELECT 
+                d.*, 
+                p.nombre AS ARTICULO 
+            FROM detalle_orden_compra d
+            JOIN productos p ON d.idArticulo = p.idProducto
+            WHERE d.idOrdenCompra = ?";
+    
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("i", $id_orden);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $detalles = array();
+    while ($fila = $result->fetch_assoc()) {
+        $detalles[] = $fila;
+    }
+    return $detalles;
+}
+
+function Eliminar_Detalle_Orden($conexion, $id_detalle) {
+    $sql = "DELETE FROM detalle_orden_compra WHERE idDetalleOrdenCompra = ?";
+    $stmt = $conexion->prepare($sql);
+    return $stmt->execute([$id_detalle]);
+}
+
+function Actualizar_Detalle_Orden($conexion, $id_detalle, $cantidad, $precio) {
+    $sql = "UPDATE detalle_orden_compra 
+            SET cantidad = ?, precio = ?
+            WHERE idDetalleOrdenCompra = ?";
+    $stmt = $conexion->prepare($sql);
+    return $stmt->execute([$cantidad, $precio, $id_detalle]);
+}
+
 ?>

@@ -133,7 +133,7 @@
             </a>
           </li>
           <li>
-            <a href="../listados/listados_ordenes_compras.php">
+            <a href="../listados/listados_ordenes_compra.php">
               <i class="bi bi-circle"></i><span>Listado de Ordenes Compras</span>
             </a>
           </li>
