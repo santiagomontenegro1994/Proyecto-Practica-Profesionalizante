@@ -565,6 +565,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         e.Apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
+                        es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
@@ -583,6 +584,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         e.Apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
+                        es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
                     INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
@@ -601,6 +603,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         e.Apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
+                        es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
                     INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
@@ -620,6 +623,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
                         es.Denominacion AS ESTADO,
+                        es.IdEstado,
                         GROUP_CONCAT(ts.Denominacion SEPARATOR ', ') AS SERVICIOS
                     FROM turnos t
                     INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
@@ -641,6 +645,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['IdTurno'] = $data['IdTurno'];
+        $Listado[$i]['IdEstado'] = $data['IdEstado'];
         $Listado[$i]['Fecha'] = $data['Fecha'];
         $Listado[$i]['Horario'] = $data['Horario'];
         $Listado[$i]['NOMBRE_E'] = $data['ESTILISTA_N'];
@@ -1669,4 +1674,67 @@ function Listar_Compras($vConexion) {
     return $Listado;
 }
 
-?>
+function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+
+    switch ($criterio) {
+        case 'Proveedor':
+            $SQL = "SELECT 
+                        c.idCompra, 
+                        c.fecha, 
+                        c.descripcion,
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+                    FROM compras c
+                    LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON c.idUsuario = u.id
+                    WHERE p.razon_social LIKE '%$parametro%'
+                    ORDER BY c.idCompra DESC";
+            break;
+
+        case 'Fecha':
+            $SQL = "SELECT 
+                        c.idCompra, 
+                        c.fecha, 
+                        c.descripcion,
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+                    FROM compras c
+                    LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON c.idUsuario = u.id
+                    WHERE c.fecha LIKE '%$parametro%'
+                    ORDER BY c.idCompra DESC";
+            break;
+
+        case 'Id':
+            $SQL = "SELECT 
+                        c.idCompra, 
+                        c.fecha, 
+                        c.descripcion,
+                        p.razon_social AS PROVEEDOR,
+                        CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+                    FROM compras c
+                    LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
+                    LEFT JOIN usuarios u ON c.idUsuario = u.id
+                    WHERE c.idCompra = '$parametro'
+                    ORDER BY c.idCompra DESC";
+            break;
+
+        default:
+            return $Listado;
+    }
+
+    $rs = mysqli_query($vConexion, $SQL);
+
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_COMPRA'] = $data['idCompra'];
+        $Listado[$i]['FECHA'] = $data['fecha'];
+        $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
+        $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
+        $Listado[$i]['USUARIO'] = $data['USUARIO'];
+        $i++;
+    }
+
+    return $Listado;
+}

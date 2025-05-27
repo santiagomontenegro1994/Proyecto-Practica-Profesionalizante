@@ -108,6 +108,11 @@ if (!empty($_POST['BotonBuscar'])) {
                     <td><?php echo $ListadoCompras[$i]['USUARIO']; ?></td>
                     <td><?php echo $ListadoCompras[$i]['DESCRIPCION']; ?></td>
                     <td>
+                      <a href="../eliminar/eliminar_compra.php?ID_COMPRA=<?php echo $ListadoCompras[$i]['ID_COMPRA']; ?>" 
+                        title="Anular" 
+                        onclick="return confirm('Confirma anular esta orden de compra');">
+                        <i class="bi bi-trash-fill text-danger fs-5"></i>
+                      </a>
                       <a href="../modificar/modificar_compra.php?ID_COMPRA=<?php echo $ListadoCompras[$i]['ID_COMPRA']; ?>" 
                         title="Modificar">
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
