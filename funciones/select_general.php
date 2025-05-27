@@ -1738,3 +1738,63 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
 
     return $Listado;
 }
+
+function Eliminar_Compra($vConexion , $vIdConsulta) {
+
+        $SQL_MiConsulta="SELECT idCompra FROM compras 
+                        WHERE idCompra = $vIdConsulta "; 
+    
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['idCompra']) ) {
+        //si se cumple todo, entonces elimino:
+        mysqli_query($vConexion, "DELETE FROM compras WHERE idCompra = $vIdConsulta");
+        return true;
+
+    }else {
+        return false;
+    }
+    
+}
+
+function Datos_Compra($vConexion, $idCompra) {
+    $SQL = "SELECT c.*, 
+                   p.razon_social AS PROVEEDOR,
+                   CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+            FROM compras c
+            INNER JOIN proveedores p ON c.idProveedor = p.idProveedor
+            INNER JOIN usuarios u ON c.idUsuario = u.id
+            WHERE c.idCompra = $idCompra";
+    
+    $rs = mysqli_query($vConexion, $SQL);
+    return mysqli_fetch_assoc($rs);
+}
+
+function Detalles_Compra($vConexion, $idCompra) {
+    $SQL = "SELECT dc.*, p.nombre AS ARTICULO
+            FROM detalle_compra dc
+            INNER JOIN productos p ON dc.idArticulo = p.idProducto
+            WHERE dc.idCompra = $idCompra";
+    
+    $rs = mysqli_query($vConexion, $SQL);
+    $detalles = array();
+    while ($fila = mysqli_fetch_assoc($rs)) {
+        $detalles[] = $fila;
+    }
+    return $detalles;
+}
+
+function Eliminar_Detalle_Compra($vConexion, $idDetalle) {
+    $SQL = "DELETE FROM detalle_compra WHERE idDetalleCompra = $idDetalle";
+    return mysqli_query($vConexion, $SQL);
+}
+
+function Actualizar_Cantidad_Detalle_Compra($vConexion, $idDetalle, $cantidad) {
+    $SQL = "UPDATE detalle_compra 
+            SET cantidad = $cantidad 
+            WHERE idDetalleCompra = $idDetalle";
+    return mysqli_query($vConexion, $SQL);
+}
+?>

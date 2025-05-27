@@ -28,12 +28,12 @@ if (!empty($_POST['BotonBuscar'])) {
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Listado Órdenes de Compra</h1>
+  <h1>Listado Presupuestos</h1>
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="../inicio/index.php">Menú</a></li>
       <li class="breadcrumb-item">Compras</li>
-      <li class="breadcrumb-item active">Listado Órdenes de Compra</li>
+      <li class="breadcrumb-item active">Listado Presupuestos</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -41,7 +41,7 @@ if (!empty($_POST['BotonBuscar'])) {
 <section class="section">
     <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Listado Órdenes de Compra</h5>
+          <h5 class="card-title">Listado Presupuestos</h5>
           <?php if (!empty($_SESSION['Mensaje'])) { ?>
             <div class="alert alert-<?php echo $_SESSION['Estilo']; ?> alert-dismissable">
               <?php echo $_SESSION['Mensaje'] ?>
@@ -117,7 +117,7 @@ if (!empty($_POST['BotonBuscar'])) {
                         title="Modificar">
                         <i class="bi bi-pencil-fill text-warning fs-5"></i>
                       </a>
-                      <a href="../descargas/descargar_compraPDF.php?ID_COMPRA=<?php echo $ListadoCompras[$i]['ID_COMPRA']; ?>" 
+                      <a href="../descargas/descargar_comp_compraPDF.php?ID_COMPRA=<?php echo $ListadoCompras[$i]['ID_COMPRA']; ?>" 
                         title="Imprimir">
                         <i class="bi bi-printer-fill text-primary fs-5"></i>
                       </a>
