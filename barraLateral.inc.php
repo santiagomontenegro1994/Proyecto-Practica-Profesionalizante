@@ -124,12 +124,17 @@
         <ul id="compras-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
             <a href="../agregar/agregar_compras.php">
-              <i class="bi bi-circle"></i><span>Agregar Compra</span>
+              <i class="bi bi-circle"></i><span>Generar Presupuesto</span>
             </a>
           </li>
           <li>
             <a href="../listados/listados_compras.php">
-              <i class="bi bi-circle"></i><span>Listado de Compras</span>
+              <i class="bi bi-circle"></i><span>Listado de Presupuestos</span>
+            </a>
+          </li>
+          <li>
+            <a href="../listados/listados_ordenes_compras.php">
+              <i class="bi bi-circle"></i><span>Listado de Ordenes Compras</span>
             </a>
           </li>
         </ul>

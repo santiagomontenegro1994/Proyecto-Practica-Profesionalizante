@@ -42,7 +42,7 @@ if (isset($_POST['BotonRegistrarCompra'])) {
     <section class="section">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Nueva Orden de Compra</h5>
+                <h5 class="card-title">Pedido de Presupuesto</h5>
 
                 <form method="post">
                     <?php if (!empty($Mensaje)) : ?>
@@ -147,7 +147,7 @@ if (isset($_POST['BotonRegistrarCompra'])) {
 
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary" name="BotonRegistrarCompra" value="1">
-                          Registrar Compra
+                          Registrar Presupuesto
                         </button>
                     </div>
                 </form>
