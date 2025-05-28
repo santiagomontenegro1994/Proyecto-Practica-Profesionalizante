@@ -26,6 +26,15 @@ if (!empty($_POST)) {
         exit;
     }
 
+    // Verificar stock
+    if ($_POST['action'] == 'checkStock') {
+        $idProducto = $_POST['idProducto'];
+        $query = mysqli_query($MiConexion, "SELECT stock FROM productos WHERE idProducto = '$idProducto'");
+        $row = mysqli_fetch_assoc($query);
+        echo $row['stock'];
+        exit;
+    }
+
     // Buscar producto
     if ($_POST['action'] == 'infoProducto') {
         $idProducto = $_POST['producto'];

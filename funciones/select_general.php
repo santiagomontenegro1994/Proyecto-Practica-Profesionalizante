@@ -925,27 +925,52 @@ function Listar_Productos_Bajo_Stock($conexion) {
     return $productos;
 }
 
-function Eliminar_Venta($vConexion , $vIdConsulta) {
-
-
-    //soy admin 
-        $SQL_MiConsulta="SELECT idVenta FROM ventas 
-                        WHERE idVenta = $vIdConsulta ";
-   
+function Eliminar_Venta($vConexion, $vIdConsulta) {
+    // Iniciar transacción
+    mysqli_begin_transaction($vConexion);
     
-    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
-        
-    $data = mysqli_fetch_array($rs);
+    try {
+        // 1. Verificar que la venta existe
+        $SQL_MiConsulta = "SELECT idVenta FROM ventas WHERE idVenta = $vIdConsulta";
+        $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        $data = mysqli_fetch_array($rs);
 
-    if (!empty($data['idVenta']) ) {
-        //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM ventas WHERE idVenta = $vIdConsulta");
+        if (empty($data['idVenta'])) {
+            return false;
+        }
+
+        // 2. Obtener los detalles de la venta
+        $SQL_Detalles = "SELECT idProducto, cantidad FROM detalle_venta WHERE idVenta = $vIdConsulta";
+        $result_detalles = mysqli_query($vConexion, $SQL_Detalles);
+
+        // 3. Restaurar el stock para cada producto
+        while ($detalle = mysqli_fetch_assoc($result_detalles)) {
+            $idProducto = $detalle['idProducto'];
+            $cantidad = $detalle['cantidad'];
+            
+            $SQL_Update_Stock = "UPDATE productos 
+                                SET stock = stock + $cantidad 
+                                WHERE idProducto = $idProducto";
+            mysqli_query($vConexion, $SQL_Update_Stock);
+        }
+
+        // 4. Eliminar los detalles de la venta
+        $SQL_Delete_Detalles = "DELETE FROM detalle_venta WHERE idVenta = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Delete_Detalles);
+
+        // 5. Eliminar la venta principal
+        $SQL_Delete_Venta = "DELETE FROM ventas WHERE idVenta = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Delete_Venta);
+
+        // Confirmar transacción
+        mysqli_commit($vConexion);
         return true;
 
-    }else {
+    } catch (Exception $e) {
+        // Revertir en caso de error
+        mysqli_rollback($vConexion);
         return false;
     }
-    
 }
 
 function Listar_Ventas($vConexion) {
@@ -1261,24 +1286,52 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
     return $Listado;
 }
 
-function Eliminar_Pedido($vConexion , $vIdConsulta) {
-
-        $SQL_MiConsulta="SELECT idPedido FROM pedidos 
-                        WHERE idPedido = $vIdConsulta "; 
+function Eliminar_Pedido($vConexion, $vIdConsulta) {
+    // Iniciar transacción
+    mysqli_begin_transaction($vConexion);
     
-    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
-        
-    $data = mysqli_fetch_array($rs);
+    try {
+        // 1. Verificar que el pedido existe
+        $SQL_MiConsulta = "SELECT idPedido FROM pedidos WHERE idPedido = $vIdConsulta";
+        $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+        $data = mysqli_fetch_array($rs);
 
-    if (!empty($data['idPedido']) ) {
-        //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM pedidos WHERE idPedido = $vIdConsulta");
+        if (empty($data['idPedido'])) {
+            return false;
+        }
+
+        // 2. Obtener los detalles del pedido
+        $SQL_Detalles = "SELECT idProducto, cantidad FROM detalle_pedido WHERE idPedido = $vIdConsulta";
+        $result_detalles = mysqli_query($vConexion, $SQL_Detalles);
+
+        // 3. Restaurar el stock para cada producto
+        while ($detalle = mysqli_fetch_assoc($result_detalles)) {
+            $idProducto = $detalle['idProducto'];
+            $cantidad = $detalle['cantidad'];
+            
+            $SQL_Update_Stock = "UPDATE productos 
+                                SET stock = stock + $cantidad 
+                                WHERE idProducto = $idProducto";
+            mysqli_query($vConexion, $SQL_Update_Stock);
+        }
+
+        // 4. Eliminar los detalles del pedido
+        $SQL_Delete_Detalles = "DELETE FROM detalle_pedido WHERE idPedido = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Delete_Detalles);
+
+        // 5. Eliminar el pedido principal
+        $SQL_Delete_Pedido = "DELETE FROM pedidos WHERE idPedido = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Delete_Pedido);
+
+        // Confirmar transacción
+        mysqli_commit($vConexion);
         return true;
 
-    }else {
+    } catch (Exception $e) {
+        // Revertir en caso de error
+        mysqli_rollback($vConexion);
         return false;
     }
-    
 }
 
 function Detalles_Pedido($vConexion, $vIdPedido) {

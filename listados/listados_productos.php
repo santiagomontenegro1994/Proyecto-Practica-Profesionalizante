@@ -111,7 +111,7 @@ if (!empty($_POST['BotonBuscar'])) {
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">#</th>
+                <th scope="col">ID</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Descripción</th>
                 <th scope="col">Precio</th>
@@ -124,7 +124,7 @@ if (!empty($_POST['BotonBuscar'])) {
             <tbody>
                 <?php for ($i = 0; $i < $CantidadProductos; $i++) { ?>
                     <tr>
-                        <th scope="row"><?php echo $i + 1; ?></th>
+                        <td><?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?></td>
                         <td><?php echo $ListadoProductos[$i]['NOMBRE']; ?></td>
                         <td><?php echo $ListadoProductos[$i]['DESCRIPCION']; ?></td>
                         <td><?php echo $ListadoProductos[$i]['PRECIO']; ?></td>

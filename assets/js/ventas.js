@@ -173,19 +173,64 @@
     //Validar cantidad de producto antes de agregar
     $('#txt_cantidad_producto').keyup(function(e){
         e.preventDefault();
-
-        var precio_total =$(this).val() * $('#txt_precio').html();//calculo el precio total
-        var precioConDosDecimales = parseFloat(precio_total).toFixed(2);
-        $('#txt_precio_total').html(precioConDosDecimales); //se lo paso al campo
-
-        //Oculta el boton agregar si es menor que 1
-        if($(this).val() < 1 || isNaN($(this).val()) ){
+        var cantidad = $(this).val();
+        var idProducto = $('#txtIdProducto').val();
+        var precio = parseFloat($('#txt_precio').html());
+        
+        // Validación básica numérica
+        if(isNaN(cantidad)) {
             $('#add_producto_venta').slideUp();
             $('#add_producto_pedido').slideUp();
-        }else{
-            $('#add_producto_venta').slideDown();
-            $('#add_producto_pedido').slideDown();
+            return;
         }
+        
+        cantidad = parseInt(cantidad);
+        
+        // Obtener stock mediante AJAX
+        $.ajax({
+            url: '../ajax.php',
+            type: "POST",
+            async: true,
+            data: {
+                action: 'checkStock',
+                idProducto: idProducto
+            },
+            success: function(response){
+                var stockDisponible = parseInt(response);
+                
+                // Mostrar mensaje de error si no hay suficiente stock
+                if(cantidad > stockDisponible) {
+                    $('#stock-error').remove();
+                    $('#txt_cantidad_producto').after(
+                        '<div id="stock-error" class="text-danger small mt-1">' +
+                        'Stock insuficiente. Disponible: ' + stockDisponible +
+                        '</div>'
+                    );
+                    $('#add_producto_venta').slideUp();
+                    $('#add_producto_pedido').slideUp();
+                    return;
+                } else {
+                    $('#stock-error').remove();
+                }
+                
+                // Calcular precio total
+                var precio_total = cantidad * precio;
+                var precioConDosDecimales = precio_total.toFixed(2);
+                $('#txt_precio_total').html(precioConDosDecimales);
+
+                // Mostrar/ocultar botones según cantidad
+                if(cantidad < 1) {
+                    $('#add_producto_venta').slideUp();
+                    $('#add_producto_pedido').slideUp();
+                } else {
+                    $('#add_producto_venta').slideDown();
+                    $('#add_producto_pedido').slideDown();
+                }
+            },
+            error: function(){
+                console.log('Error al verificar el stock');
+            }
+        });
     });
 
     // Evento keyup para recalcular el total restando la seña
