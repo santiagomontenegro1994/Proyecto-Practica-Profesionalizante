@@ -58,9 +58,12 @@ if (!empty($_POST['BotonBuscar'])) {
               <div class="col-sm-3 mt-2">
                 <button type="submit" class="btn btn-success btn-xs d-inline-block" value="buscar" name="BotonBuscar">Buscar</button>
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
-                <a href="../descargas/descargar_ordenes_compraPDF.php" 
-                  class="btn btn-primary btn-xs d-inline-block " 
-                  title="PDF"> Descargar </a>
+                <button type="button" 
+                        class="btn btn-primary btn-xs d-inline-block" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#reporteModal">
+                    Generar Reporte
+                </button>
               </div>    
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
@@ -133,12 +136,91 @@ if (!empty($_POST['BotonBuscar'])) {
     </div>
 </section>
 
+<!-- Modal Reporte por Fechas -->
+<div class="modal fade" id="reporteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generar Reporte por Fechas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="../reportes/generar_reporte_ordenes.php" method="POST" target="_blank">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha Inicio</label>
+                        <input type="date" 
+                              class="form-control" 
+                              name="fecha_inicio" 
+                              id="fecha_inicio"
+                              required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha Fin</label>
+                        <input type="date" 
+                              class="form-control" 
+                              name="fecha_fin" 
+                              id="fecha_fin"
+                              required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Generar PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </main><!-- End #main -->
 
 <?php
 $_SESSION['Mensaje'] = '';
 require('../footer.inc.php');
 ?>
+
+<!-- Script para manejar las fechas en el modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fechaInicio = document.getElementById('fecha_inicio');
+    const fechaFin = document.getElementById('fecha_fin');
+    const hoy = new Date().toISOString().split('T')[0];
+
+    // Configuración inicial
+    fechaInicio.max = hoy;
+    fechaFin.disabled = true; // Deshabilitar fecha fin inicialmente
+    fechaFin.placeholder = "Seleccione primero la fecha inicio";
+
+    // Cuando cambia la fecha inicio
+    fechaInicio.addEventListener('change', function() {
+        if (this.value) {
+            // Habilitar y configurar fecha fin
+            fechaFin.disabled = false;
+            fechaFin.min = this.value;
+            fechaFin.max = hoy;
+            
+            // Si había un valor previo en fecha fin que ahora es inválido
+            if (fechaFin.value && fechaFin.value < this.value) {
+                fechaFin.value = this.value;
+            }
+        } else {
+            // Si borran la fecha inicio
+            fechaFin.disabled = true;
+            fechaFin.value = '';
+        }
+    });
+
+    // Validación fecha fin
+    fechaFin.addEventListener('change', function() {
+        if (this.value < fechaInicio.value) {
+            this.value = fechaInicio.value;
+        }
+        if (this.value > hoy) {
+            this.value = hoy;
+        }
+    });
+});
+</script>
 
 </body>
 </html>

@@ -1977,4 +1977,31 @@ function Actualizar_Detalle_Orden($conexion, $id_detalle, $cantidad, $precio) {
     return $stmt->execute([$cantidad, $precio, $id_detalle]);
 }
 
+function Listar_Ordenes_Compra_Rango($conexion, $fecha_inicio, $fecha_fin) {
+    $sql = "SELECT 
+                o.idOrdenCompra AS ID_ORDEN,
+                o.fecha AS FECHA,
+                p.razon_social AS PROVEEDOR,
+                CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
+            FROM orden_compra o
+            LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
+            LEFT JOIN usuarios u ON o.idUsuario = u.id
+            LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
+            WHERE o.fecha BETWEEN ? AND ?
+            GROUP BY o.idOrdenCompra
+            ORDER BY o.fecha DESC";
+    
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("ss", $fecha_inicio, $fecha_fin);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $ordenes = array();
+    while ($fila = $result->fetch_assoc()) {
+        $ordenes[] = $fila;
+    }
+    return $ordenes;
+}
+
 ?>
