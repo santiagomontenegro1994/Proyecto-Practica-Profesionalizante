@@ -2004,4 +2004,74 @@ function Listar_Ordenes_Compra_Rango($conexion, $fecha_inicio, $fecha_fin) {
     return $ordenes;
 }
 
+function Validar_Orden_Compra() {
+    $errores = [];
+    
+    // Validar proveedor
+    if (empty($_POST['idProveedor'])) {
+        $errores[] = "Debe seleccionar un proveedor";
+    }
+    
+    // Validar artículos
+    if (empty($_POST['idArticulo']) || !is_array($_POST['idArticulo'])) {
+        $errores[] = "Debe agregar al menos un artículo";
+    } else {
+        foreach ($_POST['idArticulo'] as $index => $idArticulo) {
+            if (empty($idArticulo)) {
+                $errores[] = "Debe seleccionar un producto para todos los artículos";
+            }
+            if (empty($_POST['cantidad'][$index]) || $_POST['cantidad'][$index] < 1) {
+                $errores[] = "Cantidad inválida para el artículo " . ($index + 1);
+            }
+            if (empty($_POST['precio'][$index]) || $_POST['precio'][$index] <= 0) {
+                $errores[] = "Precio inválido para el artículo " . ($index + 1);
+            }
+        }
+    }
+    
+    return empty($errores) ? '' : implode('<br>', $errores);
+}
+
+function Insertar_Orden_Compra($conexion) {
+    try {
+        $conexion->begin_transaction();
+        
+        // Insertar orden principal
+        $sql = "INSERT INTO orden_compra (idProveedor, fecha, idUsuario, descripcion)
+                VALUES (?, ?, ?, ?)";
+        
+        $stmt = $conexion->prepare($sql);
+        $stmt->bind_param("isis", 
+            $_POST['idProveedor'],
+            $_POST['fecha'],
+            $_SESSION['Usuario_Id'],
+            $_POST['descripcion']
+        );
+        $stmt->execute();
+        $idCompra = $conexion->insert_id;
+        
+        // Insertar detalles
+        foreach ($_POST['idArticulo'] as $index => $idArticulo) {
+            $sql = "INSERT INTO detalle_orden_compra (idOrdenCompra, idArticulo, cantidad, precio)
+                    VALUES (?, ?, ?, ?)";
+            
+            $stmt = $conexion->prepare($sql);
+            $stmt->bind_param("iiid", 
+                $idCompra,
+                $idArticulo,
+                $_POST['cantidad'][$index],
+                $_POST['precio'][$index]
+            );
+            $stmt->execute();
+        }
+        
+        $conexion->commit();
+        return true;
+    } catch (Exception $e) {
+        $conexion->rollback();
+        $GLOBALS['error_compra'] = $e->getMessage();
+        return false;
+    }
+}
+
 ?>

@@ -123,6 +123,11 @@
         </a>
         <ul id="compras-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
+            <a href="../agregar/agregar_orden_compras.php">
+              <i class="bi bi-circle"></i><span>Generar Orden de Compra</span>
+            </a>
+          </li>
+          <li>
             <a href="../agregar/agregar_compras.php">
               <i class="bi bi-circle"></i><span>Generar Presupuesto</span>
             </a>
