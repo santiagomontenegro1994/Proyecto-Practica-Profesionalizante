@@ -1,84 +1,114 @@
 <?php
 session_start();
 
-if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: ../inicio/cerrarsesion.php');
-  exit;
+if (empty($_SESSION['Usuario_Nombre'])) {
+    header('Location: ../inicio/cerrarsesion.php');
+    exit;
 }
- ($_SESSION['Descarga']);
 
-//voy a necesitar la conexion: incluyo la funcion de Conexion.
 require_once '../funciones/conexion.php';
-
-//genero una variable para usar mi conexion desde donde me haga falta
-//no envio parametros porque ya los tiene definidos por defecto
-$MiConexion = ConexionBD();
-
-//ahora voy a llamar el script con la funcion que genera mi listado
 require_once '../funciones/select_general.php';
 
-
-//voy a ir listando lo necesario para trabajar en este script: 
-$ListadoTurnos = Listar_Turnos($MiConexion);
-$CantidadTurnos = count($ListadoTurnos);
-
-//Empiezo a guardar el contenido en una variable
+$MiConexion = ConexionBD();
 ob_start();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Turnos</title>
-    <!-- Bootstrap CSS -->
+    <title>Listado de Turnos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @page { margin: 20px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .header-section {
+            text-align: center;
+            border-bottom: 2px solid #316B70;
+            margin-bottom: 15px;
+        }
+        .logo {
+            max-width: 100px;
+            display: block;
+            margin: auto;
+        }
+        .main-title {
+            font-size: 1.6rem;
+            color: #316B70;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        .turno-card {
+            border: 1px solid #ccc;
+            border-left: 5px solid #316B70;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .turno-card strong {
+            color: #316B70;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Lista de Turnos</h2>
-        <div class="list-group">
+    <div class="container-fluid" style="max-width: 800px; margin: auto;">
+        <div class="header-section">
             <?php
-            // Separar el string en base a 'Cliente:'
-            $turnos_array = explode('Cliente:', ($_SESSION['Descarga']));
-            // Eliminar el primer elemento si está vacío
-            if (empty($turnos_array[0])) {
+            $ruta_logo = '../assets/img/logo-salon.png';
+            $base64_logo = file_exists($ruta_logo)
+                ? 'data:image/' . pathinfo($ruta_logo, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($ruta_logo))
+                : '';
+            ?>
+            <?php if ($base64_logo): ?>
+                <img src="<?= $base64_logo ?>" alt="Logo" class="logo">
+            <?php endif; ?>
+            <h2 class="main-title">Pelucan - Accesorios y Peluquería</h2>
+            <p class="subtitle">Av. Principal 1234 | Tel: 351-1234567</p>
+        </div>
+
+        <h4 class="text-center mb-4">Listado de Turnos</h4>
+
+        <?php
+        if (!empty($_SESSION['Descarga'])) {
+            $turnos_array = explode('Cliente:', $_SESSION['Descarga']);
+            if (empty(trim($turnos_array[0]))) {
                 array_shift($turnos_array);
             }
-            // Formatear la salida
             foreach ($turnos_array as $turno) {
-                $turno = trim($turno); // Eliminar espacios en blanco al principio y al final
-                echo "<div class='list-group-item'>Cliente: " . $turno . "</div>";
+                $turno = trim($turno);
+                if ($turno) {
+                    echo "<div class='turno-card'><strong>Cliente:</strong> $turno</div>";
+                }
             }
-            ?>
-        </div>
+        } else {
+            echo "<p class='text-danger'>No hay información de turnos disponible.</p>";
+        }
+        ?>
     </div>
 </body>
 </html>
 
-
 <?php
-//Termino de guardar el contenido en un variable 
-$html=ob_get_clean();
-//echo $html;
+$html = ob_get_clean();
 
-//creo la variable dompdf
 require_once '../libreria/dompdf/autoload.inc.php';
 use Dompdf\Dompdf;
-$dompdf = new Dompdf();
 
-//activo las opciones para poder generar el pdf con imagenes
+$dompdf = new Dompdf();
 $options = $dompdf->getOptions();
-$options->set(array('isRemoteEnable' => true));
+$options->set(['isRemoteEnable' => true]);
 $dompdf->setOptions($options);
 
-//le paso el $html en el que guardamos toda la lista
 $dompdf->loadHtml($html);
-
-//seteo el papel en A4 vertical
-$dompdf->setPaper('A4','portrait');
-
+$dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
-//le indico el nombre del archivo y le doy true para que descargue
-$dompdf->stream("archivo.pdf", array("Attachment" => true));
+$dompdf->stream("listado_turnos.pdf", ["Attachment" => true]);
 ?>

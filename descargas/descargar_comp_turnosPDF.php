@@ -51,10 +51,13 @@ ob_start();
             border-bottom: 2px solid #316B70;
             padding-bottom: 10px;
             margin-bottom: 15px;
+            position: relative;
         }
         .logo { 
-            max-width: 100px; 
+            max-width: 120px; 
             height: auto;
+            display: block;
+            margin: 0 auto 10px;
         }
         .main-title {
             font-size: 1.8rem;
@@ -80,19 +83,38 @@ ob_start();
             align-items: baseline;
             gap: 8px;
         }
+        .service-list {
+            padding-left: 20px;
+            margin: 5px 0 0 0;
+        }
+        .text-primary-color {
+            color: #316B70;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid" style="max-width: 800px; margin: auto;">
-        <!-- Encabezado -->
+        <!-- Encabezado limpio con logo centrado -->
         <div class="header-section text-center">
             <?php
             $ruta_imagen = '../assets/img/logo-salon.png';
-            $tipo_imagen = pathinfo($ruta_imagen, PATHINFO_EXTENSION);
-            $datos_imagen = file_get_contents($ruta_imagen);
-            $base64_imagen = 'data:image/' . $tipo_imagen . ';base64,' . base64_encode($datos_imagen);
+            if (file_exists($ruta_imagen)) {
+                $tipo_imagen = pathinfo($ruta_imagen, PATHINFO_EXTENSION);
+                $datos_imagen = file_get_contents($ruta_imagen);
+                $base64_imagen = 'data:image/' . $tipo_imagen . ';base64,' . base64_encode($datos_imagen);
+            } else {
+                // SVG alternativo simple sin fondo
+                $base64_imagen = 'data:image/svg+xml;base64,' . base64_encode('
+                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+                        <text x="50%" y="50%" font-family="Arial" font-size="14" fill="#316B70" text-anchor="middle" dominant-baseline="middle">Pelucan</text>
+                    </svg>
+                ');
+            }
             ?>
-            <img src="<?= $base64_imagen ?>" alt="Logo" class="logo mb-2 d-block mx-auto">
+            
+            <!-- Logo sin fondo -->
+            <img src="<?= $base64_imagen ?>" alt="Logo Pelucan" class="logo">
+            
             <h2 class="main-title">Pelucan - Accesorios y Peluqueria</h2>
             <p class="subtitle">Av. Principal 1234 | Tel: 351-1234567</p>
         </div>
@@ -132,11 +154,22 @@ ob_start();
         </div>
 
         <div class="row mb-3">
-            <div class="col-6 align-baseline">
-                <span class="detail-label">Servicio:</span>
-                <span class="detail-value"><?= $DatosTurno['TIPO_SERVICIO'] ?></span>
+            <div class="col-12">
+                <span class="detail-label">Servicios:</span>
+                <?php if (!empty($DatosTurno['SERVICIOS'])): ?>
+                    <ul class="service-list">
+                        <?php foreach ($DatosTurno['SERVICIOS'] as $servicio): ?>
+                            <li><?= $servicio ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <span class="detail-value">(Sin servicios asignados)</span>
+                <?php endif; ?>
             </div>
-            <div class="col-6 align-baseline">
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12 align-baseline">
                 <span class="detail-label">Profesional:</span>
                 <span class="detail-value"><?= $DatosTurno['ESTILISTA'] ?></span>
             </div>

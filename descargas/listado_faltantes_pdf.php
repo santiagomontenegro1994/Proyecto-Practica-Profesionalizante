@@ -1,84 +1,131 @@
 <?php
 session_start();
 
-if (empty($_SESSION['Usuario_Nombre'])) { // Si el usuario no está logueado, no lo deja entrar
+if (empty($_SESSION['Usuario_Nombre'])) {
     header('Location: ../inicio/cerrarsesion.php');
     exit;
 }
 
-// Incluir la conexión a la base de datos
 require_once '../funciones/conexion.php';
 $MiConexion = ConexionBD();
 
-// Incluir el archivo con las funciones necesarias
 require_once '../funciones/select_general.php';
-
-// Obtener el listado de productos con stock menor o igual a 10
 $ListadoProductos = Listar_Productos_Bajo_Stock($MiConexion);
 
-// Iniciar el almacenamiento del contenido HTML
 ob_start();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Productos con Bajo Stock</title>
-    <!-- Bootstrap CSS -->
+    <title>Productos con Bajo Stock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @page { margin: 20px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #333;
+        }
+        .header-section {
+            text-align: center;
+            border-bottom: 2px solid #316B70;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .logo {
+            max-width: 100px;
+            display: block;
+            margin: auto;
+        }
+        .main-title {
+            font-size: 1.5rem;
+            color: #316B70;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .table th {
+            background-color: #316B70;
+            color: white;
+            text-align: center;
+        }
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #f5f5f5;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Listado de Productos con Bajo Stock</h2>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Stock</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($ListadoProductos as $index => $producto) { ?>
-                    <tr>
-                        <td><?php echo $index + 1; ?></td>
-                        <td><?php echo $producto['nombre']; ?></td>
-                        <td><?php echo $producto['descripcion']; ?></td>
-                        <td><?php echo $producto['stock']; ?></td>
-                    </tr>
-                <?php } ?>
-            </tbody>
-        </table>
+
+<div class="container-fluid" style="max-width: 800px; margin: auto;">
+    <!-- Encabezado con logo -->
+    <div class="header-section">
+        <?php
+        $ruta_logo = '../assets/img/logo-salon.png';
+        $base64_logo = file_exists($ruta_logo)
+            ? 'data:image/' . pathinfo($ruta_logo, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($ruta_logo))
+            : '';
+        ?>
+        <?php if ($base64_logo): ?>
+            <img src="<?= $base64_logo ?>" alt="Logo" class="logo mb-2">
+        <?php endif; ?>
+        <h2 class="main-title">Pelucan - Accesorios y Peluquería</h2>
+        <p class="subtitle">Av. Principal 1234 · Tel: 351-1234567 · pelucan@email.com</p>
     </div>
+
+    <h4 class="text-center mb-4">Listado de Productos con Bajo Stock</h4>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($ListadoProductos)): ?>
+                <?php foreach ($ListadoProductos as $index => $producto): ?>
+                    <tr>
+                        <td><?= $index + 1 ?></td>
+                        <td><?= $producto['nombre'] ?></td>
+                        <td><?= $producto['descripcion'] ?></td>
+                        <td><?= $producto['stock'] ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="4" class="text-center text-danger">No se encontraron productos con bajo stock.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
 </body>
 </html>
+
 <?php
-// Terminar de capturar el contenido HTML
 $html = ob_get_clean();
 
-// Incluir Dompdf
 require_once '../libreria/dompdf/autoload.inc.php';
 use Dompdf\Dompdf;
 
-// Crear una instancia de Dompdf
 $dompdf = new Dompdf();
-
-// Configurar opciones para permitir imágenes remotas
 $options = $dompdf->getOptions();
-$options->set(array('isRemoteEnable' => true));
+$options->set(['isRemoteEnable' => true]);
 $dompdf->setOptions($options);
 
-// Cargar el contenido HTML en Dompdf
 $dompdf->loadHtml($html);
-
-// Configurar el tamaño y la orientación del papel
 $dompdf->setPaper('A4', 'portrait');
-
-// Renderizar el PDF
 $dompdf->render();
-
-// Descargar el archivo PDF
-$dompdf->stream("listado_productos_bajo_stock.pdf", array("Attachment" => true));
+$dompdf->stream("productos_bajo_stock.pdf", ["Attachment" => true]);
 ?>
