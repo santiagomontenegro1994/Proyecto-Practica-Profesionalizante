@@ -1101,6 +1101,30 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
     return $Listado;
 }
 
+function Listar_Ventas_Fecha($conexion, $fecha_inicio, $fecha_fin) {
+    $ventas = [];
+    $sql = "SELECT v.idVenta AS ID_VENTA, v.fecha AS FECHA, 
+                   c.nombre AS CLIENTE_N, c.apellido AS CLIENTE_A,
+                   u.nombre AS VENDEDOR, v.precioTotal AS PRECIO_TOTAL, v.descuento AS DESCUENTO
+            FROM ventas v
+            INNER JOIN clientes c ON v.idCliente = c.idCliente
+            INNER JOIN usuarios u ON v.idUsuario = u.id
+            WHERE v.fecha BETWEEN ? AND ?
+            ORDER BY v.fecha DESC";
+    
+    $stmt = $conexion->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('ss', $fecha_inicio, $fecha_fin);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($fila = $result->fetch_assoc()) {
+            $ventas[] = $fila;
+        }
+        $stmt->close();
+    }
+    return $ventas;
+}
+
 function Datos_Venta($vConexion, $vIdVenta) {
     $DatosVenta = array();
     // Me aseguro que la consulta exista
@@ -1293,6 +1317,42 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
 
     // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
     return $Listado;
+}
+
+function Listar_Pedidos_Fecha($conexion, $fecha_inicio, $fecha_fin) {
+    $listado = array();
+
+    $sql = "SELECT 
+                p.idPedido AS ID_PEDIDO,
+                p.fecha AS FECHA,
+                p.precioTotal AS PRECIO_TOTAL,
+                p.descuento AS DESCUENTO,
+                p.senia AS SENIA,
+                c.nombre AS CLIENTE_N,
+                c.apellido AS CLIENTE_A,
+                u.nombre AS VENDEDOR
+            FROM pedidos p
+            INNER JOIN clientes c ON p.idCliente = c.idCliente
+            INNER JOIN usuarios u ON p.idUsuario = u.id
+            WHERE p.fecha BETWEEN ? AND ?
+            ORDER BY p.fecha ASC";
+
+    $stmt = $conexion->prepare($sql);
+    if (!$stmt) {
+        error_log("Error preparando consulta Listar_Pedidos_Fecha: " . $conexion->error);
+        return [];
+    }
+
+    $stmt->bind_param("ss", $fecha_inicio, $fecha_fin);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    while ($fila = $resultado->fetch_assoc()) {
+        $listado[] = $fila;
+    }
+
+    $stmt->close();
+    return $listado;
 }
 
 function Eliminar_Pedido($vConexion, $vIdConsulta) {

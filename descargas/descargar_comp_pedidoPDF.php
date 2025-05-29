@@ -26,53 +26,81 @@ ob_start();
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comprobante de Pedido</title>
     <style>
+        @page { margin: 10px; }
         body {
             font-family: Arial, sans-serif;
+            font-size: 13px;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background: #ffffff;
         }
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 750px;
+            margin: auto;
+            padding: 20px;
         }
-        .header {
+        .header-section {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #316B70;
+            padding-bottom: 10px;
         }
-        .header h1 {
-            color: #333;
+        .logo {
+            max-width: 100px;
+            margin: 0 auto 10px;
+            display: block;
+        }
+        .main-title {
+            font-size: 20px;
+            color: #316B70;
             margin-bottom: 5px;
         }
-        .header p {
-            color: #666;
-            margin: 0;
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
         }
-        .details {
+        .info-box {
+            display: flex;
+            justify-content: space-between;
             margin: 20px 0;
         }
-        .details h3 {
+        .info-item {
+            width: 32%;
+        }
+        .info-item h4 {
+            margin-bottom: 5px;
+            font-size: 14px;
             color: #444;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+        }
+        .info-item p {
+            margin: 0;
+            color: #222;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 10px 0 20px;
         }
-        table th, table td {
-            padding: 8px;
+        th, td {
+            padding: 7px;
+            border: 1px solid #ccc;
             text-align: left;
-            border: 1px solid #ddd;
         }
-        table th {
-            background-color: #f2f2f2;
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
         }
         .text-right {
             text-align: right;
+        }
+        .totals {
+            width: 300px;
+            margin-left: auto;
+        }
+        .totals td {
+            padding: 6px;
         }
         .footer {
             margin-top: 30px;
@@ -80,86 +108,91 @@ ob_start();
             font-style: italic;
             color: #666;
         }
-        .info-box {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .info-item {
-            flex: 1;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Comprobante de Pedido</h1>
-            <p>Fecha: <?php echo $DatosPedidoActual['FECHA'] ?></p>
+
+        <!-- ENCABEZADO -->
+        <div class="header-section">
+            <?php
+            $ruta_imagen = '../assets/img/logo-salon.png';
+            if (file_exists($ruta_imagen)) {
+                $tipo_imagen = pathinfo($ruta_imagen, PATHINFO_EXTENSION);
+                $datos_imagen = file_get_contents($ruta_imagen);
+                $base64_imagen = 'data:image/' . $tipo_imagen . ';base64,' . base64_encode($datos_imagen);
+            } else {
+                $base64_imagen = 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"><text x="10" y="30" fill="#316B70" font-size="20">Pelucan</text></svg>');
+            }
+            ?>
+            <img src="<?= $base64_imagen ?>" class="logo" alt="Logo">
+            <h2 class="main-title">Pelucan - Accesorios y Peluquería</h2>
+            <p class="subtitle">Av. Principal 1234 - Tel: 351-1234567</p>
         </div>
 
+        <!-- INFORMACIÓN -->
         <div class="info-box">
             <div class="info-item">
-                <h3>Cliente</h3>
-                <p><?php echo $DatosPedidoActual['CLIENTE_N'] ?>, <?php echo $DatosPedidoActual['CLIENTE_A'] ?></p>
+                <h4>Cliente</h4>
+                <p><?= $DatosPedidoActual['CLIENTE_N'] ?>, <?= $DatosPedidoActual['CLIENTE_A'] ?></p>
             </div>
             <div class="info-item">
-                <h3>Vendedor</h3>
-                <p><?php echo $DatosPedidoActual['VENDEDOR'] ?></p>
+                <h4>Vendedor</h4>
+                <p><?= $DatosPedidoActual['VENDEDOR'] ?></p>
             </div>
             <div class="info-item">
-                <h3>N° Pedido</h3>
-                <p><?php echo $DatosPedidoActual['ID_PEDIDO'] ?></p>
+                <h4>N° Pedido</h4>
+                <p><?= $DatosPedidoActual['ID_PEDIDO'] ?></p>
+                <p><strong>Fecha:</strong> <?= $DatosPedidoActual['FECHA'] ?></p>
             </div>
         </div>
 
-        <div class="details">
-            <h3>Detalles del Pedido</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th class="text-right">Precio Unitario</th>
-                        <th class="text-right">Cantidad</th>
-                        <th class="text-right">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($DetallesPedido as $detalle) { ?>
-                        <tr>
-                            <td><?php echo $detalle['PRODUCTO'] ?></td>
-                            <td class="text-right">$<?php echo number_format($detalle['PRECIO_VENTA'], 2) ?></td>
-                            <td class="text-right"><?php echo $detalle['CANTIDAD'] ?></td>
-                            <td class="text-right">$<?php echo number_format($detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'], 2) ?></td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
+        <!-- DETALLES -->
+        <h4 style="margin-top: 30px;">Detalles del Pedido</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-right">Precio Unitario</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($DetallesPedido as $detalle): ?>
+                <tr>
+                    <td><?= $detalle['PRODUCTO'] ?></td>
+                    <td class="text-right">$<?= number_format($detalle['PRECIO_VENTA'], 2) ?></td>
+                    <td class="text-right"><?= $detalle['CANTIDAD'] ?></td>
+                    <td class="text-right">$<?= number_format($detalle['CANTIDAD'] * $detalle['PRECIO_VENTA'], 2) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-        <div class="details">
-            <table class="text-right" style="width: 350px; margin-left: auto;">
-                <tr>
-                    <td>Subtotal:</td>
-                    <td>$<?php echo number_format($DatosPedidoActual['PRECIO_TOTAL'], 2) ?></td>
-                </tr>
-                <tr>
-                    <td>Descuento (<?php echo $DatosPedidoActual['DESCUENTO'] ?>%):</td>
-                    <td>$<?php echo number_format($monto_descuento, 2) ?></td>
-                </tr>
-                <tr>
-                    <td>Total:</td>
-                    <td>$<?php echo number_format($total, 2) ?></td>
-                </tr>
-                <tr>
-                    <td>Seña:</td>
-                    <td>$<?php echo number_format($DatosPedidoActual['SENIA'], 2) ?></td>
-                </tr>
-                <tr>
-                    <td><strong>Saldo:</strong></td>
-                    <td><strong>$<?php echo number_format($saldo, 2) ?></strong></td>
-                </tr>
-            </table>
-        </div>
+        <!-- TOTALES -->
+        <table class="totals">
+            <tr>
+                <td>Subtotal:</td>
+                <td class="text-right">$<?= number_format($DatosPedidoActual['PRECIO_TOTAL'], 2) ?></td>
+            </tr>
+            <tr>
+                <td>Descuento (<?= $DatosPedidoActual['DESCUENTO'] ?>%):</td>
+                <td class="text-right">$<?= number_format($monto_descuento, 2) ?></td>
+            </tr>
+            <tr>
+                <td><strong>Total:</strong></td>
+                <td class="text-right"><strong>$<?= number_format($total, 2) ?></strong></td>
+            </tr>
+            <tr>
+                <td>Seña:</td>
+                <td class="text-right">$<?= number_format($DatosPedidoActual['SENIA'], 2) ?></td>
+            </tr>
+            <tr>
+                <td><strong>Saldo:</strong></td>
+                <td class="text-right"><strong>$<?= number_format($saldo, 2) ?></strong></td>
+            </tr>
+        </table>
 
         <div class="footer">
             <p>Gracias por su pedido</p>
@@ -173,10 +206,10 @@ $html = ob_get_clean();
 
 require_once '../libreria/dompdf/autoload.inc.php';
 use Dompdf\Dompdf;
-$dompdf = new Dompdf();
 
+$dompdf = new Dompdf();
 $options = $dompdf->getOptions();
-$options->set(array('isRemoteEnable' => true));
+$options->set(['isRemoteEnable' => true]);
 $dompdf->setOptions($options);
 
 $dompdf->loadHtml($html);
