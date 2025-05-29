@@ -66,7 +66,7 @@ if (!empty($_POST['BotonBuscar'])) {
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
                 <a href="../descargas/descargar_pedidosPDF.php" 
                   class="btn btn-primary btn-xs d-inline-block " 
-                  title="PDF"> Descargar </a>
+                  title="PDF"> Reporte de Pedidos </a>
               </div>    
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
