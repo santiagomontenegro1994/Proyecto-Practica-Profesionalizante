@@ -64,9 +64,10 @@ if (!empty($_POST['BotonBuscar'])) {
               <div class="col-sm-3 mt-2">
                 <button type="submit" class="btn btn-success btn-xs d-inline-block" value="buscar" name="BotonBuscar">Buscar</button>
                 <button type="submit" class="btn btn-danger btn-xs d-inline-block" value="limpiar" name="BotonLimpiar">Limpiar</button>
-                <a href="../descargas/descargar_ventasPDF.php" 
-                  class="btn btn-primary btn-xs d-inline-block " 
-                  title="PDF"> Descargar </a> 
+                <button type="button" class="btn btn-primary btn-xs d-inline-block" 
+                  data-bs-toggle="modal" data-bs-target="#reporteVentasModal">
+                  Reporte por Fechas
+                </button>
                   
               </div>
               <div class="col-sm-5 mt-2">
@@ -169,6 +170,55 @@ if (!empty($_POST['BotonBuscar'])) {
         </div>
     </div>
 </section>
+
+<!-- Modal Reporte por Fechas -->
+<div class="modal fade" id="reporteVentasModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generar Reporte por Fechas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="../reportes/generar_reporte_ventas.php" method="POST" target="_blank">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Fecha Inicio</label>
+            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha Fin</label>
+            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Generar PDF</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const inicio = document.getElementById('fecha_inicio');
+  const fin = document.getElementById('fecha_fin');
+  const hoy = new Date().toISOString().split('T')[0];
+  inicio.max = hoy;
+  fin.max = hoy;
+  fin.disabled = true;
+
+  inicio.addEventListener('change', () => {
+    if (inicio.value) {
+      fin.disabled = false;
+      fin.min = inicio.value;
+    } else {
+      fin.disabled = true;
+      fin.value = '';
+    }
+  });
+});
+</script>
 
 </main><!-- End #main -->
 
