@@ -11,7 +11,7 @@ require_once '../funciones/select_general.php';
 
 $MiConexion = ConexionBD();
 
-if(empty($_GET['ID_ORDEN'])) {
+if (empty($_GET['ID_ORDEN'])) {
     $_SESSION['Mensaje'] = "Orden no especificada";
     $_SESSION['Estilo'] = 'danger';
     header('Location: ../listados/listados_ordenes_compra.php');
@@ -22,7 +22,7 @@ $id_orden = $_GET['ID_ORDEN'];
 $Orden = Datos_Orden_Compra($MiConexion, $id_orden);
 $Detalles = Detalles_Orden_Compra($MiConexion, $id_orden);
 
-if(empty($Orden)) {
+if (empty($Orden)) {
     $_SESSION['Mensaje'] = "Orden no encontrada";
     $_SESSION['Estilo'] = 'danger';
     header('Location: ../listados/listados_ordenes_compra.php');
@@ -31,120 +31,138 @@ if(empty($Orden)) {
 
 ob_start();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orden de Compra</title>
     <style>
+        @page { margin: 10px; }
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header h1 {
+            font-size: 12px;
+            padding: 10px;
             color: #333;
-            margin-bottom: 5px;
         }
-        .empresa-info {
-            margin-bottom: 30px;
+        .header-section {
             text-align: center;
+            border-bottom: 2px solid #316B70;
+            margin-bottom: 15px;
         }
-        .detalles-box {
+        .logo {
+            max-width: 100px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .main-title {
+            font-size: 20px;
+            color: #316B70;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 0;
+        }
+        h2 {
+            text-align: center;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .info-box {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin: 10px 0 20px;
         }
-        .detalle-item {
+        .info-item {
             flex: 1;
+            padding-right: 10px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-top: 10px;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #ccc;
+            padding: 6px;
             text-align: left;
         }
         th {
-            background-color: #f2f2f2;
+            background: #f0f0f0;
         }
-        .total {
-            margin-top: 20px;
+        .text-right {
             text-align: right;
-            font-size: 1.2em;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-style: italic;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="empresa-info">
-            <h2>PELUCAN</h2>
-            <p>Dirección: Calle Falsa 123</p>
-            <p>Teléfono: (123) 456-7890</p>
-        </div>
 
-        <div class="header">
-            <h1>Orden de Compra N° <?= $Orden['idOrdenCompra'] ?></h1>
-            <p>Fecha: <?= $Orden['fecha'] ?></p>
-        </div>
+<div class="header-section">
+    <?php
+    $ruta_imagen = '../assets/img/logo-salon.png';
+    if (file_exists($ruta_imagen)) {
+        $tipo_imagen = pathinfo($ruta_imagen, PATHINFO_EXTENSION);
+        $datos_imagen = file_get_contents($ruta_imagen);
+        $base64_imagen = 'data:image/' . $tipo_imagen . ';base64,' . base64_encode($datos_imagen);
+    } else {
+        $base64_imagen = 'data:image/svg+xml;base64,' . base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><text x="50%" y="50%" text-anchor="middle" fill="#316B70" font-size="14">Pelucan</text></svg>');
+    }
+    ?>
+    <img src="<?= $base64_imagen ?>" class="logo" alt="Logo">
+    <h1 class="main-title">Pelucan - Accesorios y Peluquería</h1>
+    <p class="subtitle">Av. Principal 1234 - Tel: 351-1234567</p>
+</div>
 
-        <div class="detalles-box">
-            <div class="detalle-item">
-                <h3>Proveedor</h3>
-                <p><?= $Orden['PROVEEDOR'] ?></p>
-                <p>Tel: <?= $Orden['telefono'] ?></p>
-            </div>
-            
-            <div class="detalle-item">
-                <h3>Datos de la Orden</h3>
-                <p>Responsable: <?= $Orden['USUARIO'] ?></p>
-                <p>Fecha Emisión: <?= $Orden['fecha'] ?></p>
-            </div>
-        </div>
+<h2>Orden de Compra N° <?= $Orden['idOrdenCompra'] ?></h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Artículo</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach($Detalles as $detalle): ?>
-                <tr>
-                    <td><?= $detalle['ARTICULO'] ?></td>
-                    <td><?= $detalle['cantidad'] ?></td>
-                    <td>$<?= number_format($detalle['precio'], 2) ?></td>
-                    <td>$<?= number_format($detalle['cantidad'] * $detalle['precio'], 2) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <div class="total">
-            <strong>Total General: $<?= number_format($Orden['PRECIO_TOTAL'], 2) ?></strong>
-        </div>
-
-        <div style="margin-top: 50px; text-align: center;">
-            <p>_________________________________</p>
-            <p>Firma Autorizada</p>
-        </div>
+<div class="info-box">
+    <div class="info-item">
+        <strong>Fecha:</strong> <?= $Orden['fecha'] ?><br>
+        <strong>Responsable:</strong> <?= $Orden['USUARIO'] ?>
     </div>
+    <div class="info-item">
+        <strong>Proveedor:</strong> <?= $Orden['PROVEEDOR'] ?><br>
+        <strong>Teléfono:</strong> <?= $Orden['telefono'] ?>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Artículo</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($Detalles as $detalle): ?>
+        <tr>
+            <td><?= $detalle['ARTICULO'] ?></td>
+            <td><?= $detalle['cantidad'] ?></td>
+            <td>$<?= number_format($detalle['precio'], 2, ',', '.') ?></td>
+            <td>$<?= number_format($detalle['cantidad'] * $detalle['precio'], 2, ',', '.') ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<p class="text-right" style="margin-top: 10px;">
+    <strong>Total General: $<?= number_format($Orden['PRECIO_TOTAL'], 2, ',', '.') ?></strong>
+</p>
+
+<div class="footer">
+    <p>_________________________________</p>
+    <p>Firma Autorizada</p>
+</div>
+
 </body>
 </html>
 
@@ -153,15 +171,13 @@ $html = ob_get_clean();
 
 require_once '../libreria/dompdf/autoload.inc.php';
 use Dompdf\Dompdf;
-$dompdf = new Dompdf();
 
+$dompdf = new Dompdf();
 $options = $dompdf->getOptions();
-$options->set(array('isRemoteEnable' => true));
+$options->set(['isRemoteEnable' => true]);
 $dompdf->setOptions($options);
 
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
-
-$dompdf->stream("orden_compra_".$Orden['idOrdenCompra'].".pdf", array("Attachment" => true));
-?>
+$dompdf->stream("orden_compra_" . $Orden['idOrdenCompra'] . ".pdf", ["Attachment" => true]);
