@@ -128,7 +128,7 @@ if (!empty($_POST['BotonModificarProducto'])) {
 
 <?php
     $_SESSION['Mensaje']='';
-    require ('footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
+    require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
     ob_end_flush();
 ?>
 

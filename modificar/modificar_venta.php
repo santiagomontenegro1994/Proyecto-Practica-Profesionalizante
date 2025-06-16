@@ -114,11 +114,15 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                     <table class="table w-auto ms-auto"> <!-- w-auto ajusta el ancho -->
                         <tr>
                             <td class="card-title">Sub Total:</td>
-                            <td class="text-dark fs-5">$<?php echo $DatosVentaActual['PRECIO_TOTAL'] ?></td>
+                            <td class="text-dark fs-5">
+                                $<?php echo number_format($DatosVentaActual['PRECIO_TOTAL'], 2, ',', '.'); ?>
+                            </td>
                         </tr>
                         <tr>
                             <td class="card-title">Descuento:</td>
-                            <td class="text-dark fs-5">%<?php echo $DatosVentaActual['DESCUENTO'] ?></td>
+                            <td class="text-dark fs-5">
+                                %<?php echo number_format($DatosVentaActual['DESCUENTO'], 2, ',', '.'); ?>
+                            </td>
                         </tr>
                         <tr>
                             <?php
@@ -127,7 +131,9 @@ ob_end_flush(); // Envía el contenido del búfer al navegador
                             $saldo = ($DatosVentaActual['PRECIO_TOTAL'] - $monto_descuento);
                             ?>
                             <td class="card-title">Total:</td>
-                            <td class="text-dark fs-5">$<?php echo $saldo ?></td>
+                            <td class="text-dark fs-5">
+                                $<?php echo number_format($saldo, 2, ',', '.'); ?>
+                            </td>
                         </tr>
                     </table>
                 </div>

@@ -986,12 +986,12 @@ function Listar_Ventas($vConexion) {
 
     $Listado = array();
 
-    // 1) Genero la consulta que deseo
+    // Consulta que suma el total de cada venta a partir de los detalles
     $SQL = "SELECT 
                 v.idVenta, 
                 v.idCliente, 
                 v.fecha, 
-                v.precioTotal, 
+                IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                 v.descuento, 
                 c.nombre AS CLIENTE_N, 
                 c.apellido AS CLIENTE_A,
@@ -999,12 +999,12 @@ function Listar_Ventas($vConexion) {
             FROM ventas v
             LEFT JOIN clientes c ON v.idCliente = c.idCliente
             LEFT JOIN usuarios u ON v.idUsuario = u.id
+            LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+            GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY v.fecha DESC";
 
-    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
     $rs = mysqli_query($vConexion, $SQL);
 
-    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_VENTA'] = $data['idVenta'];
@@ -1017,7 +1017,6 @@ function Listar_Ventas($vConexion) {
         $i++;
     }
 
-    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
     return $Listado;
 }
 
@@ -1031,7 +1030,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
-                        v.precioTotal, 
+                        IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A,
@@ -1039,7 +1038,9 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
+                    LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
                     WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
 
@@ -1048,7 +1049,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
-                        v.precioTotal, 
+                        IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A,
@@ -1056,7 +1057,9 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
+                    LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
                     WHERE v.fecha LIKE '%$parametro%'
+                    GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
 
@@ -1065,7 +1068,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
-                        v.precioTotal, 
+                        IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
                         c.apellido AS CLIENTE_A,
@@ -1073,7 +1076,9 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     FROM ventas v
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
+                    LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
                     WHERE v.idVenta = '$parametro'
+                    GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
 
@@ -1103,13 +1108,20 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
 
 function Listar_Ventas_Fecha($conexion, $fecha_inicio, $fecha_fin) {
     $ventas = [];
-    $sql = "SELECT v.idVenta AS ID_VENTA, v.fecha AS FECHA, 
-                   c.nombre AS CLIENTE_N, c.apellido AS CLIENTE_A,
-                   u.nombre AS VENDEDOR, v.precioTotal AS PRECIO_TOTAL, v.descuento AS DESCUENTO
+    $sql = "SELECT 
+                v.idVenta AS ID_VENTA, 
+                v.fecha AS FECHA, 
+                c.nombre AS CLIENTE_N, 
+                c.apellido AS CLIENTE_A,
+                CONCAT(u.nombre, ' ', u.apellido) AS VENDEDOR, 
+                IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS PRECIO_TOTAL, 
+                v.descuento AS DESCUENTO
             FROM ventas v
             INNER JOIN clientes c ON v.idCliente = c.idCliente
             INNER JOIN usuarios u ON v.idUsuario = u.id
+            LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
             WHERE v.fecha BETWEEN ? AND ?
+            GROUP BY v.idVenta, v.fecha, c.nombre, c.apellido, u.nombre, u.apellido, v.descuento
             ORDER BY v.fecha DESC";
     
     $stmt = $conexion->prepare($sql);
@@ -1127,12 +1139,12 @@ function Listar_Ventas_Fecha($conexion, $fecha_inicio, $fecha_fin) {
 
 function Datos_Venta($vConexion, $vIdVenta) {
     $DatosVenta = array();
-    // Me aseguro que la consulta exista
+    // Consulta que suma el total de la venta a partir de los detalles
     $SQL = "SELECT 
                 v.idVenta, 
                 v.idCliente, 
                 v.fecha, 
-                v.precioTotal, 
+                IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                 v.descuento, 
                 v.idEstado, 
                 c.nombre AS CLIENTE_N, 
@@ -1141,7 +1153,9 @@ function Datos_Venta($vConexion, $vIdVenta) {
             FROM ventas v
             LEFT JOIN clientes c ON v.idCliente = c.idCliente
             LEFT JOIN usuarios u ON v.idUsuario = u.id
-            WHERE v.idVenta = $vIdVenta";
+            LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+            WHERE v.idVenta = $vIdVenta
+            GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, v.idEstado, c.nombre, c.apellido, u.nombre, u.apellido";
 
     $rs = mysqli_query($vConexion, $SQL);
 
