@@ -1212,12 +1212,12 @@ function Listar_Pedidos($vConexion) {
 
     $Listado = array();
 
-    // 1) Genero la consulta que deseo
+    // Consulta que suma el total de cada pedido a partir de los detalles
     $SQL = "SELECT 
                 p.idPedido, 
                 p.idCliente, 
                 p.fecha, 
-                p.precioTotal, 
+                IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                 p.descuento,
                 p.senia, 
                 c.nombre AS CLIENTE_N, 
@@ -1226,12 +1226,12 @@ function Listar_Pedidos($vConexion) {
             FROM pedidos p
             LEFT JOIN clientes c ON p.idCliente = c.idCliente
             LEFT JOIN usuarios u ON p.idUsuario = u.id
+            LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+            GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY p.idPedido DESC";
 
-    // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
     $rs = mysqli_query($vConexion, $SQL);
 
-    // 3) El resultado deberá organizarse en una matriz, entonces lo recorro
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_PEDIDO'] = $data['idPedido'];
@@ -1245,7 +1245,6 @@ function Listar_Pedidos($vConexion) {
         $i++;
     }
 
-    // Devuelvo el listado generado en el array $Listado. (Podrá salir vacío o con datos)
     return $Listado;
 }
 
@@ -1259,7 +1258,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                         p.idPedido, 
                         p.idCliente, 
                         p.fecha, 
-                        p.precioTotal, 
+                        IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
                         c.nombre AS CLIENTE_N, 
@@ -1268,7 +1267,9 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     FROM pedidos p
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
                     WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
 
@@ -1277,7 +1278,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                         p.idPedido, 
                         p.idCliente, 
                         p.fecha, 
-                        p.precioTotal, 
+                        IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
                         c.nombre AS CLIENTE_N, 
@@ -1286,7 +1287,9 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     FROM pedidos p
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
                     WHERE p.fecha LIKE '%$parametro%'
+                    GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
 
@@ -1295,7 +1298,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                         p.idPedido, 
                         p.idCliente, 
                         p.fecha, 
-                        p.precioTotal, 
+                        IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
                         c.nombre AS CLIENTE_N, 
@@ -1304,7 +1307,9 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     FROM pedidos p
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
+                    LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
                     WHERE p.idPedido = '$parametro'
+                    GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
 
@@ -1339,16 +1344,18 @@ function Listar_Pedidos_Fecha($conexion, $fecha_inicio, $fecha_fin) {
     $sql = "SELECT 
                 p.idPedido AS ID_PEDIDO,
                 p.fecha AS FECHA,
-                p.precioTotal AS PRECIO_TOTAL,
+                IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS PRECIO_TOTAL,
                 p.descuento AS DESCUENTO,
                 p.senia AS SENIA,
                 c.nombre AS CLIENTE_N,
                 c.apellido AS CLIENTE_A,
-                u.nombre AS VENDEDOR
+                CONCAT(u.nombre, ' ', u.apellido) AS VENDEDOR
             FROM pedidos p
             INNER JOIN clientes c ON p.idCliente = c.idCliente
             INNER JOIN usuarios u ON p.idUsuario = u.id
+            LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
             WHERE p.fecha BETWEEN ? AND ?
+            GROUP BY p.idPedido, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY p.fecha ASC";
 
     $stmt = $conexion->prepare($sql);
@@ -1453,12 +1460,12 @@ function Detalles_Pedido($vConexion, $vIdPedido) {
 
 function Datos_Pedido($vConexion, $vIdPedido) {
     $DatosPedido = array();
-    // Me aseguro que la consulta exista
+    // Consulta que suma el total del pedido a partir de los detalles
     $SQL = "SELECT 
                 p.idPedido, 
                 p.idCliente, 
                 p.fecha, 
-                p.precioTotal, 
+                IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                 p.descuento, 
                 p.senia,
                 p.idEstado, 
@@ -1468,7 +1475,9 @@ function Datos_Pedido($vConexion, $vIdPedido) {
             FROM pedidos p
             LEFT JOIN clientes c ON p.idCliente = c.idCliente
             LEFT JOIN usuarios u ON p.idUsuario = u.id
-            WHERE p.idPedido = $vIdPedido";
+            LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+            WHERE p.idPedido = $vIdPedido
+            GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, p.idEstado, c.nombre, c.apellido, u.nombre, u.apellido";
 
     $rs = mysqli_query($vConexion, $SQL);
 
