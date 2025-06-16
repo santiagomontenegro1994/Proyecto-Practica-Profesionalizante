@@ -142,6 +142,10 @@ if (!empty($_POST['BotonBuscar'])) {
                             title="Modificar">
                             <i class="bi bi-pencil-fill text-warning fs-5"></i>
                           </a>
+                          <a href="#" onclick="agregarDesdeListado(<?php echo $ListadoProductos[$i]['ID_PRODUCTO']; ?>); return false;" 
+                            title="Agregar a Venta">
+                              <i class="bi bi-cart-plus-fill text-prymari fs-5"></i>
+                          </a>
                         </td>
                     </tr>
                 <?php } ?>
