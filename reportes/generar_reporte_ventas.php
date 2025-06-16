@@ -15,15 +15,15 @@ $MiConexion = ConexionBD();
 if(empty($_POST['fecha_inicio']) || empty($_POST['fecha_fin'])) {
     $_SESSION['Mensaje'] = "Debe seleccionar ambas fechas";
     $_SESSION['Estilo'] = 'danger';
-    header('Location: ../listados/listados_ordenes_compra.php');
+    header('Location: ../listados/listados_ventas.php'); // Cambiado a listados_ventas
     exit;
 }
 
 $fecha_inicio = $_POST['fecha_inicio'];
 $fecha_fin = $_POST['fecha_fin'];
 
-// Obtener órdenes en el rango
-$ordenes = Listar_Ordenes_Compra_Rango($MiConexion, $fecha_inicio, $fecha_fin);
+// Obtener ventas en el rango
+$ventas = Listar_Ventas_Fecha($MiConexion, $fecha_inicio, $fecha_fin);
 
 ob_start();
 ?>
@@ -32,7 +32,7 @@ ob_start();
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Reporte de Órdenes de Compra</title>
+  <title>Reporte de Ventas</title>
   <style>
     @page { margin: 10px; }
     body {
@@ -88,6 +88,9 @@ ob_start();
     .text-right {
       text-align: right;
     }
+    .text-center {
+      text-align: center;
+    }
     .total-row {
       font-weight: bold;
       background-color: #f5f5f5;
@@ -112,36 +115,45 @@ ob_start();
   <p class="subtitle">Av. Principal 1234 - Tel: 351-1234567</p>
 </div>
 
-<h2>Reporte de Órdenes de Compra</h2>
+<h2>Reporte de Ventas</h2>
 <p>Desde: <?= date('d/m/Y', strtotime($fecha_inicio)) ?> | Hasta: <?= date('d/m/Y', strtotime($fecha_fin)) ?></p>
 
 <table>
   <thead>
     <tr>
-      <th>ID</th>
+      <th>ID Venta</th>
       <th>Fecha</th>
-      <th>Proveedor</th>
-      <th>Usuario</th>
+      <th>Cliente</th>
+      <th>Vendedor</th>
       <th class="text-right">Total</th>
+      <th class="text-right">Descuento</th>
+      <th class="text-right">Neto</th>
     </tr>
   </thead>
   <tbody>
     <?php 
     $total_general = 0;
-    foreach ($ordenes as $orden): 
-      $total_general += $orden['PRECIO_TOTAL'];
+    $total_descuentos = 0;
+    foreach ($ventas as $venta): 
+      $neto = $venta['PRECIO_TOTAL'] - $venta['DESCUENTO'];
+      $total_general += $venta['PRECIO_TOTAL'];
+      $total_descuentos += $venta['DESCUENTO'];
     ?>
     <tr>
-      <td><?= $orden['ID_ORDEN'] ?></td>
-      <td><?= date('d/m/Y', strtotime($orden['FECHA'])) ?></td>
-      <td><?= $orden['PROVEEDOR'] ?></td>
-      <td><?= $orden['USUARIO'] ?></td>
-      <td class="text-right">$<?= number_format($orden['PRECIO_TOTAL'], 2, ',', '.') ?></td>
+      <td class="text-center"><?= $venta['ID_VENTA'] ?></td>
+      <td><?= date('d/m/Y', strtotime($venta['FECHA'])) ?></td>
+      <td><?= $venta['CLIENTE_A'] . ', ' . $venta['CLIENTE_N'] ?></td>
+      <td><?= $venta['VENDEDOR'] ?></td>
+      <td class="text-right">$<?= number_format($venta['PRECIO_TOTAL'], 2, ',', '.') ?></td>
+      <td class="text-right">$<?= number_format($venta['DESCUENTO'], 2, ',', '.') ?></td>
+      <td class="text-right">$<?= number_format($neto, 2, ',', '.') ?></td>
     </tr>
     <?php endforeach; ?>
     <tr class="total-row">
-      <td colspan="4" class="text-right"><strong>Total General:</strong></td>
+      <td colspan="4" class="text-right"><strong>Totales:</strong></td>
       <td class="text-right"><strong>$<?= number_format($total_general, 2, ',', '.') ?></strong></td>
+      <td class="text-right"><strong>$<?= number_format($total_descuentos, 2, ',', '.') ?></strong></td>
+      <td class="text-right"><strong>$<?= number_format(($total_general - $total_descuentos), 2, ',', '.') ?></strong></td>
     </tr>
   </tbody>
 </table>
@@ -164,4 +176,4 @@ $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'landscape');
 $dompdf->render();
 
-$dompdf->stream("reporte_ordenes_".date('Ymd_His').".pdf", array("Attachment" => true));
+$dompdf->stream("reporte_ventas_".date('Ymd_His').".pdf", array("Attachment" => true));
