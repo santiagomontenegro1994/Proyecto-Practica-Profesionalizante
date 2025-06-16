@@ -567,63 +567,53 @@
 });
 
 //Agrega producto a venta desde la lista de productos(fuera del ready)
-function agregarAVenta(idProducto) {
-    // Solicitar la cantidad
-    var cantidad = prompt("Ingrese la cantidad:");
-
-    // Verificar que se haya ingresado un valor
-    if (cantidad > 0 && cantidad !== null && cantidad !== "" && !isNaN(cantidad)) {
-        // Confirmar la acción
-        var confirmar = confirm("¿Está seguro que desea agregar " + cantidad + " unidades a la venta?");
-        if (confirmar) {
-            // Redirigir a la página con los parámetros necesarios
-            //window.location.href = "modificar_productos.php?ID_PRODUCTO=" + idProducto + "&CANTIDAD=" + cantidad;
-
-            var action = 'agregarProductoDetalle';
-
+function agregarDesdeListado(idProducto) {
+    Swal.fire({
+        title: 'Agregar a Venta',
+        html: `
+            <div class="mb-3">
+                <label class="form-label">Cantidad</label>
+                <input type="number" id="swalCantidad" class="form-control" value="1" min="1">
+            </div>
+            <div id="stock-message" class="small text-muted"></div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Agregar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const cantidad = $('#swalCantidad').val();
+            if (!cantidad || cantidad < 1) {
+                Swal.showValidationMessage('La cantidad debe ser al menos 1');
+                return false;
+            }
+            return { cantidad: cantidad, idProducto: idProducto };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
             $.ajax({
                 url: '../ajax.php',
                 type: "POST",
-                async : true,
-                data: {action:action,producto:idProducto,cantidad:cantidad}, 
-    
-                success: function(response){
-                    try {
-                        var info = JSON.parse(response); // Intentar analizar la respuesta como JSON
-                        $('#detalleVenta').html(info.detalle);//pasamos el codigo a #detalle_venta y totales
-                        $('#detalleTotal').html(info.totales);
-
-                        //ponemos todos los valores por defecto
-                        $('#txtIdProducto').val('');
-                        $('#txt_producto').html('-'); 
-                        $('#txt_categoria').html('-');
-                        $('#txt_precio').html('0.00');
-                        $('#txt_cantidad_producto').val(0);
-                        $('#txt_precio_total').html('0.00');
-
-                        //bloquear Cantidad
-                        $('#txt_cantidad_producto').attr('disabled','disabled');
-
-                        //ocultar boton agregar
-                        $('#add_producto_venta').slideUp();
-                        alert('Producto agregado a la venta!');
-                    } catch (e) {
-                        console.error('Error al analizar el JSON:', e);
-                        console.error('Respuesta recibida:', response);
-                        console.log('no data');
-                    }
-                    viewProcesar();//llamo la funcion para ver si oculto el boton
-
+                data: { 
+                    action: 'agregarProductoDetalle',
+                    producto: result.value.idProducto,
+                    cantidad: result.value.cantidad
                 },
-                error: function(error){
-                    console.log('Error:', error);
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Producto agregado!',
+                        text: 'El producto se ha añadido correctamente.',
+                        showConfirmButton: false,
+                        timer: 1500 // Cierra automáticamente después de 1.5 segundos
+                    });
+                    // Aquí puedes actualizar algo en la página si lo necesitas
+                },
+                error: function() {
+                    Swal.fire('Error', 'No se pudo agregar el producto', 'error');
                 }
-    
             });
         }
-    } else {
-        alert("Por favor, ingrese una cantidad válida.");
-    }
+    });
 }
 
 //funcion para eliminar el detalle de la venta(fuera del ready)

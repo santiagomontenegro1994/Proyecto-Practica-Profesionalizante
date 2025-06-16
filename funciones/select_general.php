@@ -1001,7 +1001,7 @@ function Listar_Ventas($vConexion) {
             LEFT JOIN usuarios u ON v.idUsuario = u.id
             LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
             GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
-            ORDER BY v.fecha DESC";
+            ORDER BY v.idVenta DESC";
 
     $rs = mysqli_query($vConexion, $SQL);
 
