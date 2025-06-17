@@ -326,10 +326,15 @@ try {
 
 } catch (Exception $e) {
     // Manejo de errores
-    http_response_code($e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500);
+    $errorCode = $e->getCode() >= 400 && $e->getCode() < 600 ? $e->getCode() : 500;
+    http_response_code($errorCode);
+    
+    error_log("Error en get_turnos_data: " . $e->getMessage());
+    
     echo json_encode([
         'error' => true,
         'message' => $e->getMessage(),
-        'code' => $e->getCode()
+        'code' => $errorCode,
+        'trace' => $e->getTraceAsString()
     ]);
 }

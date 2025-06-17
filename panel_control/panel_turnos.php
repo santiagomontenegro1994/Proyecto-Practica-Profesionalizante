@@ -764,55 +764,50 @@ function mostrarAlerta(mensaje, tipo = 'info') {
 
 // Función para generar PDF
 function generarPDF() {
-  // Obtener los parámetros de filtro actuales
-  const periodo = document.querySelector('.dropdown-item.active')?.textContent || 'Hoy';
-  const fechaInicio = document.querySelector('.fecha-inicio')?.value || '';
-  const fechaFin = document.querySelector('.fecha-fin')?.value || '';
-  
-  // Mostrar spinner mientras se genera
-  Swal.fire({
-    title: 'Generando PDF',
-    html: '<div class="spinner-border text-primary" role="status"></div>',
-    showConfirmButton: false,
-    allowOutsideClick: false
-  });
-  
-  // Enviar solicitud al servidor para generar PDF
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = 'imprimir_panel_turnos.php';
-  form.target = '_blank';
-  
-  const inputPeriodo = document.createElement('input');
-  inputPeriodo.type = 'hidden';
-  inputPeriodo.name = 'periodo';
-  inputPeriodo.value = periodo;
-  form.appendChild(inputPeriodo);
-  
-  if (fechaInicio) {
-    const inputInicio = document.createElement('input');
-    inputInicio.type = 'hidden';
-    inputInicio.name = 'fecha_inicio';
-    inputInicio.value = fechaInicio;
-    form.appendChild(inputInicio);
-  }
-  
-  if (fechaFin) {
-    const inputFin = document.createElement('input');
-    inputFin.type = 'hidden';
-    inputFin.name = 'fecha_fin';
-    inputFin.value = fechaFin;
-    form.appendChild(inputFin);
-  }
-  
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
-  
-  // Cerrar el spinner después de un tiempo (no podemos detectar cuando termina el PDF)
-  setTimeout(() => {
-    Swal.close();
-  }, 3000);
+    // Obtener el período y fechas del último filtro aplicado
+    const ultimoFiltro = JSON.parse(localStorage.getItem('ultimo_filtro_global')) || {};
+    const periodo = ultimoFiltro.periodo || 'hoy';
+    const fechaInicio = ultimoFiltro.fechaInicio || '';
+    const fechaFin = ultimoFiltro.fechaFin || '';
+    
+    // Mostrar spinner mientras se genera
+    Swal.fire({
+        title: 'Generando PDF',
+        html: '<div class="spinner-border text-primary" role="status"></div>',
+        showConfirmButton: false,
+        allowOutsideClick: false
+    });
+    
+    // Crear formulario dinámico
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'imprimir_panel_turnos.php';
+    form.target = '_blank';
+    
+    // Agregar parámetros como inputs ocultos
+    const params = {
+        'periodo': periodo
+    };
+    
+    if (fechaInicio && fechaFin) {
+        params.fecha_inicio = fechaInicio;
+        params.fecha_fin = fechaFin;
+    }
+    
+    Object.keys(params).forEach(key => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = params[key];
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    // Cerrar spinner después de un tiempo
+    setTimeout(() => Swal.close(), 2000);
 }
 
 // Función para exportar a Excel
