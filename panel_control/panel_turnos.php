@@ -23,10 +23,18 @@ require ('../barraLateral.inc.php');
 
   <section class="section dashboard">
     <div class="row">
-      <div class="col-12 mb-3">
-        <div class="float-end">
-          <button id="sincronizar-filtros" class="btn btn-sm btn-outline-primary" onclick="toggleSincronizacionFiltros()">
+      <div class="col-12 mb-3 d-flex justify-content-between">
+        <div>
+          <button id="sincronizar-filtros" class="btn btn-sm btn-primary" onclick="toggleSincronizacionFiltros()">
             <i id="sincronizar-filtros-icon" class="bi bi-link"></i> Sincronizar filtros
+          </button>
+        </div>
+        <div>
+          <button onclick="generarPDF()" class="btn btn-sm btn-danger me-2">
+            <i class="bi bi-file-pdf"></i> PDF
+          </button>
+          <button onclick="exportarAExcel()" class="btn btn-sm btn-success">
+            <i class="bi bi-file-excel"></i> Excel
           </button>
         </div>
       </div>
@@ -37,7 +45,7 @@ require ('../barraLateral.inc.php');
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li><a class="dropdown-item" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
+              <li><a class="dropdown-item active" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('semana', this)">Esta semana</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('mes', this)">Este mes</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('anio', this)">Este año</a></li>
@@ -79,7 +87,7 @@ require ('../barraLateral.inc.php');
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li><a class="dropdown-item" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
+              <li><a class="dropdown-item active" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('semana', this)">Esta semana</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('mes', this)">Este mes</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('anio', this)">Este año</a></li>
@@ -121,7 +129,7 @@ require ('../barraLateral.inc.php');
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li><a class="dropdown-item" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
+              <li><a class="dropdown-item active" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('semana', this)">Esta semana</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('mes', this)">Este mes</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('anio', this)">Este año</a></li>
@@ -154,7 +162,7 @@ require ('../barraLateral.inc.php');
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li><a class="dropdown-item" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
+              <li><a class="dropdown-item active" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('semana', this)">Esta semana</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('mes', this)">Este mes</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('anio', this)">Este año</a></li>
@@ -187,7 +195,7 @@ require ('../barraLateral.inc.php');
           <div class="filter">
             <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <li><a class="dropdown-item" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
+              <li><a class="dropdown-item active" onclick="seleccionarPeriodo('hoy', this)">Hoy</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('semana', this)">Esta semana</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('mes', this)">Este mes</a></li>
               <li><a class="dropdown-item" onclick="seleccionarPeriodo('anio', this)">Este año</a></li>
@@ -213,7 +221,6 @@ require ('../barraLateral.inc.php');
           </div>
         </div>
       </div>
-
     </div>
   </section>
 </main>
@@ -222,10 +229,21 @@ require ('../barraLateral.inc.php');
 
 <!-- CDN de ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<!-- SweetAlert para notificaciones -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- SheetJS para exportar Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <script>
-// Variables globales para los gráficos
+// Variables globales para los gráficos y datos
 let estadoChart, estilistaChart, horarioChart;
 let filtrosSincronizados = true;
+let datosReporte = {
+  turnos: [],
+  estados: [],
+  estilistas: [],
+  horarios: []
+};
 
 // Función para formatear números
 function formatNumber(value, decimals = 0) {
@@ -236,6 +254,12 @@ function formatNumber(value, decimals = 0) {
 // Función para manejar la selección de período
 function seleccionarPeriodo(periodo, elemento) {
   if (periodo === 'personalizado') return; // Se maneja con el botón
+  
+  // Marcar como activo en el dropdown
+  document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  elemento.classList.add('active');
   
   const card = elemento.closest('.card');
   const tipo = obtenerTipoCard(card);
@@ -379,6 +403,12 @@ async function cargarGraficoEstado(periodo, fechaInicio = null, fechaFin = null)
       return;
     }
     
+    // Guardar datos para reportes
+    datosReporte.estados = data.labels.map((label, index) => ({
+      label: label,
+      value: data.series[index]
+    }));
+    
     // Configuración del gráfico
     const options = {
       series: data.series,
@@ -479,6 +509,12 @@ async function cargarGraficoEstilista(periodo, fechaInicio = null, fechaFin = nu
       return;
     }
     
+    // Guardar datos para reportes
+    datosReporte.estilistas = data.labels.map((label, index) => ({
+      label: label,
+      value: data.series[index]
+    }));
+    
     const options = {
       series: [{
         name: 'Turnos',
@@ -568,6 +604,12 @@ async function cargarGraficoHorario(periodo, fechaInicio = null, fechaFin = null
       `;
       return;
     }
+    
+    // Guardar datos para reportes
+    datosReporte.horarios = data.labels.map((label, index) => ({
+      label: label,
+      value: data.series[index]
+    }));
     
     const options = {
       series: [{
@@ -709,24 +751,158 @@ function cargarPreferenciaFiltro(tipo) {
 
 // Función para mostrar alertas
 function mostrarAlerta(mensaje, tipo = 'info') {
-  const alerta = document.createElement('div');
-  alerta.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
-  alerta.style.top = '20px';
-  alerta.style.right = '20px';
-  alerta.style.zIndex = '9999';
-  alerta.style.minWidth = '300px';
-  alerta.innerHTML = `
-    ${mensaje}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
+  Swal.fire({
+    icon: tipo,
+    title: mensaje,
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+  });
+}
+
+// Función para generar PDF
+function generarPDF() {
+  // Obtener los parámetros de filtro actuales
+  const periodo = document.querySelector('.dropdown-item.active')?.textContent || 'Hoy';
+  const fechaInicio = document.querySelector('.fecha-inicio')?.value || '';
+  const fechaFin = document.querySelector('.fecha-fin')?.value || '';
   
-  document.body.appendChild(alerta);
+  // Mostrar spinner mientras se genera
+  Swal.fire({
+    title: 'Generando PDF',
+    html: '<div class="spinner-border text-primary" role="status"></div>',
+    showConfirmButton: false,
+    allowOutsideClick: false
+  });
   
-  // Auto cerrar después de 5 segundos
+  // Enviar solicitud al servidor para generar PDF
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'imprimir_panel_turnos.php';
+  form.target = '_blank';
+  
+  const inputPeriodo = document.createElement('input');
+  inputPeriodo.type = 'hidden';
+  inputPeriodo.name = 'periodo';
+  inputPeriodo.value = periodo;
+  form.appendChild(inputPeriodo);
+  
+  if (fechaInicio) {
+    const inputInicio = document.createElement('input');
+    inputInicio.type = 'hidden';
+    inputInicio.name = 'fecha_inicio';
+    inputInicio.value = fechaInicio;
+    form.appendChild(inputInicio);
+  }
+  
+  if (fechaFin) {
+    const inputFin = document.createElement('input');
+    inputFin.type = 'hidden';
+    inputFin.name = 'fecha_fin';
+    inputFin.value = fechaFin;
+    form.appendChild(inputFin);
+  }
+  
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  
+  // Cerrar el spinner después de un tiempo (no podemos detectar cuando termina el PDF)
   setTimeout(() => {
-    const bsAlert = new bootstrap.Alert(alerta);
-    bsAlert.close();
-  }, 5000);
+    Swal.close();
+  }, 3000);
+}
+
+// Función para exportar a Excel
+function exportarAExcel() {
+  // Recolectar todos los datos necesarios
+  const reporteData = {
+    fecha: new Date().toLocaleDateString(),
+    periodo: document.getElementById('periodo-turnosHoy').textContent.replace('| ', ''),
+    turnosHoy: document.getElementById('valor-turnosHoy').textContent,
+    variacionTurnos: document.getElementById('variacion-turnosHoy').textContent,
+    ingresos: document.getElementById('valor-ingresosTurnos').textContent,
+    variacionIngresos: document.getElementById('variacion-ingresosTurnos').textContent,
+    estados: datosReporte.estados,
+    estilistas: datosReporte.estilistas,
+    horarios: datosReporte.horarios
+  };
+
+  // Crear libro de Excel
+  const wb = XLSX.utils.book_new();
+  
+  // Hoja de resumen
+  const resumen = [
+    ["REPORTE DE TURNOS"],
+    ["Fecha de generación", reporteData.fecha],
+    ["Período", reporteData.periodo],
+    [],
+    ["Métrica", "Valor"],
+    ["Turnos hoy", reporteData.turnosHoy],
+    ["Variación turnos", reporteData.variacionTurnos],
+    ["Ingresos", reporteData.ingresos],
+    ["Variación ingresos", reporteData.variacionIngresos]
+  ];
+  
+  // Hoja de estados
+  const estados = [
+    ["Turnos por Estado"],
+    ["Estado", "Cantidad", "Porcentaje"]
+  ];
+  const totalEstados = reporteData.estados.reduce((sum, item) => sum + item.value, 0);
+  reporteData.estados.forEach(item => {
+    estados.push([
+      item.label,
+      item.value,
+      totalEstados > 0 ? (item.value / totalEstados * 100).toFixed(2) + '%' : '0%'
+    ]);
+  });
+  
+  // Hoja de estilistas
+  const estilistas = [
+    ["Turnos por Estilista"],
+    ["Estilista", "Cantidad", "Porcentaje"]
+  ];
+  const totalEstilistas = reporteData.estilistas.reduce((sum, item) => sum + item.value, 0);
+  reporteData.estilistas.forEach(item => {
+    estilistas.push([
+      item.label,
+      item.value,
+      totalEstilistas > 0 ? (item.value / totalEstilistas * 100).toFixed(2) + '%' : '0%'
+    ]);
+  });
+  
+  // Hoja de horarios
+  const horarios = [
+    ["Ocupación por Horario"],
+    ["Franja Horaria", "Cantidad", "Porcentaje"]
+  ];
+  const totalHorarios = reporteData.horarios.reduce((sum, item) => sum + item.value, 0);
+  reporteData.horarios.forEach(item => {
+    horarios.push([
+      item.label,
+      item.value,
+      totalHorarios > 0 ? (item.value / totalHorarios * 100).toFixed(2) + '%' : '0%'
+    ]);
+  });
+
+  // Añadir hojas al libro
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumen), "Resumen");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(estados), "Estados");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(estilistas), "Estilistas");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(horarios), "Horarios");
+
+  // Generar archivo
+  XLSX.writeFile(wb, `reporte_turnos_${new Date().toISOString().split('T')[0]}.xlsx`);
+  
+  // Mostrar notificación
+  Swal.fire(
+    'Exportado a Excel',
+    'El reporte se ha descargado correctamente con todos los datos.',
+    'success'
+  );
 }
 
 // Cargar datos iniciales al cargar la página
