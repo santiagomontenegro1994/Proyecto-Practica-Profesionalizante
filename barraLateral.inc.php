@@ -156,7 +156,7 @@
             </a>
           </li>
           <li>
-            <a href="tables-data.html">
+            <a href="../panel_control/panel_ventas.php">
               <i class="bi bi-circle"></i><span>Ventas</span>
             </a>
           </li>
