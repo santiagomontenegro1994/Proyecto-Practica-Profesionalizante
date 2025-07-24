@@ -98,12 +98,12 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
     
     // 3. Turnos por estilista
     $query_estilistas = "SELECT 
-                CONCAT(es.Nombre, ' ', es.Apellido) as estilista,
+                CONCAT(es.nombre, ' ', es.apellido) as estilista,
                 COUNT(turnos.IdTurno) as cantidad
               FROM turnos
-              JOIN estilista es ON turnos.IdEstilista = es.IdEstilista
+              JOIN usuarios es ON turnos.IdEstilista = es.id
               WHERE $filtro
-              GROUP BY es.IdEstilista
+              GROUP BY es.id
               ORDER BY cantidad DESC";
     
     $result = $conexion->query($query_estilistas);

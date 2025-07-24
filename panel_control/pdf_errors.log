@@ -1,0 +1,6 @@
+[24-Jul-2025 22:05:52 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'proyecto.estilista' doesn't exist in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\imprimir_panel_turnos.php:109
+Stack trace:
+#0 C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\imprimir_panel_turnos.php(109): mysqli->query('SELECT \r\n      ...')
+#1 C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\imprimir_panel_turnos.php(151): obtenerDatosReporte(Object(mysqli), 'anio', NULL, NULL)
+#2 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\imprimir_panel_turnos.php on line 109

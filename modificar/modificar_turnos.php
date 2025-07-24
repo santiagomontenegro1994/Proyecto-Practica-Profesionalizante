@@ -97,11 +97,43 @@ if (!empty($_POST['ModificarTurno'])) {
                         <input type="date" class="form-control"  name="Fecha" id="fecha"
                         value="<?php echo !empty($DatosTurnoActual['FECHA']) ? $DatosTurnoActual['FECHA'] : ''; ?>">
                     </div>
-
+                    <!-- Campo de Horario -->
                     <div class="col-12">
-                        <label for="hora" class="form-label">Horario</label>
-                        <input type="time" class="form-control" name="Horario"
-                        value="<?php echo !empty($DatosTurnoActual['HORARIO']) ? $DatosTurnoActual['HORARIO'] : ''; ?>">
+                        <label for="horario" class="form-label">Horario</label>
+                        <select class="form-select" id="horario" name="Horario">
+                            <option value="">Seleccione un horario</option>
+                            <?php
+                            // Definimos los horarios disponibles
+                            $horarios = [
+                                '08:30' => '8:30',
+                                '09:00' => '9:00',
+                                '09:30' => '9:30',
+                                '10:00' => '10:00',
+                                '10:30' => '10:30',
+                                '11:00' => '11:00',
+                                '11:30' => '11:30',
+                                '12:00' => '12:00',
+                                '12:30' => '12:30',
+                                '16:00' => '16:00',
+                                '16:30' => '16:30',
+                                '17:00' => '17:00',
+                                '17:30' => '17:30',
+                                '18:00' => '18:00',
+                                '18:30' => '18:30',
+                                '19:00' => '19:00',
+                                '19:30' => '19:30'
+                            ];
+                            
+                            // Obtenemos el horario actual del turno (si existe)
+                            $horaActual = !empty($DatosTurnoActual['HORARIO']) ? $DatosTurnoActual['HORARIO'] : '';
+                            
+                            // Generamos las opciones del select
+                            foreach ($horarios as $valor => $texto) {
+                                $selected = ($horaActual == $valor) ? 'selected' : '';
+                                echo "<option value=\"$valor\" $selected>$texto</option>";
+                            }
+                            ?>
+                        </select>
                     </div>
 
                     <div class="col-12">

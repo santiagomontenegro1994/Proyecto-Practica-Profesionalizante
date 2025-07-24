@@ -298,28 +298,62 @@ function Modificar_Proveedor($vConexion) {
 }
 
 function Datos_Turno($vConexion, $vIdTurno) {
-    $DatosTurno = array();
-    
-    $SQL = "SELECT t.*, 
-                   GROUP_CONCAT(dt.idTipoServicio) AS servicios_seleccionados
+    $vIdTurno = (int)$vIdTurno;
+    $DatosTurno = array(
+        'ID_TURNO' => '',
+        'HORARIO' => '',
+        'FECHA' => '',
+        'ESTILISTA' => '',
+        'ESTADO' => '',
+        'CLIENTE' => '',
+        'servicios_seleccionados' => array()
+    );
+
+    // Obtener datos básicos del turno
+    $SQL = "SELECT 
+                t.IdTurno, 
+                t.Horario, 
+                t.Fecha, 
+                t.IdEstilista, 
+                t.IdEstado, 
+                t.IdCliente
             FROM turnos t
-            LEFT JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
-            WHERE t.IdTurno = $vIdTurno
-            GROUP BY t.IdTurno";
+            WHERE t.IdTurno = $vIdTurno";
 
     $rs = mysqli_query($vConexion, $SQL);
     
-    if ($rs && mysqli_num_rows($rs) > 0) {
-        $data = mysqli_fetch_assoc($rs);
-        
-        // Mantener la estructura original del array
+    if (!$rs) {
+        die("Error al obtener datos del turno: " . mysqli_error($vConexion));
+    }
+
+    $data = mysqli_fetch_assoc($rs);
+    
+    if (!empty($data)) {
         $DatosTurno['ID_TURNO'] = $data['IdTurno'];
-        $DatosTurno['HORARIO'] = $data['Horario'];
+        // Formatear el horario para eliminar los segundos (de HH:MM:SS a HH:MM)
+        $DatosTurno['HORARIO'] = substr($data['Horario'], 0, 5);
         $DatosTurno['FECHA'] = $data['Fecha'];
-        $DatosTurno['servicios_seleccionados'] = $data['servicios_seleccionados']; // Ahora viene de detalle_turno
         $DatosTurno['ESTILISTA'] = $data['IdEstilista'];
         $DatosTurno['ESTADO'] = $data['IdEstado'];
         $DatosTurno['CLIENTE'] = $data['IdCliente'];
+        
+        // Obtener IDs de servicios asociados al turno
+        $SQL_Servicios = "SELECT idTipoServicio 
+                          FROM detalle_turno 
+                          WHERE idTurno = $vIdTurno";
+        
+        $rs_servicios = mysqli_query($vConexion, $SQL_Servicios);
+        
+        if (!$rs_servicios) {
+            die("Error al obtener servicios del turno: " . mysqli_error($vConexion));
+        }
+
+        $servicios = array();
+        while ($servicio = mysqli_fetch_assoc($rs_servicios)) {
+            $servicios[] = $servicio['idTipoServicio'];
+        }
+        
+        $DatosTurno['servicios_seleccionados'] = implode(',', $servicios);
     }
     
     return $DatosTurno;
@@ -330,7 +364,7 @@ function Validar_Turno(){
     if (strlen($_POST['Fecha']) < 4) {
         $_SESSION['Mensaje'].='Debes seleccionar una fecha. <br />';
     }
-    if (strlen($_POST['Horario']) < 4) {
+    if (empty($_POST['Horario'])) {
         $_SESSION['Mensaje'].='Debes seleccionar un horario. <br />';
     }
     if (empty($_POST['TipoServicio']) || in_array('', $_POST['TipoServicio'])) {
@@ -361,11 +395,11 @@ function Datos_Turno_Comprobante($vConexion, $vIdTurno) {
                 t.IdTurno, 
                 t.Horario, 
                 t.Fecha, 
-                CONCAT(e.Apellido, ', ', e.Nombre) AS ESTILISTA, 
+                CONCAT(e.apellido, ', ', e.nombre) AS ESTILISTA, 
                 es.Denominacion AS ESTADO, 
                 CONCAT(c.apellido, ', ', c.nombre) AS CLIENTE
             FROM turnos t
-            LEFT JOIN estilista e ON t.IdEstilista = e.IdEstilista
+            LEFT JOIN usuarios e ON t.IdEstilista = e.id
             LEFT JOIN estado es ON t.IdEstado = es.IdEstado
             LEFT JOIN clientes c ON t.IdCliente = c.idCliente
             WHERE t.IdTurno = $vIdTurno";
@@ -456,8 +490,9 @@ function Listar_Estilistas($vConexion) {
     $Listado=array();
 
       //1) genero la consulta que deseo
-        $SQL = "SELECT IdEstilista , Apellido , Nombre
-        FROM estilista
+        $SQL = "SELECT id , apellido , nombre
+        FROM usuarios
+        WHERE nivel = 2
         ORDER BY Apellido";
 
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
@@ -466,9 +501,9 @@ function Listar_Estilistas($vConexion) {
         //3) el resultado deberá organizarse en una matriz, entonces lo recorro
         $i=0;
         while ($data = mysqli_fetch_array($rs)) {
-            $Listado[$i]['ID'] = $data['IdEstilista'];
-            $Listado[$i]['APELLIDO'] = $data['Apellido'];
-            $Listado[$i]['NOMBRE'] = $data['Nombre'];
+            $Listado[$i]['ID'] = $data['id'];
+            $Listado[$i]['APELLIDO'] = $data['apellido'];
+            $Listado[$i]['NOMBRE'] = $data['nombre'];
             $i++;
         }
 
@@ -526,10 +561,10 @@ function Listar_Estados_Turnos($vConexion) {
 }
 
 function Listar_Turnos($vConexion) {
-    $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.Nombre AS NOMBRE_E, e.Apellido AS APELLIDO_E, 
+    $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
                    c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
             FROM turnos t
-            INNER JOIN estilista e ON t.IdEstilista = e.IdEstilista
+            INNER JOIN usuarios e ON t.IdEstilista = e.id
             INNER JOIN clientes c ON t.IdCliente = c.idCliente
             INNER JOIN estado es ON t.IdEstado = es.IdEstado
             ORDER BY t.Fecha DESC, t.Horario DESC";
@@ -570,15 +605,15 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         t.IdTurno,
                         t.Fecha,
                         t.Horario,
-                        e.Nombre AS ESTILISTA_N,
-                        e.Apellido AS ESTILISTA_A,
+                        e.nombre AS ESTILISTA_N,
+                        e.apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
                         es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
-                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     WHERE CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
@@ -589,14 +624,14 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         t.IdTurno,
                         t.Fecha,
                         t.Horario,
-                        e.Nombre AS ESTILISTA_N,
-                        e.Apellido AS ESTILISTA_A,
+                        e.nombre AS ESTILISTA_N,
+                        e.apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
                         es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
-                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     WHERE CONCAT(e.Apellido, ' ', e.Nombre) LIKE '%$parametro%'
@@ -608,14 +643,14 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         t.IdTurno,
                         t.Fecha,
                         t.Horario,
-                        e.Nombre AS ESTILISTA_N,
-                        e.Apellido AS ESTILISTA_A,
+                        e.nombre AS ESTILISTA_N,
+                        e.apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
                         es.IdEstado,
                         es.Denominacion AS ESTADO
                     FROM turnos t
-                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     WHERE t.Fecha LIKE '%$parametro%'
@@ -627,15 +662,15 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                         t.IdTurno,
                         t.Fecha,
                         t.Horario,
-                        e.Nombre AS ESTILISTA_N,
-                        e.Apellido AS ESTILISTA_A,
+                        e.nombre AS ESTILISTA_N,
+                        e.apellido AS ESTILISTA_A,
                         c.Nombre AS CLIENTE_N, 
                         c.Apellido AS CLIENTE_A,
                         es.Denominacion AS ESTADO,
                         es.IdEstado,
                         GROUP_CONCAT(ts.Denominacion SEPARATOR ', ') AS SERVICIOS
                     FROM turnos t
-                    INNER JOIN estilista e ON t.IdEstilista = e.idEstilista
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     LEFT JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
@@ -2007,7 +2042,6 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
                     WHERE o.fecha LIKE '%$parametro%'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
-                   
                     ORDER BY o.idOrdenCompra DESC";
             break;
 
@@ -2219,4 +2253,101 @@ function Insertar_Orden_Compra($conexion) {
     }
 }
 
+function Validar_Usuario() {
+    $mensaje = '';
+    if (strlen($_POST['Nombre']) < 3) {
+        $mensaje .= 'Debes ingresar un nombre con al menos 3 caracteres.<br />';
+    }
+    if (strlen($_POST['Apellido']) < 3) {
+        $mensaje .= 'Debes ingresar un apellido con al menos 3 caracteres.<br />';
+    }
+    if (strlen($_POST['User']) < 3) {
+        $mensaje .= 'Debes ingresar un usuario con al menos 3 caracteres.<br />';
+    }
+    if (strlen($_POST['Clave']) < 4) {
+        $mensaje .= 'Debes ingresar una clave con al menos 4 caracteres.<br />';
+    }
+    if (empty($_POST['Nivel']) || !in_array($_POST['Nivel'], ['1','2','3','4','5'])) {
+        $mensaje .= 'Debes seleccionar un nivel válido.<br />';
+    }
+    foreach ($_POST as $Id => $Valor) {
+        $_POST[$Id] = trim(strip_tags($Valor));
+    }
+    return $mensaje;
+}
+
+function InsertarUsuario($vConexion) {
+    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
+    $apellido = mysqli_real_escape_string($vConexion, $_POST['Apellido']);
+    $user = mysqli_real_escape_string($vConexion, $_POST['User']);
+    $clave = password_hash($_POST['Clave'], PASSWORD_DEFAULT);
+    $nivel = (int)$_POST['Nivel'];
+
+    $SQL_Insert = "INSERT INTO usuarios (nombre, apellido, user, clave, nivel) 
+                   VALUES ('$nombre', '$apellido', '$user', '$clave', '$nivel')";
+    if (mysqli_query($vConexion, $SQL_Insert)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function Listar_Usuarios($vConexion) {
+    $Listado = array();
+    $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios ORDER BY apellido, nombre";
+    $rs = mysqli_query($vConexion, $SQL);
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_USUARIO'] = $data['ID_USUARIO'];
+        $Listado[$i]['NOMBRE'] = $data['NOMBRE'];
+        $Listado[$i]['APELLIDO'] = $data['APELLIDO'];
+        $Listado[$i]['USER'] = $data['USER'];
+        // Puedes mostrar el nombre del nivel si lo prefieres
+        switch ($data['NIVEL']) {
+            case 1: $Listado[$i]['NIVEL'] = 'Administrador'; break;
+            case 2: $Listado[$i]['NIVEL'] = 'Estilista'; break;
+            case 3: $Listado[$i]['NIVEL'] = 'Ventas'; break;
+            case 4: $Listado[$i]['NIVEL'] = 'Depósito'; break;
+            case 5: $Listado[$i]['NIVEL'] = 'Compras'; break;
+            default: $Listado[$i]['NIVEL'] = $data['NIVEL'];
+        }
+        $i++;
+    }
+    return $Listado;
+}
+
+function Listar_Usuarios_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+    switch ($criterio) {
+        case 'Nombre':
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE nombre LIKE '%$parametro%' ORDER BY apellido, nombre";
+            break;
+        case 'Apellido':
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE apellido LIKE '%$parametro%' ORDER BY apellido, nombre";
+            break;
+        case 'Usuario':
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE user LIKE '%$parametro%' ORDER BY apellido, nombre";
+            break;
+        default:
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios ORDER BY apellido, nombre";
+    }
+    $rs = mysqli_query($vConexion, $SQL);
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID_USUARIO'] = $data['ID_USUARIO'];
+        $Listado[$i]['NOMBRE'] = $data['NOMBRE'];
+        $Listado[$i]['APELLIDO'] = $data['APELLIDO'];
+        $Listado[$i]['USER'] = $data['USER'];
+        switch ($data['NIVEL']) {
+            case 1: $Listado[$i]['NIVEL'] = 'Administrador'; break;
+            case 2: $Listado[$i]['NIVEL'] = 'Estilista'; break;
+            case 3: $Listado[$i]['NIVEL'] = 'Ventas'; break;
+            case 4: $Listado[$i]['NIVEL'] = 'Depósito'; break;
+            case 5: $Listado[$i]['NIVEL'] = 'Compras'; break;
+            default: $Listado[$i]['NIVEL'] = $data['NIVEL'];
+        }
+        $i++;
+    }
+    return $Listado;
+}
 ?>

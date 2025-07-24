@@ -242,13 +242,13 @@ try {
         case 'estilistaChart':
             // Consulta para contar turnos por estilista
             $query = "SELECT 
-                        e.IdEstilista,
-                        CONCAT(e.Nombre, ' ', e.Apellido) as estilista,
+                        e.id,
+                        CONCAT(e.nombre, ' ', e.apellido) as estilista,
                         COUNT(t.IdTurno) as cantidad
                       FROM turnos t
-                      JOIN estilista e ON t.IdEstilista = e.IdEstilista
+                      JOIN usuarios e ON t.IdEstilista = e.id
                       WHERE $filtro
-                      GROUP BY e.IdEstilista, e.Nombre, e.Apellido
+                      GROUP BY e.id, e.nombre, e.apellido
                       ORDER BY cantidad DESC";
             
             $result = $conexion->query($query);

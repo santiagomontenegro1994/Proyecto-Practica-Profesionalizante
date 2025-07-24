@@ -1,0 +1,3 @@
+[24-Jul-2025 21:21:13 Europe/Berlin] Error en get_turnos_data: Table 'proyecto.estilista' doesn't exist
+[24-Jul-2025 21:21:48 Europe/Berlin] Error en get_turnos_data: Table 'proyecto.estilista' doesn't exist
+[24-Jul-2025 22:05:11 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.IdEstilista' in 'group statement'
