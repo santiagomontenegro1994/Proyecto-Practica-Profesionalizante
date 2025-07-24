@@ -73,7 +73,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
     <table class="table table-striped">
         <thead>
             <tr class="table-primary">
-            <th scope="col" class="col-2 text-truncate" style="max-width: 50px;">ID</th>
+            <th scope="col" class="col-2 text-truncate" style="max-width: 50px;">COD.</th>
             <th scope="col" class="col-5">Producto</th>
             <th scope="col" class="col-3">Categoría</th>
             <th scope="col" class="col-2">Cantidad</th>
@@ -93,7 +93,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
             </tr>
 
             <tr class="table-primary">
-                <th scope="col">ID</th>
+                <th scope="col">COD.</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Categoría</th>
                 <th scope="col" class="col-2">Cantidad</th>
