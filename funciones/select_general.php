@@ -2264,11 +2264,24 @@ function Validar_Usuario() {
     if (strlen($_POST['User']) < 3) {
         $mensaje .= 'Debes ingresar un usuario con al menos 3 caracteres.<br />';
     }
-    if (strlen($_POST['Clave']) < 4) {
-        $mensaje .= 'Debes ingresar una clave con al menos 4 caracteres.<br />';
-    }
     if (empty($_POST['Nivel']) || !in_array($_POST['Nivel'], ['1','2','3','4','5'])) {
         $mensaje .= 'Debes seleccionar un nivel válido.<br />';
+    }
+    // Validación de contraseña solo si se está creando o modificando la clave
+    if (isset($_POST['Clave']) && $_POST['Clave'] !== '') {
+        $clave = $_POST['Clave'];
+        if (strlen($clave) < 8) {
+            $mensaje .= 'La contraseña debe tener al menos 8 caracteres.<br />';
+        }
+        if (!preg_match('/[A-Z]/', $clave)) {
+            $mensaje .= 'La contraseña debe tener al menos una letra mayúscula.<br />';
+        }
+        if (!preg_match('/[a-z]/', $clave)) {
+            $mensaje .= 'La contraseña debe tener al menos una letra minúscula.<br />';
+        }
+        if (!preg_match('/[0-9]/', $clave)) {
+            $mensaje .= 'La contraseña debe tener al menos un número.<br />';
+        }
     }
     foreach ($_POST as $Id => $Valor) {
         $_POST[$Id] = trim(strip_tags($Valor));
@@ -2349,5 +2362,64 @@ function Listar_Usuarios_Parametro($vConexion, $criterio, $parametro) {
         $i++;
     }
     return $Listado;
+}
+
+function Datos_Usuario($vConexion, $vIdUsuario) {
+    $DatosUsuario = array();
+    $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL
+            FROM usuarios WHERE id = $vIdUsuario";
+    $rs = mysqli_query($vConexion, $SQL);
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosUsuario['ID_USUARIO'] = $data['ID_USUARIO'];
+        $DatosUsuario['NOMBRE'] = $data['NOMBRE'];
+        $DatosUsuario['APELLIDO'] = $data['APELLIDO'];
+        $DatosUsuario['USER'] = $data['USER'];
+        $DatosUsuario['NIVEL'] = $data['NIVEL'];
+    }
+    return $DatosUsuario;
+}
+
+function Modificar_Usuario($vConexion) {
+    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
+    $apellido = mysqli_real_escape_string($vConexion, $_POST['Apellido']);
+    $user = mysqli_real_escape_string($vConexion, $_POST['User']);
+    $nivel = (int)$_POST['Nivel'];
+    $idUsuario = mysqli_real_escape_string($vConexion, $_POST['IdUsuario']);
+
+    $SQL_MiConsulta = "UPDATE usuarios 
+        SET nombre = '$nombre',
+            apellido = '$apellido',
+            user = '$user',
+            nivel = '$nivel'";
+
+    // Si se ingresó una nueva clave, la actualiza
+    if (!empty($_POST['Clave'])) {
+        $clave = password_hash($_POST['Clave'], PASSWORD_DEFAULT);
+        $SQL_MiConsulta .= ", clave = '$clave'";
+    }
+
+    $SQL_MiConsulta .= " WHERE id = '$idUsuario'";
+
+    if (mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function Eliminar_Usuario($vConexion, $vIdUsuario) {
+    // Verifico que el usuario exista
+    $SQL_MiConsulta = "SELECT id FROM usuarios WHERE id = $vIdUsuario";
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['id'])) {
+        // Si el usuario existe, lo elimino
+        mysqli_query($vConexion, "DELETE FROM usuarios WHERE id = $vIdUsuario");
+        return true;
+    } else {
+        return false;
+    }
 }
 ?>

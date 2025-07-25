@@ -89,29 +89,6 @@
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="../index.php">
-                <i class="bi bi-person"></i>
-                <span>Mi perfil</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="../index.php">
-                <i class="bi bi-gear"></i>
-                <span>Configuraciones</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
               <a class="dropdown-item d-flex align-items-center" href="../inicio/cerrarsesion.php">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Cerrar sesion</span>

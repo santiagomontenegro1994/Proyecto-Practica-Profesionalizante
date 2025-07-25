@@ -161,7 +161,7 @@ if (isset($_POST['BotonRegistrarOrdenCompra'])) {
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="btn btn-primary" name="BotonRegistrarOrdenCompra" value="1">
+                        <button type="submit" class="btn btn-primario" name="BotonRegistrarOrdenCompra" value="1">
                           Registrar Orden de Compra
                         </button>
                     </div>
