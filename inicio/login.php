@@ -124,7 +124,7 @@ if (!empty($_POST['BotonLogin'])) {
                     </div>
 
                     <div class="col-12">
-                      <button class="btn btn-primary w-100" type="submit" value="Login" name="BotonLogin">Iniciar</button>
+                      <button class="btn btn-primario w-100" type="submit" value="Login" name="BotonLogin">Iniciar</button>
                     </div>
                   </form>
 

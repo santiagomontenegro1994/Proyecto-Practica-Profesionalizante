@@ -123,7 +123,7 @@ if (!empty($_POST['BotonModificarCliente'])) {
                   
                     <input type='hidden' name="IdCliente" value="<?php echo $DatosClienteActual['ID_CLIENTE']; ?>" />
                     
-                    <button type="submit" class="btn btn-primary" value="Modificar" name="BotonModificarCliente">Modificar</button>
+                    <button type="submit" class="btn btn-primario" value="Modificar" name="BotonModificarCliente">Modificar</button>
                     <a href="../listados/listados_clientes.php" 
                     class="btn btn-success btn-info " 
                     title="Listado"> Volver al listado  </a>

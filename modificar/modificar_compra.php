@@ -188,7 +188,7 @@ ob_end_flush();
                         <a href="../listados/listados_compras.php" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Volver
                         </a>
-                        <button type="button" class="btn btn-primary" onclick="validarPrecios()">
+                        <button type="button" class="btn btn-primario" onclick="validarPrecios()">
                             <i class="bi bi-file-earmark-text"></i> Generar Orden de Compra
                         </button>
                     </div>

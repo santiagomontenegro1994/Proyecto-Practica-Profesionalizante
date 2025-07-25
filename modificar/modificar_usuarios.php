@@ -103,7 +103,7 @@ if (!empty($_POST['BotonModificarUsuario'])) {
                     </div>
                     <div class="text-center">
                         <input type='hidden' name="IdUsuario" value="<?php echo $DatosUsuarioActual['ID_USUARIO']; ?>" />
-                        <button type="submit" class="btn btn-primary" value="Modificar" name="BotonModificarUsuario">Modificar</button>
+                        <button type="submit" class="btn btn-primario" value="Modificar" name="BotonModificarUsuario">Modificar</button>
                         <a href="../listados/listados_usuarios.php" class="btn btn-success btn-info" title="Listado">Volver al listado</a>
                     </div>
                 </form>

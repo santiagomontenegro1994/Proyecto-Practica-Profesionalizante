@@ -115,7 +115,7 @@ if (!empty($_POST['BotonModificarProducto'])) {
 
                 <div class="text-center">
                     <input type='hidden' name="IdProducto" value="<?php echo $DatosProductoActual['ID_PRODUCTO']; ?>" />
-                    <button type="submit" class="btn btn-primary" value="Modificar" name="BotonModificarProducto">Modificar</button>
+                    <button type="submit" class="btn btn-primario" value="Modificar" name="BotonModificarProducto">Modificar</button>
                     <a href="../listados/listados_productos.php" 
                     class="btn btn-success btn-info " 
                     title="Listado"> Volver al listado  </a>
