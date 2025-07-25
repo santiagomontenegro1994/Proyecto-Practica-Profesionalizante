@@ -2422,4 +2422,113 @@ function Eliminar_Usuario($vConexion, $vIdUsuario) {
         return false;
     }
 }
+
+function Validar_Servicio() {
+    $mensaje = '';
+    if (empty($_POST['Denominacion']) || strlen($_POST['Denominacion']) < 3) {
+        $mensaje .= 'Debes ingresar una denominación con al menos 3 caracteres.<br />';
+    }
+    if (!isset($_POST['Precio']) || !is_numeric($_POST['Precio']) || $_POST['Precio'] <= 0) {
+        $mensaje .= 'Debes ingresar un precio válido mayor a 0.<br />';
+    }
+    // Limpiar entradas
+    foreach ($_POST as $Id => $Valor) {
+        $_POST[$Id] = trim(strip_tags($Valor));
+    }
+    return $mensaje;
+}
+
+function InsertarServicio($vConexion) {
+    $denominacion = mysqli_real_escape_string($vConexion, $_POST['Denominacion']);
+    $precio = (float)$_POST['Precio'];
+    $SQL_Insert = "INSERT INTO tipo_servicio (Denominacion, precio) VALUES ('$denominacion', '$precio')";
+    if (mysqli_query($vConexion, $SQL_Insert)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function Listar_Servicios($vConexion) {
+    $Listado = array();
+    $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio ORDER BY Denominacion";
+    $rs = mysqli_query($vConexion, $SQL);
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID'] = $data['ID'];
+        $Listado[$i]['DENOMINACION'] = $data['Denominacion'];
+        $Listado[$i]['PRECIO'] = $data['PRECIO'];
+        $i++;
+    }
+    return $Listado;
+}
+
+function Listar_Servicios_Parametro($vConexion, $criterio, $parametro) {
+    $Listado = array();
+    switch ($criterio) {
+        case 'Denominacion':
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE Denominacion LIKE '%$parametro%' ORDER BY Denominacion";
+            break;
+        case 'Precio':
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE precio LIKE '%$parametro%' ORDER BY Denominacion";
+            break;
+        default:
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio ORDER BY Denominacion";
+    }
+    $rs = mysqli_query($vConexion, $SQL);
+    $i = 0;
+    while ($data = mysqli_fetch_array($rs)) {
+        $Listado[$i]['ID'] = $data['ID'];
+        $Listado[$i]['DENOMINACION'] = $data['Denominacion'];
+        $Listado[$i]['PRECIO'] = $data['PRECIO'];
+        $i++;
+    }
+    return $Listado;
+}
+
+function Datos_Servicio($vConexion, $vIdServicio) {
+    $DatosServicio = array();
+    $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE IdTipoServicio = $vIdServicio";
+    $rs = mysqli_query($vConexion, $SQL);
+    $data = mysqli_fetch_array($rs);
+    if (!empty($data)) {
+        $DatosServicio['ID'] = $data['ID'];
+        $DatosServicio['DENOMINACION'] = $data['Denominacion'];
+        $DatosServicio['PRECIO'] = $data['PRECIO'];
+    }
+    return $DatosServicio;
+}
+
+function Modificar_Servicio($vConexion) {
+    $denominacion = mysqli_real_escape_string($vConexion, $_POST['Denominacion']);
+    $precio = (float)$_POST['Precio'];
+    $idServicio = (int)$_POST['IdServicio'];
+
+    $SQL_MiConsulta = "UPDATE tipo_servicio 
+        SET Denominacion = '$denominacion',
+            precio = '$precio'
+        WHERE IdTipoServicio = '$idServicio'";
+
+    if (mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function Eliminar_Servicio($vConexion, $vIdServicio) {
+    // Verifico que el servicio exista
+    $SQL_MiConsulta = "SELECT IdTipoServicio FROM tipo_servicio WHERE IdTipoServicio = $vIdServicio";
+    $rs = mysqli_query($vConexion, $SQL_MiConsulta);
+    $data = mysqli_fetch_array($rs);
+
+    if (!empty($data['IdTipoServicio'])) {
+        // Si el servicio existe, lo elimino
+        mysqli_query($vConexion, "DELETE FROM tipo_servicio WHERE IdTipoServicio = $vIdServicio");
+        return true;
+    } else {
+        return false;
+    }
+}
+
 ?>
