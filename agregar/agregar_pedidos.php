@@ -30,7 +30,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
         <div class="card-body">
             <div class="d-flex justify-content-start align-items-center"> 
                 <h5 class="card-title mr-2">Datos del Cliente</h5> 
-                <a href="#" class="btn btn-primary btn-sm m-2 btn_new_cliente">Nuevo Cliente</a>
+                <a href="#" class="btn btn-primario btn-sm m-2 btn_new_cliente">Nuevo Cliente</a>
             </div>
 
 <!-- Horizontal Form -->
@@ -59,7 +59,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
             </div>
 
             <div class="text-center" id="div_registro_cliente" style="display: none;">
-                <button type="submit" class="btn btn-primary">Registrar</button>
+                <button type="submit" class="btn btn-primario">Registrar</button>
             </div>
         </form>
 <!-- End Horizontal Form -->

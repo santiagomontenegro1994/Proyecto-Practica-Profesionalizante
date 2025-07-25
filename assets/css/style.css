@@ -47,6 +47,10 @@
   scroll-behavior: smooth;
 }
 
+html {
+  background-color: var(--color-secondary-ligth); /* Usando la variable CSS */
+}
+
 body {
   font-family: "Open Sans", sans-serif;
   background: #f6f9ff;
@@ -70,16 +74,21 @@ h1, h2, h3, h4, h5, h6 {
 /*--------------------------------------------------------------
 # Main
 --------------------------------------------------------------*/
-#main {
-  margin-top: 60px;
-  padding: 20px 30px;
-  transition: all 0.3s;
+
+main {
   background-image: url('http://localhost/Proyecto-Practica-Profesionalizante/assets/img/Patron.jpg'); /* Ruta a tu archivo SVG */
   background-repeat: no-repeat; /* Evita que se repita */
   background-attachment: fixed; /* Fija el fondo */
   background-size: cover; /* Ajusta el tamaño para cubrir todo el área */
   background-position: center; /* Centra la imagen */
 }
+
+#main {
+  margin-top: 60px;
+  padding: 20px 30px;
+  transition: all 0.3s;
+}
+
 @media (max-width: 1199px) {
   #main {
     padding: 20px;
@@ -1111,7 +1120,8 @@ h1, h2, h3, h4, h5, h6 {
   padding: 20px 0;
   font-size: 14px;
   transition: all 0.3s;
-  border-top: 1px solid #cddfff;
+  border-top: 1px solid var(--color-secondary);
+  background-color: var(--color-secondary-ligth);
 }
 .footer .copyright {
   text-align: center;
@@ -1165,4 +1175,8 @@ h1, h2, h3, h4, h5, h6 {
     border-color: var(--color-primary);
     opacity: 0.65;
   }
+}
+
+.table>:not(caption)>*>* {
+  background-color: var(--color-secondary-ligth);
 }

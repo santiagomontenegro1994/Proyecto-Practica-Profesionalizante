@@ -201,7 +201,7 @@ ob_end_flush();
                                     min="0">
                             </div>
                             <div class="col-md-4">
-                                <button type="submit" name="BotonActualizarSenia" value="actualizar" class="btn btn-primary w-100">
+                                <button type="submit" name="BotonActualizarSenia" value="actualizar" class="btn btn-primario w-100">
                                     <i class="bi bi-pencil-square"></i> Actualizar Seña
                                 </button>
                             </div>
