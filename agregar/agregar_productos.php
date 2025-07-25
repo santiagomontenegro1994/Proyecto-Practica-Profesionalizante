@@ -83,7 +83,7 @@ if (!empty($_POST['BotonRegistrar'])) {
                   </div>
                 </div>
                 <div class="text-center">
-                  <button type="submit" class="btn btn-primary" value="Registrar" name="BotonRegistrar">Agregar</button>
+                  <button type="submit" class="btn btn-primario" value="Registrar" name="BotonRegistrar">Agregar</button>
                   <button type="reset" class="btn btn-secondary">Reset</button>
                 </div>
               </form><!-- End Horizontal Form -->

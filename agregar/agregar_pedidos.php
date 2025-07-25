@@ -114,7 +114,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
     </div>
     <div class="d-flex justify-content-center align-items-center"> 
         <a href="#" class="btn btn-danger btn-sm m-2" id="btn_anular_pedido">Anular</a> 
-        <a href="#" class="btn btn-primary btn-sm m-2" id="btn_new_pedido" style="display: none;">Crear Pedido</a>
+        <a href="#" class="btn btn-primario btn-sm m-2" id="btn_new_pedido" style="display: none;">Crear Pedido</a>
     </div>
           <!-- End Table with stripped rows -->
 
