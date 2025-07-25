@@ -145,6 +145,42 @@
         </ul>
       </li><!-- End Compras Nav -->
 
+            <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#usuarios-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-person-bounding-box"></i><span>Usuarios</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="usuarios-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="../agregar/agregar_usuarios.php">
+              <i class="bi bi-circle"></i><span>Agregar</span>
+            </a>
+          </li>
+          <li>
+            <a href="../listados/listados_usuarios.php">
+              <i class="bi bi-circle"></i><span>Listados</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Usuarios Nav -->
+
+                  <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#servicios-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-scissors"></i><span>Servicios</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="servicios-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="../agregar/agregar_servicios.php">
+              <i class="bi bi-circle"></i><span>Agregar</span>
+            </a>
+          </li>
+          <li>
+            <a href="../listados/listados_servicios.php">
+              <i class="bi bi-circle"></i><span>Listados</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Servicios Nav -->
+
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#tables-nav1" data-bs-toggle="collapse" href="#">
           <i class="bi bi-layout-text-window-reverse"></i><span>Panel de control</span><i class="bi bi-chevron-down ms-auto"></i>
@@ -167,24 +203,6 @@
           </li>
         </ul>
       </li><!-- End Panel de control Nav -->
-
-            <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#usuarios-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-person-bounding-box"></i><span>Usuarios</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="usuarios-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="../agregar/agregar_usuarios.php">
-              <i class="bi bi-circle"></i><span>Agregar</span>
-            </a>
-          </li>
-          <li>
-            <a href="../listados/listados_usuarios.php">
-              <i class="bi bi-circle"></i><span>Listados</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Clientes Nav -->
 
     </ul>
 
