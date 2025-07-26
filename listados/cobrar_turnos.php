@@ -20,7 +20,7 @@ $MiConexion = ConexionBD();
 require_once '../funciones/select_general.php';
 
 //voy a ir listando lo necesario para trabajar en este script: 
-$ListadoTurnos = Listar_Turnos($MiConexion);
+$ListadoTurnos = Listar_Turnos_Completados($MiConexion);
 $CantidadTurnos = count($ListadoTurnos);
 
 $ListadoTiposTurnos = Listar_Tipos($MiConexion);
@@ -31,7 +31,7 @@ if (!empty($_POST['Buscar'])) {
 
   $parametro = $_POST['parametro'];
   $criterio = $_POST['criterio'];
-  $ListadoTurnos = Listar_Turnos_Parametro($MiConexion,$criterio,$parametro);
+  $ListadoTurnos = Listar_Turnos_Completados_Parametro($MiConexion,$criterio,$parametro);
   $CantidadTurnos = count($ListadoTurnos);
 
 }
@@ -41,12 +41,12 @@ if (!empty($_POST['Buscar'])) {
 <main id="main" class="main">
 
 <div class="pagetitle">
-  <h1>Listado Turnos</h1>
+  <h1>Turnos por cobrar</h1>
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="../inicio/index.php">Menu</a></li>
-      <li class="breadcrumb-item">Turnos</li>
-      <li class="breadcrumb-item active">Listado Turnos</li>
+      <li class="breadcrumb-item">Turnos por cobrar</li>
+      <li class="breadcrumb-item active">Listado</li>
     </ol>
   </nav>
 </div><!-- End Page Title -->
@@ -91,12 +91,6 @@ if (!empty($_POST['Buscar'])) {
                         <input class="form-check-input" type="radio" name="criterio" id="gridRadios1" value="Cliente" checked>
                         <label class="form-check-label" for="gridRadios1">
                           Cliente
-                        </label>
-                      </div>
-                      <div class="form-check form-check-inline small-text">
-                        <input class="form-check-input" type="radio" name="criterio" id="gridRadios2" value="Estilista">
-                        <label class="form-check-label" for="gridRadios2">
-                          Estilista
                         </label>
                       </div>
                       <div class="form-check form-check-inline small-text">
@@ -156,7 +150,7 @@ if (!empty($_POST['Buscar'])) {
                     <th scope="col">Fecha</th>
                     <th scope="col">Horario</th>
                     <th scope="col">Tipo de Servicio</th>
-                    <th scope="col">Estilista</th>
+                    <th scope="col">Total por Cobrar</th>
                     <th scope="col">Cliente</th>
                     <th scope="col">Acciones</th>
                 </tr>
@@ -168,12 +162,30 @@ if (!empty($_POST['Buscar'])) {
                     
                     // Obtener servicios del turno
                     $servicios = Listar_Servicios_Por_Turno($MiConexion, $ListadoTurnos[$i]['IdTurno']);
-                    
+
+                    // Calcular el total por cobrar
+                    $total = 0;
+                    foreach ($servicios as $servicio) {
+                        // Si Listar_Servicios_Por_Turno devuelve solo denominaciones, deberás obtener el precio aquí
+                        // Si devuelve array con denominacion y precio, usa $servicio['precio']
+                        if (is_array($servicio) && isset($servicio['precio'])) {
+                            $total += $servicio['precio'];
+                        } else {
+                            // Si solo tienes denominación, consulta el precio aquí
+                            $denominacion = is_array($servicio) ? $servicio['Denominacion'] : $servicio;
+                            $sqlPrecio = "SELECT precio FROM tipo_servicio WHERE Denominacion = '$denominacion' LIMIT 1";
+                            $rsPrecio = mysqli_query($MiConexion, $sqlPrecio);
+                            if ($rowPrecio = mysqli_fetch_assoc($rsPrecio)) {
+                                $total += $rowPrecio['precio'];
+                            }
+                        }
+                    }
+
                     // Preparar datos para descarga
                     $_SESSION['Descarga'] .= "Cliente: {$ListadoTurnos[$i]['NOMBRE_C']}, {$ListadoTurnos[$i]['APELLIDO_C']} - ";
                     $_SESSION['Descarga'] .= "Fecha: {$ListadoTurnos[$i]['Fecha']} - Horario: {$ListadoTurnos[$i]['Horario']} - ";
-                    $_SESSION['Descarga'] .= "Servicios: " . implode(", ", $servicios) . " - ";
-                    $_SESSION['Descarga'] .= "Estilista: {$ListadoTurnos[$i]['NOMBRE_E']}, {$ListadoTurnos[$i]['APELLIDO_E']}\n";
+                    $_SESSION['Descarga'] .= "Servicios: " . implode(", ", array_map(function($s){ return is_array($s)?$s['Denominacion']:$s; }, $servicios)) . " - ";
+                    $_SESSION['Descarga'] .= "Total: $total\n";
 
                     // Color de fila según estado
                     list($Title, $Color) = ColorDeFilaTurnos($ListadoTurnos[$i]['IdTurno'],$ListadoTurnos[$i]['Fecha'], $ListadoTurnos[$i]['IdEstado'],$MiConexion); 
@@ -182,24 +194,18 @@ if (!empty($_POST['Buscar'])) {
                         <th scope="row"><?php echo $i+1; ?></th>
                         <td><?php echo $ListadoTurnos[$i]['Fecha']; ?></td>
                         <td><?php echo $ListadoTurnos[$i]['Horario']; ?></td>
-                        <td><?php echo implode(", ", $servicios); ?></td>
-                        <td><?php echo $ListadoTurnos[$i]['APELLIDO_E'] ?>, <?php echo $ListadoTurnos[$i]['NOMBRE_E'] ?></td>
+                        <td><?php echo implode(", ", array_map(function($s){ return is_array($s)?$s['Denominacion']:$s; }, $servicios)); ?></td>
+                        <td>$<?php echo number_format($total, 2, ',', '.'); ?></td>
                         <td><?php echo $ListadoTurnos[$i]['APELLIDO_C'] ?>, <?php echo $ListadoTurnos[$i]['NOMBRE_C'] ?></td>
                         <td>
-                            <a href="../eliminar/eliminar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
-                              title="Eliminar" 
-                              onclick="return confirm('¿Confirma eliminar este turno?');">
-                                <i class="bi bi-trash-fill text-danger fs-5"></i>
+                            <a href="../descargas/descargar_ticket_turnoPDF.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
+                              title="Imprimir ticket de cobro" target="_blank">
+                                <button type="button" class="btn btn-primary btn-xs">Imprimir ticket de cobro</button>
                             </a>
-
-                            <a href="../modificar/modificar_turnos.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
-                              title="Modificar">
-                                <i class="bi bi-pencil-fill text-warning fs-5"></i>
-                            </a>
-
-                            <a href="../descargas/descargar_comp_turnosPDF.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
-                              title="Imprimir">
-                                <i class="bi bi-printer-fill text-primary fs-5"></i>
+                            <a href="../acciones/cobrar_turno.php?ID_TURNO=<?php echo $ListadoTurnos[$i]['IdTurno']; ?>" 
+                              title="Cobrar">
+                                <button type="button" class="btn btn-success btn-xs"
+                                  onclick="return confirm('¿Confirma marcar el turno como cobrado?');">Cobrar</button>
                             </a>
                         </td>
                     </tr>

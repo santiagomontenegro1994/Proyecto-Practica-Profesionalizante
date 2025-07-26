@@ -72,7 +72,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
         <h5 class="card-title mr-2">Datos de la Venta</h5>
     <table class="table table-striped">
         <thead>
-            <tr class="table-primary">
+            <tr class="table-primaria">
             <th scope="col" class="col-2 text-truncate" style="max-width: 50px;">COD.</th>
             <th scope="col" class="col-5">Producto</th>
             <th scope="col" class="col-3">Descripcion</th>
@@ -92,7 +92,7 @@ require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionado
                 <td><a href="#" id="add_producto_venta" class="text-primary fw-bold" style="display: none;"><i class="bi bi-bag-plus-fill text-primary fs-5"></i> Agregar</a></td>   
             </tr>
 
-            <tr class="table-primary">
+            <tr class="table-primaria">
                 <th scope="col">COD.</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Descripcion</th>
