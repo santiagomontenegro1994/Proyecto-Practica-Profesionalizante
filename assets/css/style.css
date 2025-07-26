@@ -1177,6 +1177,39 @@ main {
   }
 }
 
-.table>:not(caption)>*>* {
-  background-color: var(--color-secondary-ligth);
+
+
+/*--------------------------------------------------------------
+# Estilo adisional de tabla pendiente
+--------------------------------------------------------------*/
+
+  .table-pendiente {
+    --bs-table-bg: #E6A5A5; /* Mismo color para todas las filas */
+    --bs-table-striped-bg: #E6A5A5; /* Mismo color para filas bandeadas */
+    color: #000;
+    border-color: #270202;
+}  
+
+  .table-completo {
+    --bs-table-bg: #A3C9A8; /* Mismo color para todas las filas */
+    --bs-table-striped-bg: #A3C9A8; /* Mismo color para filas bandeadas */
+    color: #000;
+    border-color: #003d0a;
+}  
+
+  .table-proceso {
+    --bs-table-bg: #F4E3B2; /* Mismo color para todas las filas */
+    --bs-table-striped-bg: #F4E3B2; /* Mismo color para filas bandeadas */
+    color: #000;
+    border-color: #080a01;
+} 
+
+.table-primaria {
+    --bs-table-bg: #ddc1d4; /* --color-primary-light */
+    --bs-table-striped-bg: #e3cbd9;
+    --bs-table-active-bg: #c293b2; /* --color-primary */
+    --bs-table-hover-bg: #dfc5d6;
+    color: #000;
+    border-color: #693b5a; /* --color-primary-dark */
 }
+

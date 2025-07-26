@@ -110,6 +110,11 @@
             </a>
           </li>
           <li>
+            <a href="../listados/cobrar_turnos.php">
+              <i class="bi bi-circle"></i><span>Cobrar Turnos</span>
+            </a>
+          </li>
+          <li>
             <a href="../listados/listados_ventas.php">
               <i class="bi bi-circle"></i><span>Listado de Ventas</span>
             </a>

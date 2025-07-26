@@ -734,33 +734,62 @@ function InsertarTurnos($vConexion) {
     return true;
 }
 
-function ColorDeFila($vFecha,$vEstado) {
-    $Title='';
-    $Color=''; 
+function ColorDeFilaTurnos($vIdTurno, $vFecha, $vEstado, $conexion) { // Corregido el nombre del parámetro
+    $Title = '';
+    $Color = '';
+    
+    // Establecer zona horaria de Argentina
+    date_default_timezone_set('America/Argentina/Buenos_Aires');
     $FechaActual = date("Y-m-d");
 
-    if ($vFecha < $FechaActual && $vEstado!=3){
-        //la fecha del viaje es mayor a mañana?
-        $Title='Turno Vencido';
-        $Color='table-danger'; 
-    
-    } else if ($vEstado == 2){
-        //Turno en Curso
-        $Title='Turno en Curso';
-        $Color='table-warning'; 
-    } else if ($vEstado==3){
-        //Turno Completado
-        $Title='Turno Completado';
-        $Color='table-success'; 
-    } else if ($vEstado == 1){
-        //Turno pendiente
-        $Title='Turno Pendiente';
-        $Color='table-primary';
-    }
+    // Debug: Verificar valores recibidos
+    // error_log("Turno ID: $vIdTurno, Fecha: $vFecha, Estado: $vEstado");
+
+    // Lógica para marcar turnos vencidos (estado 6)
+    if (($vEstado == 1 || $vEstado == 2) && $vFecha < $FechaActual) {
+        $Title = 'Turno Vencido';
+        $Color = 'table-danger';
         
+        // Actualizar estado en la base de datos
+        $query = "UPDATE turnos SET IdEstado = 6 WHERE IdTurno = $vIdTurno";
+        if (!mysqli_query($conexion, $query)) {
+            error_log("Error al actualizar estado del turno: " . mysqli_error($conexion));
+        }
+        $vEstado = 6; // Actualizamos también la variable local
+    }
+    
+    // Asignar colores y títulos según estado
+    switch ($vEstado) { // Usamos la variable que podría haber sido actualizada
+        case 1:
+            $Title = 'Turno Pendiente';
+            $Color = 'table-pendiente';
+            break;
+        case 2:
+            $Title = 'Turno En Proceso';
+            $Color = 'table-proceso';
+            break;
+        case 3:
+            $Title = 'Turno Completado';
+            $Color = 'table-completo';
+            break;
+        case 4:
+            $Title = 'Turno Pagado';
+            $Color = 'table-primaria';
+            break;
+        case 5:
+            $Title = 'Turno Rechazado';
+            $Color = 'table-secondary';
+            break;
+        case 6:
+            $Title = 'Turno Vencido';
+            $Color = 'table-secondary';
+            break;
+        default:
+            $Title = 'Estado Desconocido';
+            $Color = '';
+    }
     
     return [$Title, $Color];
-
 }
 
 function Listar_Horarios_Ocupados($MiConexion, $fecha) {
@@ -777,7 +806,96 @@ function Listar_Horarios_Ocupados($MiConexion, $fecha) {
 
     return $horariosOcupados;
 }
+//-----------
+function Listar_Turnos_Completados($vConexion) {
+    $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                   c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+            FROM turnos t
+            INNER JOIN usuarios e ON t.IdEstilista = e.id
+            INNER JOIN clientes c ON t.IdCliente = c.idCliente
+            INNER JOIN estado es ON t.IdEstado = es.IdEstado
+            WHERE t.IdEstado = 3
+            ORDER BY t.Fecha DESC, t.Horario DESC";
+    $resultado = mysqli_query($vConexion, $SQL);
+    $Listado = array();
+    if ($resultado) {
+        while ($fila = mysqli_fetch_assoc($resultado)) {
+            $Listado[] = $fila;
+        }
+    }
+    return $Listado;
+}
 
+function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) {
+    switch ($criterio) {
+        case 'Cliente':
+            $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                           c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE t.IdEstado = 3 AND CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+        case 'Estilista':
+            $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                           c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE t.IdEstado = 3 AND CONCAT(e.apellido, ' ', e.nombre) LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+        case 'Fecha':
+            $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                           c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE t.IdEstado = 3 AND t.Fecha LIKE '%$parametro%'
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+        case 'TipoServicio':
+            $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                           c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    INNER JOIN detalle_turno dt ON t.IdTurno = dt.IdTurno
+                    INNER JOIN tipo_servicio ts ON dt.IdTipoServicio = ts.IdTipoServicio
+                    WHERE t.IdEstado = 3 AND ts.Denominacion LIKE '%$parametro%'
+                    GROUP BY t.IdTurno
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+            break;
+        default:
+            $SQL = "SELECT t.IdTurno, t.Fecha, t.Horario, e.nombre AS NOMBRE_E, e.apellido AS APELLIDO_E, 
+                           c.Nombre AS NOMBRE_C, c.Apellido AS APELLIDO_C, es.IdEstado, es.Denominacion AS ESTADO
+                    FROM turnos t
+                    INNER JOIN usuarios e ON t.IdEstilista = e.id
+                    INNER JOIN clientes c ON t.IdCliente = c.idCliente
+                    INNER JOIN estado es ON t.IdEstado = es.IdEstado
+                    WHERE t.IdEstado = 3
+                    ORDER BY t.Fecha DESC, t.Horario DESC";
+    }
+    $resultado = mysqli_query($vConexion, $SQL);
+    $Listado = array();
+    if ($resultado) {
+        while ($fila = mysqli_fetch_assoc($resultado)) {
+            $Listado[] = $fila;
+        }
+    }
+    return $Listado;
+}
+
+function Cobrar_Turno($vConexion, $idTurno) {
+    $SQL = "UPDATE turnos SET IdEstado = 4 WHERE IdTurno = $idTurno";
+    return mysqli_query($vConexion, $SQL);
+}
+//------------
 function Validar_Producto(){
     $vMensaje='';
         
