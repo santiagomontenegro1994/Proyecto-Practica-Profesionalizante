@@ -22,8 +22,6 @@ $CantidadEstilistas = count($ListadoEstilistas);
 $ListadoClientes = Listar_Clientes_Turnos($MiConexion);
 $CantidadClientes = count($ListadoClientes);
 
-require_once '../funciones/insertar_clientes.php';
-
 $_SESSION['Estilo'] = 'alert';
 
 if (!empty($_POST['Registrar'])) {

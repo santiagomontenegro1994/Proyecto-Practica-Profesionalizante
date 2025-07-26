@@ -13,8 +13,7 @@ require_once ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta secci
 require_once '../funciones/conexion.php';
 $MiConexion=ConexionBD(); 
 
-require_once '../funciones/validacion_registro_clientes.php'; 
-require_once '../funciones/insertar_clientes.php';
+require_once '../funciones/select_general.php'; 
 
 $Mensaje='';
 $Estilo='warning';

@@ -105,7 +105,7 @@ try {
     switch($tipo) {
         case 'turnosHoy':
             // Consulta para contar turnos actuales
-            $query = "SELECT COUNT(*) as total FROM turnos WHERE $filtro";
+            $query = "SELECT COUNT(*) as total FROM turnos WHERE $filtro AND idActivo = 1";
             $result = $conexion->query($query);
             if (!$result) {
                 throw new Exception("Error en consulta: " . $conexion->error, 500);
@@ -114,7 +114,7 @@ try {
             $total_actual = (int)$row['total'];
             
             // Consulta para contar turnos período anterior
-            $query_anterior = "SELECT COUNT(*) as total FROM turnos WHERE Fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'";
+            $query_anterior = "SELECT COUNT(*) as total FROM turnos WHERE idActivo = 1 AND Fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'";
             $result_anterior = $conexion->query($query_anterior);
             if (!$result_anterior) {
                 throw new Exception("Error en consulta: " . $conexion->error, 500);
@@ -135,10 +135,13 @@ try {
         case 'ingresosTurnos':
             // Consulta para sumar ingresos actuales
             $query = "SELECT COALESCE(SUM(ts.precio), 0) as total 
-                      FROM turnos t
-                      JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
-                      JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
-                      WHERE $filtro";
+                        FROM turnos t
+                        JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
+                        JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
+                        WHERE $filtro 
+                        AND t.IdEstado = 4
+                        AND t.idActivo = 1
+                        AND ts.idActivo = 1";
             $result = $conexion->query($query);
             if (!$result) {
                 throw new Exception("Error en consulta: " . $conexion->error, 500);
@@ -148,10 +151,12 @@ try {
             
             // Consulta para sumar ingresos período anterior
             $query_anterior = "SELECT COALESCE(SUM(ts.precio), 0) as total 
-                              FROM turnos t
-                              JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
-                              JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
-                              WHERE Fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'";
+                                FROM turnos t
+                                JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
+                                JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
+                                WHERE t.Fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'
+                                AND t.IdEstado = 4
+                                AND t.idActivo = 1";
             $result_anterior = $conexion->query($query_anterior);
             if (!$result_anterior) {
                 throw new Exception("Error en consulta: " . $conexion->error, 500);
@@ -188,7 +193,7 @@ try {
                         t.IdEstado,
                         COUNT(t.IdTurno) as cantidad
                       FROM turnos t
-                      WHERE $filtro
+                      WHERE $filtro AND t.IdActivo = 1
                       GROUP BY t.IdEstado";
             
             $result = $conexion->query($query);
@@ -247,7 +252,7 @@ try {
                         COUNT(t.IdTurno) as cantidad
                       FROM turnos t
                       JOIN usuarios e ON t.IdEstilista = e.id
-                      WHERE $filtro
+                      WHERE $filtro AND t.IdActivo = 1
                       GROUP BY e.id, e.nombre, e.apellido
                       ORDER BY cantidad DESC";
             
@@ -283,7 +288,7 @@ try {
                         END as franja,
                         COUNT(IdTurno) as cantidad
                       FROM turnos
-                      WHERE $filtro
+                      WHERE $filtro AND IdActivo = 1
                       GROUP BY franja
                       ORDER BY 
                         CASE franja

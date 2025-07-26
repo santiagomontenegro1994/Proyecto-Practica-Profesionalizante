@@ -74,7 +74,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               FROM turnos
               LEFT JOIN detalle_turno dt ON turnos.IdTurno = dt.idTurno
               LEFT JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
-              WHERE $filtro";
+              WHERE $filtro AND turnos.IdActivo = 1";
     
     $result = $conexion->query($query_resumen);
     $datos['resumen'] = $result ? $result->fetch_assoc() : ['total_turnos' => 0, 'total_ingresos' => 0];

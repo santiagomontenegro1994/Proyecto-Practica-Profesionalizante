@@ -13,13 +13,27 @@ function Eliminar_Cliente($vConexion , $vIdConsulta) {
 
     if (!empty($data['idCliente']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM clientes WHERE idCliente = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE clientes SET idActivo = 2 WHERE idCliente = $vIdConsulta");
         return true;
 
     }else {
         return false;
     }
     
+}
+
+function InsertarClientes($vConexion){
+    
+    $SQL_Insert="INSERT INTO clientes (nombre, apellido, telefono, direccion, email, dni)
+    VALUES ('".$_POST['Nombre']."' , '".$_POST['Apellido']."' , '".$_POST['Telefono']."', '".$_POST['Direccion']."', '".$_POST['Email']."', '".$_POST['DNI']."')";
+
+
+    if (!mysqli_query($vConexion, $SQL_Insert)) {
+        //si surge un error, finalizo la ejecucion del script con un mensaje
+        die('<h4>Error al intentar insertar el registro.</h4>');
+    }
+
+    return true;
 }
 
 function Eliminar_Turno($vConexion , $vIdConsulta) {
@@ -36,13 +50,40 @@ function Eliminar_Turno($vConexion , $vIdConsulta) {
 
     if (!empty($data['IdTurno']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM turnos WHERE IdTurno = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE turnos SET idActivo = 2 WHERE IdTurno = $vIdConsulta");
         return true;
 
     }else {
         return false;
     }
     
+}
+
+function Listar_Clientes($vConexion) {
+
+    $Listado=array();
+
+      //1) genero la consulta que deseo
+        $SQL = "SELECT * FROM clientes WHERE idActivo = 1";
+
+        //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
+        $rs = mysqli_query($vConexion, $SQL);
+        
+        //3) el resultado deberá organizarse en una matriz, entonces lo recorro
+        $i=0;
+        while ($data = mysqli_fetch_array($rs)) {
+            $Listado[$i]['ID_CLIENTE'] = $data['idCliente'];
+            $Listado[$i]['NOMBRE'] = $data['nombre'];
+            $Listado[$i]['APELLIDO'] = $data['apellido'];
+            $Listado[$i]['TELEFONO'] = $data['telefono'];
+            $Listado[$i]['DIRECCION'] = $data['direccion'];
+            $Listado[$i]['EMAIL'] = $data['email'];
+            $Listado[$i]['DNI'] = $data['dni'];
+            $i++;
+        }
+
+    //devuelvo el listado generado en el array $Listado. (Podra salir vacio o con datos)..
+    return $Listado;
 }
 
 function Datos_Cliente($vConexion , $vIdCliente) {
@@ -179,7 +220,7 @@ function Listar_Proveedores($vConexion) {
     $Listado = array();
 
     // 1) Genero la consulta que deseo
-    $SQL = "SELECT * FROM proveedores";
+    $SQL = "SELECT * FROM proveedores WHERE idActivo = 1 ";
 
     // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a variable $rs
     $rs = mysqli_query($vConexion, $SQL);
@@ -203,19 +244,19 @@ function Listar_Proveedores_Parametro($vConexion,$criterio,$parametro) {
     $Listado=array();
 
       //1) genero la consulta que deseo segun el parametro
-        $sql = "SELECT * FROM proveedores";
+        $sql = "SELECT * FROM proveedores  WHERE idActivo = 1 ";
         switch ($criterio) { 
         case 'RazonSocial': 
-        $sql = "SELECT * FROM proveedores WHERE razon_social LIKE '%$parametro%'";
+        $sql = "SELECT * FROM proveedores  WHERE idActivo = 1 AND razon_social LIKE '%$parametro%'";
         break;
         case 'CUIT':
-        $sql = "SELECT * FROM proveedores WHERE cuit LIKE '%$parametro%'";
+        $sql = "SELECT * FROM proveedores WHERE idActivo = 1 AND cuit LIKE '%$parametro%'";
         break;
         case 'Telefono':
-        $sql = "SELECT * FROM proveedores WHERE telefono LIKE '%$parametro%'";
+        $sql = "SELECT * FROM proveedores WHERE idActivo = 1 AND telefono LIKE '%$parametro%'";
         break;
         case 'Email':
-        $sql = "SELECT * FROM proveedores WHERE email LIKE '%$parametro%'";
+        $sql = "SELECT * FROM proveedores WHERE idActivo = 1 AND email LIKE '%$parametro%'";
         break;
         }    
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
@@ -248,7 +289,7 @@ function Eliminar_Proveedor($vConexion , $vIdConsulta) {
 
     if (!empty($data['idProveedor']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM proveedores WHERE idProveedor = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE proveedores SET idActivo = 2 WHERE idProveedor = $vIdConsulta");
         return true;
 
     }else {
@@ -468,6 +509,7 @@ function Listar_Tipos($vConexion) {
       //1) genero la consulta que deseo
         $SQL = "SELECT IdTipoServicio , Denominacion
         FROM tipo_servicio
+        WHERE idActivo = 1
         ORDER BY Denominacion";
 
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
@@ -492,7 +534,7 @@ function Listar_Estilistas($vConexion) {
       //1) genero la consulta que deseo
         $SQL = "SELECT id , apellido , nombre
         FROM usuarios
-        WHERE nivel = 2
+        WHERE nivel = 2 AND idActivo = 1
         ORDER BY Apellido";
 
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
@@ -518,6 +560,7 @@ function Listar_Clientes_Turnos($vConexion) {
       //1) genero la consulta que deseo
         $SQL = "SELECT idCliente , apellido , nombre
         FROM clientes
+        WHERE idActivo = 1
         ORDER BY Apellido";
 
         //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
@@ -529,6 +572,48 @@ function Listar_Clientes_Turnos($vConexion) {
             $Listado[$i]['ID'] = $data['idCliente'];
             $Listado[$i]['APELLIDO'] = $data['apellido'];
             $Listado[$i]['NOMBRE'] = $data['nombre'];
+            $i++;
+        }
+
+    //devuelvo el listado generado en el array $Listado. (Podra salir vacio o con datos)..
+    return $Listado;
+}
+
+function Listar_Clientes_Parametro($vConexion,$criterio,$parametro) {
+    $Listado=array();
+
+      //1) genero la consulta que deseo segun el parametro
+        $sql = "SELECT * FROM clientes";
+        switch ($criterio) { 
+        case 'Nombre': 
+        $sql = "SELECT * FROM clientes WHERE idActivo = 1 AND nombre LIKE '%$parametro%'";
+        break;
+        case 'Apellido':
+        $sql = "SELECT * FROM clientes WHERE idActivo = 1 AND apellido LIKE '%$parametro%'";
+        break;
+        case 'Telefono':
+        $sql = "SELECT * FROM clientes WHERE idActivo = 1 AND telefono LIKE '%$parametro%'";
+        break;
+        case 'Email':
+        $sql = "SELECT * FROM clientes WHERE idActivo = 1 AND email LIKE '%$parametro%'";
+        break;
+        case 'DNI':
+            $sql = "SELECT * FROM clientes WHERE idActivo = 1 AND dni LIKE '%$parametro%'";
+            break;
+        }    
+        //2) a la conexion actual le brindo mi consulta, y el resultado lo entrego a variable $rs
+        $rs = mysqli_query($vConexion, $sql);
+        
+        //3) el resultado deberá organizarse en una matriz, entonces lo recorro
+        $i=0;
+        while ($data = mysqli_fetch_array($rs)) {
+            $Listado[$i]['ID_CLIENTE'] = $data['id'];
+            $Listado[$i]['NOMBRE'] = $data['nombre'];
+            $Listado[$i]['APELLIDO'] = $data['apellido'];
+            $Listado[$i]['TELEFONO'] = $data['telefono'];
+            $Listado[$i]['DIRECCION'] = $data['direccion'];
+            $Listado[$i]['EMAIL'] = $data['email'];
+            $Listado[$i]['DNI'] = $data['dni'];
             $i++;
         }
 
@@ -567,6 +652,7 @@ function Listar_Turnos($vConexion) {
             INNER JOIN usuarios e ON t.IdEstilista = e.id
             INNER JOIN clientes c ON t.IdCliente = c.idCliente
             INNER JOIN estado es ON t.IdEstado = es.IdEstado
+            WHERE t.idActivo = 1
             ORDER BY t.Fecha DESC, t.Horario DESC";
 
     $resultado = mysqli_query($vConexion, $SQL);
@@ -615,7 +701,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
 
@@ -634,7 +720,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE CONCAT(e.Apellido, ' ', e.Nombre) LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND CONCAT(e.Apellido, ' ', e.Nombre) LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
 
@@ -653,7 +739,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE t.Fecha LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND t.Fecha LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
 
@@ -675,7 +761,7 @@ function Listar_Turnos_Parametro($vConexion, $criterio, $parametro) {
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     LEFT JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
                     LEFT JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
-                    WHERE ts.Denominacion LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND ts.Denominacion LIKE '%$parametro%'
                     GROUP BY t.IdTurno
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
@@ -814,7 +900,7 @@ function Listar_Turnos_Completados($vConexion) {
             INNER JOIN usuarios e ON t.IdEstilista = e.id
             INNER JOIN clientes c ON t.IdCliente = c.idCliente
             INNER JOIN estado es ON t.IdEstado = es.IdEstado
-            WHERE t.IdEstado = 3
+            WHERE t.IdEstado = 3 AND t.idActivo = 1
             ORDER BY t.Fecha DESC, t.Horario DESC";
     $resultado = mysqli_query($vConexion, $SQL);
     $Listado = array();
@@ -835,7 +921,7 @@ function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) 
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE t.IdEstado = 3 AND CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND t.IdEstado = 3 AND CONCAT(c.Apellido, ' ', c.Nombre) LIKE '%$parametro%' 
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
         case 'Estilista':
@@ -845,7 +931,7 @@ function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) 
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE t.IdEstado = 3 AND CONCAT(e.apellido, ' ', e.nombre) LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND t.IdEstado = 3 AND CONCAT(e.apellido, ' ', e.nombre) LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
         case 'Fecha':
@@ -855,7 +941,7 @@ function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) 
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE t.IdEstado = 3 AND t.Fecha LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND t.IdEstado = 3 AND t.Fecha LIKE '%$parametro%'
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
         case 'TipoServicio':
@@ -867,7 +953,7 @@ function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) 
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
                     INNER JOIN detalle_turno dt ON t.IdTurno = dt.IdTurno
                     INNER JOIN tipo_servicio ts ON dt.IdTipoServicio = ts.IdTipoServicio
-                    WHERE t.IdEstado = 3 AND ts.Denominacion LIKE '%$parametro%'
+                    WHERE t.idActivo = 1 AND t.IdEstado = 3 AND ts.Denominacion LIKE '%$parametro%'
                     GROUP BY t.IdTurno
                     ORDER BY t.Fecha DESC, t.Horario DESC";
             break;
@@ -878,7 +964,7 @@ function Listar_Turnos_Completados_Parametro($vConexion, $criterio, $parametro) 
                     INNER JOIN usuarios e ON t.IdEstilista = e.id
                     INNER JOIN clientes c ON t.IdCliente = c.idCliente
                     INNER JOIN estado es ON t.IdEstado = es.IdEstado
-                    WHERE t.IdEstado = 3
+                    WHERE t.idActivo = 1 AND t.IdEstado = 3
                     ORDER BY t.Fecha DESC, t.Horario DESC";
     }
     $resultado = mysqli_query($vConexion, $SQL);
@@ -941,7 +1027,7 @@ function Listar_Productos($vConexion) {
 
     // 1) Genero la consulta que deseo
     $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
-            FROM productos
+            FROM productos WHERE idActivo = 1
             ORDER BY nombre";
 
     // 2) A la conexión actual le brindo mi consulta, y el resultado lo entrego a la variable $rs
@@ -972,25 +1058,25 @@ function Listar_Productos_Parametro($vConexion, $criterio, $parametro) {
         case 'Nombre':
             $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
                     FROM productos
-                    WHERE nombre LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND nombre LIKE '%$parametro%'
                     ORDER BY nombre";
             break;
         case 'Descripcion':
             $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
                     FROM productos
-                    WHERE descripcion LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND descripcion LIKE '%$parametro%'
                     ORDER BY nombre";
             break;
         case 'Precio':
             $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
                     FROM productos
-                    WHERE precio LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND precio LIKE '%$parametro%'
                     ORDER BY nombre";
             break;
         case 'Stock':
             $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
                     FROM productos
-                    WHERE stock LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND stock LIKE '%$parametro%'
                     ORDER BY nombre";
             break;
     }
@@ -1070,7 +1156,7 @@ function Eliminar_Producto($vConexion, $vIdProducto) {
 
     if (!empty($data['idProducto'])) {
         // Si el producto existe, lo elimino
-        mysqli_query($vConexion, "DELETE FROM productos WHERE idProducto = $vIdProducto");
+        mysqli_query($vConexion, "UPDATE productos SET idActivo = 2 WHERE idProducto = $vIdConsulta");
         return true;
     } else {
         return false;
@@ -1078,7 +1164,7 @@ function Eliminar_Producto($vConexion, $vIdProducto) {
 }
 
 function Listar_Productos_Bajo_Stock($conexion) {
-    $sql = "SELECT * FROM productos WHERE stock <= 10 ORDER BY stock ASC";
+    $sql = "SELECT * FROM productos WHERE idActivo = 1 AND stock <= 10 ORDER BY stock ASC";
     $resultado = mysqli_query($conexion, $sql);
     $productos = [];
     while ($fila = mysqli_fetch_assoc($resultado)) {
@@ -1153,6 +1239,7 @@ function Listar_Ventas($vConexion) {
             LEFT JOIN clientes c ON v.idCliente = c.idCliente
             LEFT JOIN usuarios u ON v.idUsuario = u.id
             LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+            WHERE v.idActivo = 1
             GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY v.idVenta DESC";
 
@@ -1192,7 +1279,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
                     LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-                    WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    WHERE v.idActivo = 1 AND c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
                     GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
@@ -1211,7 +1298,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
                     LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-                    WHERE v.fecha LIKE '%$parametro%'
+                    WHERE v.idActivo = 1 AND v.fecha LIKE '%$parametro%'
                     GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
@@ -1230,7 +1317,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON v.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON v.idUsuario = u.id
                     LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-                    WHERE v.idVenta = '$parametro'
+                    WHERE v.idActivo = 1 AND v.idVenta = '$parametro'
                     GROUP BY v.idVenta, v.idCliente, v.fecha, v.descuento, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY v.fecha DESC";
             break;
@@ -1273,7 +1360,7 @@ function Listar_Ventas_Fecha($conexion, $fecha_inicio, $fecha_fin) {
             INNER JOIN clientes c ON v.idCliente = c.idCliente
             INNER JOIN usuarios u ON v.idUsuario = u.id
             LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-            WHERE v.fecha BETWEEN ? AND ?
+            WHERE v.idActivo = 1 AND v.fecha BETWEEN ? AND ?
             GROUP BY v.idVenta, v.fecha, c.nombre, c.apellido, u.nombre, u.apellido, v.descuento
             ORDER BY v.fecha DESC";
     
@@ -1380,6 +1467,7 @@ function Listar_Pedidos($vConexion) {
             LEFT JOIN clientes c ON p.idCliente = c.idCliente
             LEFT JOIN usuarios u ON p.idUsuario = u.id
             LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+            WHERE p.idActivo = 1
             GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY p.idPedido DESC";
 
@@ -1421,7 +1509,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
-                    WHERE c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
+                    WHERE p.idActivo = 1 AND c.nombre LIKE '%$parametro%' OR c.apellido LIKE '%$parametro%'
                     GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
@@ -1441,7 +1529,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
-                    WHERE p.fecha LIKE '%$parametro%'
+                    WHERE p.idActivo = 1 AND p.fecha LIKE '%$parametro%'
                     GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
@@ -1461,7 +1549,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
                     LEFT JOIN clientes c ON p.idCliente = c.idCliente
                     LEFT JOIN usuarios u ON p.idUsuario = u.id
                     LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
-                    WHERE p.idPedido = '$parametro'
+                    WHERE p.idActivo = 1 AND p.idPedido = '$parametro'
                     GROUP BY p.idPedido, p.idCliente, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
                     ORDER BY p.idPedido DESC";
             break;
@@ -1507,7 +1595,7 @@ function Listar_Pedidos_Fecha($conexion, $fecha_inicio, $fecha_fin) {
             INNER JOIN clientes c ON p.idCliente = c.idCliente
             INNER JOIN usuarios u ON p.idUsuario = u.id
             LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
-            WHERE p.fecha BETWEEN ? AND ?
+            WHERE p.idActivo = 1 AND p.fecha BETWEEN ? AND ?
             GROUP BY p.idPedido, p.fecha, p.descuento, p.senia, c.nombre, c.apellido, u.nombre, u.apellido
             ORDER BY p.fecha ASC";
 
@@ -1849,12 +1937,12 @@ function Actualizar_Cantidad_Detalle($conexion, $idDetalle, $nuevaCantidad) {
 }
 
 function Listado_Proveedores($conexion) {
-    $sql = "SELECT idProveedor, razon_social FROM proveedores";
+    $sql = "SELECT idProveedor, razon_social FROM proveedores WHERE idActivo = 1";
     return mysqli_query($conexion, $sql);
 }
 
 function Listado_Productos($conexion) {
-    $sql = "SELECT idProducto, nombre FROM productos ORDER BY nombre";
+    $sql = "SELECT idProducto, nombre FROM productos WHERE idActivo = 1 ORDER BY nombre";
     return mysqli_query($conexion, $sql);
 }
 
@@ -1952,6 +2040,7 @@ function Listar_Compras($vConexion) {
             FROM compras c
             LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
             LEFT JOIN usuarios u ON c.idUsuario = u.id
+            WHERE c.idActivo = 1
             ORDER BY c.idCompra DESC";
 
     // 2) Ejecuto la consulta
@@ -1986,7 +2075,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                     FROM compras c
                     LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON c.idUsuario = u.id
-                    WHERE p.razon_social LIKE '%$parametro%'
+                    WHERE c.idActivo = 1 AND p.razon_social LIKE '%$parametro%'
                     ORDER BY c.idCompra DESC";
             break;
 
@@ -2000,7 +2089,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                     FROM compras c
                     LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON c.idUsuario = u.id
-                    WHERE c.fecha LIKE '%$parametro%'
+                    WHERE c.idActivo = 1 AND c.fecha LIKE '%$parametro%'
                     ORDER BY c.idCompra DESC";
             break;
 
@@ -2014,7 +2103,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                     FROM compras c
                     LEFT JOIN proveedores p ON c.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON c.idUsuario = u.id
-                    WHERE c.idCompra = '$parametro'
+                    WHERE c.idActivo = 1 AND c.idCompra = '$parametro'
                     ORDER BY c.idCompra DESC";
             break;
 
@@ -2048,7 +2137,8 @@ function Eliminar_Compra($vConexion , $vIdConsulta) {
 
     if (!empty($data['idCompra']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM compras WHERE idCompra = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE compras SET idActivo = 2 WHERE idCompra = $vIdConsulta");
+        
         return true;
 
     }else {
@@ -2142,7 +2232,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE p.razon_social LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND p.razon_social LIKE '%$parametro%'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2158,7 +2248,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE o.fecha LIKE '%$parametro%'
+                    WHERE idActivo = 1 AND o.fecha LIKE '%$parametro%'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2174,7 +2264,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE o.idOrdenCompra = '$parametro'
+                    WHERE idActivo = 1 AND o.idOrdenCompra = '$parametro'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2209,7 +2299,7 @@ function Eliminar_Orden_Compra($vConexion , $vIdConsulta) {
 
     if (!empty($data['idOrdenCompra']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "DELETE FROM orden_compra WHERE idOrdenCompra = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE orden_compra SET idActivo = 2 WHERE idOrdenCompra = $vIdConsulta");
         return true;
 
     }else {
@@ -2285,7 +2375,7 @@ function Listar_Ordenes_Compra_Rango($conexion, $fecha_inicio, $fecha_fin) {
             LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
             LEFT JOIN usuarios u ON o.idUsuario = u.id
             LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-            WHERE o.fecha BETWEEN ? AND ?
+            WHERE idActivo = 1 AND o.fecha BETWEEN ? AND ?
             GROUP BY o.idOrdenCompra
             ORDER BY o.fecha DESC";
     
@@ -2425,7 +2515,7 @@ function InsertarUsuario($vConexion) {
 
 function Listar_Usuarios($vConexion) {
     $Listado = array();
-    $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios ORDER BY apellido, nombre";
+    $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE idActivo = 1 ORDER BY apellido, nombre";
     $rs = mysqli_query($vConexion, $SQL);
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
@@ -2451,16 +2541,16 @@ function Listar_Usuarios_Parametro($vConexion, $criterio, $parametro) {
     $Listado = array();
     switch ($criterio) {
         case 'Nombre':
-            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE nombre LIKE '%$parametro%' ORDER BY apellido, nombre";
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE idActivo = 1 AND nombre LIKE '%$parametro%' ORDER BY apellido, nombre";
             break;
         case 'Apellido':
-            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE apellido LIKE '%$parametro%' ORDER BY apellido, nombre";
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE idActivo = 1 AND apellido LIKE '%$parametro%' ORDER BY apellido, nombre";
             break;
         case 'Usuario':
-            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE user LIKE '%$parametro%' ORDER BY apellido, nombre";
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE idActivo = 1 AND user LIKE '%$parametro%' ORDER BY apellido, nombre";
             break;
         default:
-            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios ORDER BY apellido, nombre";
+            $SQL = "SELECT id AS ID_USUARIO, nombre AS NOMBRE, apellido AS APELLIDO, user AS USER, nivel AS NIVEL FROM usuarios WHERE idActivo = 1 ORDER BY apellido, nombre";
     }
     $rs = mysqli_query($vConexion, $SQL);
     $i = 0;
@@ -2534,7 +2624,7 @@ function Eliminar_Usuario($vConexion, $vIdUsuario) {
 
     if (!empty($data['id'])) {
         // Si el usuario existe, lo elimino
-        mysqli_query($vConexion, "DELETE FROM usuarios WHERE id = $vIdUsuario");
+        mysqli_query($vConexion, "UPDATE usuarios SET idActivo = 2 WHERE id = $vIdConsulta");
         return true;
     } else {
         return false;
@@ -2569,7 +2659,7 @@ function InsertarServicio($vConexion) {
 
 function Listar_Servicios($vConexion) {
     $Listado = array();
-    $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio ORDER BY Denominacion";
+    $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE idActivo = 1 ORDER BY Denominacion";
     $rs = mysqli_query($vConexion, $SQL);
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
@@ -2585,13 +2675,13 @@ function Listar_Servicios_Parametro($vConexion, $criterio, $parametro) {
     $Listado = array();
     switch ($criterio) {
         case 'Denominacion':
-            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE Denominacion LIKE '%$parametro%' ORDER BY Denominacion";
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE idActivo = 1 AND Denominacion LIKE '%$parametro%' ORDER BY Denominacion";
             break;
         case 'Precio':
-            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE precio LIKE '%$parametro%' ORDER BY Denominacion";
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE idActivo = 1 AND precio LIKE '%$parametro%' ORDER BY Denominacion";
             break;
         default:
-            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio ORDER BY Denominacion";
+            $SQL = "SELECT IdTipoServicio AS ID, Denominacion, precio AS PRECIO FROM tipo_servicio WHERE idActivo = 1 ORDER BY Denominacion";
     }
     $rs = mysqli_query($vConexion, $SQL);
     $i = 0;
@@ -2642,7 +2732,7 @@ function Eliminar_Servicio($vConexion, $vIdServicio) {
 
     if (!empty($data['IdTipoServicio'])) {
         // Si el servicio existe, lo elimino
-        mysqli_query($vConexion, "DELETE FROM tipo_servicio WHERE IdTipoServicio = $vIdServicio");
+        mysqli_query($vConexion, "UPDATE tipo_servicio SET idActivo = 2 WHERE IdTipoServicio = $vIdConsulta");
         return true;
     } else {
         return false;

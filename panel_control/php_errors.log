@@ -1,3 +1,8 @@
 [24-Jul-2025 21:21:13 Europe/Berlin] Error en get_turnos_data: Table 'proyecto.estilista' doesn't exist
 [24-Jul-2025 21:21:48 Europe/Berlin] Error en get_turnos_data: Table 'proyecto.estilista' doesn't exist
 [24-Jul-2025 22:05:11 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.IdEstilista' in 'group statement'
+[26-Jul-2025 20:23:46 Europe/Berlin] Error en get_turnos_data: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '/ <- FILTRO POR ESTADO PAGADO
+                    AND t.idActivo = 1
+      ...' at line 6
+[26-Jul-2025 20:24:05 Europe/Berlin] Error en get_turnos_data: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '/ <- FILTRO POR ESTADO PAGADO
+                    AND t.idActivo = 1' at line 6
