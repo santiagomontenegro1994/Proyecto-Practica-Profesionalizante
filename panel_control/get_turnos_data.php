@@ -221,11 +221,12 @@ try {
             $labels = [];
             $series = [];
             $colores = [
-                1 => '#008FFB', // Confirmado
-                2 => '#00E396', // Atendido
-                3 => '#FEB019', // Cancelado
-                4 => '#FF4560', // Reprogramado
-                5 => '#775DD0'  // Pendiente
+                1 => '#FF4560', // Pendiente
+                2 => '#00E396', // En Proceso
+                3 => '#FEB019', // Completado
+                4 => '#008FFB', // Pagado
+                5 => '#702b35ff', // Rechazado
+                5 => '#775DD0'  // Vencido
             ];
             $colors = [];
             

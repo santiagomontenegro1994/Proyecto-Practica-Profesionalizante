@@ -6,3 +6,46 @@
       ...' at line 6
 [26-Jul-2025 20:24:05 Europe/Berlin] Error en get_turnos_data: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '/ <- FILTRO POR ESTADO PAGADO
                     AND t.idActivo = 1' at line 6
+[26-Jul-2025 23:33:14 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "AnalizadorTurnos" not found in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php:136
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php on line 136
+[26-Jul-2025 23:33:14 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "AnalizadorTurnos" not found in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php:136
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php on line 136
+[26-Jul-2025 23:38:07 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "AnalizadorTurnos" not found in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php:136
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php on line 136
+[26-Jul-2025 23:38:07 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "AnalizadorTurnos" not found in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php:136
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_turnos_data.php on line 136
+[27-Jul-2025 00:04:17 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.activo' in 'where clause'
+[27-Jul-2025 00:04:17 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:04:18 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:06:12 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.activo' in 'where clause'
+[27-Jul-2025 00:06:12 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:06:12 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:08:40 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.activo' in 'where clause'
+[27-Jul-2025 00:08:40 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:08:40 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:11:28 Europe/Berlin] Error en get_turnos_data: Unknown column 'e.activo' in 'where clause'
+[27-Jul-2025 00:11:28 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:11:28 Europe/Berlin] Error en get_turnos_data: Unknown column 'u.activo' in 'where clause'
+[27-Jul-2025 00:53:50 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[27-Jul-2025 00:53:50 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[27-Jul-2025 00:55:15 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[27-Jul-2025 00:55:15 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[27-Jul-2025 00:57:29 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[27-Jul-2025 00:57:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control/../funciones/openai_helper.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94

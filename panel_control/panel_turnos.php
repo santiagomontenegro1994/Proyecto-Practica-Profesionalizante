@@ -21,6 +21,35 @@ require ('../barraLateral.inc.php');
     </nav>
   </div>
 
+  <style>
+    .markdown-content {
+      line-height: 1.6;
+    }
+    .markdown-content h3 {
+      color: #3b82f6;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .markdown-content h4 {
+      color: #4b5563;
+      margin-top: 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+    }
+    .markdown-content ul {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .markdown-content li {
+      margin-bottom: 0.5rem;
+    }
+    .markdown-content strong {
+      font-weight: 600;
+      color: #1f2937;
+    }
+  </style>
+
   <section class="section dashboard">
     <div class="row">
       <div class="col-12 mb-3 d-flex justify-content-between">
@@ -218,6 +247,36 @@ require ('../barraLateral.inc.php');
           <div class="card-body">
             <h5 class="card-title">Ocupación por Horario <span id="periodo-horarioChart">| Hoy</span></h5>
             <div id="horarioChart" style="min-height: 350px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Recomendaciones Inteligentes -->
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Recomendaciones Inteligentes <span id="periodo-recomendaciones">| Hoy</span></h5>
+            <div id="recomendacionesContainer">
+              <div class="text-center py-4">
+                <i class="bi bi-robot" style="font-size: 2rem; color: #6c757d;"></i>
+                <p class="text-muted mt-2">Haz clic en el botón para obtener recomendaciones basadas en tus datos</p>
+                <button id="btnObtenerRecomendaciones" class="btn btn-primary" onclick="obtenerRecomendaciones()">
+                  <i class="bi bi-magic"></i> Obtener Recomendaciones
+                </button>
+              </div>
+              <div id="recomendacionesContent" class="d-none">
+                <div class="d-flex justify-content-end mb-3">
+                  <button class="btn btn-sm btn-outline-primary" onclick="obtenerRecomendaciones()">
+                    <i class="bi bi-arrow-repeat"></i> Actualizar
+                  </button>
+                </div>
+                <div id="recomendacionesMarkdown" class="markdown-content"></div>
+              </div>
+              <div id="recomendacionesLoading" class="text-center py-5 d-none">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2">Analizando datos y generando recomendaciones...</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -670,6 +729,110 @@ async function cargarGraficoHorario(periodo, fechaInicio = null, fechaFin = null
   }
 }
 
+async function obtenerRecomendaciones() {
+  const container = document.getElementById('recomendacionesContainer');
+  const content = document.getElementById('recomendacionesContent');
+  const loading = document.getElementById('recomendacionesLoading');
+  const markdown = document.getElementById('recomendacionesMarkdown');
+
+  // Obtener período actual
+  const ultimoFiltro = JSON.parse(localStorage.getItem('ultimo_filtro_global')) || {};
+  const periodo = ultimoFiltro.periodo || 'hoy';
+  const fechaInicio = ultimoFiltro.fechaInicio || null;
+  const fechaFin = ultimoFiltro.fechaFin || null;
+
+  // Mostrar loading
+  container.querySelector('.text-center').classList.add('d-none');
+  content.classList.add('d-none');
+  loading.classList.remove('d-none');
+
+  try {
+    // Construir URL
+    let requestUrl = `../panel_control/get_recomendaciones.php?periodo=${periodo}`;
+    if (periodo === 'personalizado' && fechaInicio && fechaFin) {
+      requestUrl += `&fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    }
+    requestUrl += `&_=${Date.now()}`; // Evitar caché
+
+    // Hacer la solicitud
+    const response = await fetch(requestUrl);
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const rawResponse = await response.text();
+
+    // Depuración
+    console.log('Respuesta del servidor:', {
+      url: requestUrl,
+      status: response.status,
+      contentType: contentType,
+      body: rawResponse.substring(0, 300) + (rawResponse.length > 300 ? '...' : '')
+    });
+
+    // Si no es JSON, manejar error
+    if (!isJson) {
+      let errorMsg = 'El servidor respondió con un formato inesperado';
+      if (rawResponse.includes('<b>') && rawResponse.includes('</b>')) {
+        errorMsg = 'Error en el servidor: ' + rawResponse.match(/<b>.*?<\/b>(.*?)<br/)?.[1] || 'Error desconocido';
+      }
+      throw new Error(errorMsg);
+    }
+
+    // Parsear JSON
+    const data = JSON.parse(rawResponse);
+    
+    if (!response.ok || data.error) {
+      throw new Error(data.message || 'Error al obtener recomendaciones');
+    }
+
+    // Mostrar resultados
+    document.getElementById('periodo-recomendaciones').textContent = '| ' + (data.periodo || periodo);
+    markdown.innerHTML = convertirMarkdownAHTML(data.recomendaciones);
+    
+    loading.classList.add('d-none');
+    content.classList.remove('d-none');
+
+  } catch (error) {
+    console.error('Error completo:', error);
+    loading.classList.add('d-none');
+    container.querySelector('.text-center').classList.remove('d-none');
+
+    // Mostrar error al usuario
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al obtener recomendaciones',
+      html: `
+        <div class="text-start">
+          <p><strong>${error.message}</strong></p>
+          <details class="mt-2">
+            <summary class="text-primary cursor-pointer small">Detalles técnicos</summary>
+            <div class="alert alert-light small mt-2">
+              <strong>Error:</strong> ${error.message}<br>
+              <strong>Tipo:</strong> ${error.name}<br>
+              <strong>URL:</strong> ${requestUrl || 'No disponible'}<br>
+            </div>
+          </details>
+        </div>
+      `,
+      confirmButtonText: 'Entendido'
+    });
+  }
+}
+
+// Función auxiliar para convertir markdown
+function convertirMarkdownAHTML(markdown) {
+  if (!markdown) return '';
+  
+  return markdown
+    .replace(/^# (.*$)/gm, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gm, '<h4>$1</h4>')
+    .replace(/^- (.*$)/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)+/g, '<ul>$&</ul>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '<br><br>');
+}
+
 // Función para alternar sincronización de filtros
 function toggleSincronizacionFiltros() {
   filtrosSincronizados = !filtrosSincronizados;
@@ -718,6 +881,11 @@ function aplicarFiltroGlobal(periodo = null, fechaInicio = null, fechaFin = null
   cargarGraficoEstado(periodo, fechaInicio, fechaFin);
   cargarGraficoEstilista(periodo, fechaInicio, fechaFin);
   cargarGraficoHorario(periodo, fechaInicio, fechaFin);
+  
+  // Si hay recomendaciones visibles, actualizarlas
+  if (!document.getElementById('recomendacionesContent').classList.contains('d-none')) {
+    obtenerRecomendaciones();
+  }
 }
 
 // Función para guardar preferencia de filtro
