@@ -1,7 +1,7 @@
 <?php
 function obtenerRecomendacionesDeOpenAICompras($datos, $periodo) {
     // Configura tu API Key de OpenAI
-    define('OPENAI_API_KEY', 'apiaqui');
+    define('OPENAI_API_KEY', 'aqui');
     
     // Validar que la API key esté configurada
     if (!defined('OPENAI_API_KEY') || empty(OPENAI_API_KEY)) {

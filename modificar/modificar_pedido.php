@@ -71,6 +71,19 @@ if (!empty($_POST['BotonActualizarCantidad'])) {
     exit;
 }
 
+// Procesar actualización de estado
+if (!empty($_POST['BotonActualizarEstado'])) {
+    if (Actualizar_Estado_Pedido($MiConexion, $_POST['IdPedido'], $_POST['estado'])) {
+        $_SESSION['Mensaje'] = "Estado actualizado correctamente";
+        $_SESSION['Estilo'] = 'success';
+    } else {
+        $_SESSION['Mensaje'] = "Error al actualizar el estado";
+        $_SESSION['Estilo'] = 'danger';
+    }
+    header("Location: modificar_pedido.php?ID_PEDIDO=".$_POST['IdPedido']);
+    exit;
+}
+
 // Obtener datos del pedido
 if (!empty($_GET['ID_PEDIDO'])) {
     $DatosPedidoActual = Datos_Pedido($MiConexion, $_GET['ID_PEDIDO']);
@@ -182,7 +195,7 @@ ob_end_flush();
                 </div>
             </form>
 
-            <!-- Formulario separado para la seña -->
+            <!-- Formulario para actualizar seña -->
             <form method="post" class="mt-4">
                 <input type="hidden" name="IdPedido" value="<?= $DatosPedidoActual['ID_PEDIDO'] ?>">
                 <div class="card">
@@ -206,31 +219,83 @@ ob_end_flush();
                                 </button>
                             </div>
                         </div>
-                        
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <table class="table">
-                                    <tr class="table-primary">
-                                        <th>Saldo a pagar:</th>
-                                        <td>$<?= number_format(
-                                            ($subtotal - ($subtotal * $DatosPedidoActual['DESCUENTO']/100)) - $DatosPedidoActual['SENIA'], 
-                                            2, 
-                                            ',', 
-                                            '.'
-                                        ) ?></td>
-                                    </tr>
-                                </table>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Formulario para actualizar estado -->
+            <form method="post" class="mt-4">
+                <input type="hidden" name="IdPedido" value="<?= $DatosPedidoActual['ID_PEDIDO'] ?>">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Estado actual:</label>
+                                <div class="h4 text-primary"><?= $DatosPedidoActual['ESTADO'] ?></div>
                             </div>
-                        </div>
-                        
-                        <div class="text-center mt-4">
-                            <a href="../listados/listados_pedidos.php" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Volver al Listado
-                            </a>
+                            <div class="col-md-4">
+                                <select class="form-select" name="estado" required>
+                                    <?php 
+                                    $estados = Lista_Estados_Pedido($MiConexion);
+                                    foreach ($estados as $estado) {
+                                        $selected = ($estado['ID_ESTADO'] == $DatosPedidoActual['ID_ESTADO']) ? 'selected' : '';
+                                        echo "<option value='{$estado['ID_ESTADO']}' $selected>{$estado['ESTADO']}</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" name="BotonActualizarEstado" value="actualizar" class="btn btn-primario w-100">
+                                    <i class="bi bi-arrow-repeat"></i> Actualizar Estado
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </form>
+
+            <!-- Sección de resumen -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table">
+                                <tr class="table-primary">
+                                    <th>Subtotal:</th>
+                                    <td>$<?= number_format($subtotal, 2, ',', '.') ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Descuento (<?= $DatosPedidoActual['DESCUENTO'] ?>%):</th>
+                                    <td>$<?= number_format($subtotal * $DatosPedidoActual['DESCUENTO']/100, 2, ',', '.') ?></td>
+                                </tr>
+                                <tr class="table-secondary">
+                                    <th>Total con descuento:</th>
+                                    <td>$<?= number_format($subtotal - ($subtotal * $DatosPedidoActual['DESCUENTO']/100), 2, ',', '.') ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Seña:</th>
+                                    <td>$<?= number_format($DatosPedidoActual['SENIA'], 2, ',', '.') ?></td>
+                                </tr>
+                                <tr class="table-success">
+                                    <th>Saldo a pagar:</th>
+                                    <td>$<?= number_format(
+                                        ($subtotal - ($subtotal * $DatosPedidoActual['DESCUENTO']/100)) - $DatosPedidoActual['SENIA'], 
+                                        2, 
+                                        ',', 
+                                        '.'
+                                    ) ?></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="../listados/listados_pedidos.php" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al Listado
+                        </a>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 

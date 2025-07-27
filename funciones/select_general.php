@@ -1736,7 +1736,8 @@ function Datos_Pedido($vConexion, $vIdPedido) {
     $SQL = "SELECT 
                 p.idPedido, 
                 p.idCliente, 
-                p.fecha, 
+                p.fecha,
+                ep.denominacion AS estadoPedido, 
                 IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                 p.descuento, 
                 p.senia,
@@ -1746,6 +1747,7 @@ function Datos_Pedido($vConexion, $vIdPedido) {
                 CONCAT(u.nombre, ' ', u.apellido) AS vendedor
             FROM pedidos p
             LEFT JOIN clientes c ON p.idCliente = c.idCliente
+            LEFT JOIN estado_pedidos ep ON p.idEstado = ep.idEstadoPedido
             LEFT JOIN usuarios u ON p.idUsuario = u.id
             LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
             WHERE p.idPedido = $vIdPedido
@@ -1765,6 +1767,7 @@ function Datos_Pedido($vConexion, $vIdPedido) {
         $DatosPedido['VENDEDOR'] = $data['vendedor'];
         $DatosPedido['CLIENTE_N'] = $data['CLIENTE_N'];
         $DatosPedido['CLIENTE_A'] = $data['CLIENTE_A'];
+        $DatosPedido['ESTADO'] = $data['estadoPedido'];
     }
     return $DatosPedido;
 }
@@ -2799,6 +2802,24 @@ function Eliminar_Servicio($vConexion, $vIdServicio) {
     } else {
         return false;
     }
+}
+
+function Lista_Estados_Pedido($conexion) {
+    $query = "SELECT idEstadoPedido as ID_ESTADO, denominacion as ESTADO FROM estado_pedidos";
+    $result = $conexion->query($query);
+    
+    $estados = array();
+    while ($row = $result->fetch_assoc()) {
+        $estados[] = $row;
+    }
+    return $estados;
+}
+
+function Actualizar_Estado_Pedido($conexion, $id_pedido, $id_estado) {
+    $query = "UPDATE pedidos SET idEstado = ? WHERE idPedido = ?";
+    $stmt = $conexion->prepare($query);
+    $stmt->bind_param("ii", $id_estado, $id_pedido);
+    return $stmt->execute();
 }
 
 ?>
