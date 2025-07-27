@@ -1202,13 +1202,9 @@ function Eliminar_Venta($vConexion, $vIdConsulta) {
             mysqli_query($vConexion, $SQL_Update_Stock);
         }
 
-        // 4. Eliminar los detalles de la venta
-        $SQL_Delete_Detalles = "DELETE FROM detalle_venta WHERE idVenta = $vIdConsulta";
-        mysqli_query($vConexion, $SQL_Delete_Detalles);
-
-        // 5. Eliminar la venta principal
-        $SQL_Delete_Venta = "DELETE FROM ventas WHERE idVenta = $vIdConsulta";
-        mysqli_query($vConexion, $SQL_Delete_Venta);
+        // 4. Eliminar la venta principal
+        $SQL_Update_Venta = "UPDATE ventas SET idEstado = 3 WHERE idVenta = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Update_Venta);
 
         // Confirmar transacción
         mysqli_commit($vConexion);
@@ -1230,6 +1226,7 @@ function Listar_Ventas($vConexion) {
                 v.idVenta, 
                 v.idCliente, 
                 v.fecha, 
+                v.idEstado, 
                 IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                 v.descuento, 
                 c.nombre AS CLIENTE_N, 
@@ -1248,6 +1245,7 @@ function Listar_Ventas($vConexion) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_VENTA'] = $data['idVenta'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
@@ -1270,6 +1268,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
+                        v.idEstado, 
                         IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
@@ -1289,6 +1288,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
+                        v.idEstado, 
                         IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
@@ -1308,6 +1308,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
                         v.idVenta, 
                         v.idCliente, 
                         v.fecha, 
+                        v.idEstado, 
                         IFNULL(SUM(dv.precio_venta * dv.cantidad), 0) AS precioTotal, 
                         v.descuento, 
                         c.nombre AS CLIENTE_N, 
@@ -1333,6 +1334,7 @@ function Listar_Ventas_Parametro($vConexion, $criterio, $parametro) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_VENTA'] = $data['idVenta'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
@@ -1448,6 +1450,33 @@ function Detalles_Venta($vConexion, $vIdVenta) {
     return $DetallesVenta;
 }
 
+function ColorDeFilaVentas($vEstado) { 
+
+    $Title = '';
+    $Color = '';
+    
+    // Asignar colores y títulos según estado
+    switch ($vEstado) { // Usamos la variable que podría haber sido actualizada
+        case 1:
+            $Title = 'En proceso';
+            $Color = 'table-proceso';
+            break;
+        case 2:
+            $Title = 'Finalizada';
+            $Color = 'table-primaria';
+            break;
+        case 3:
+            $Title = 'Cancelada';
+            $Color = 'table-secondary';
+            break;
+        default:
+            $Title = 'Estado Desconocido';
+            $Color = '';
+    }
+    
+    return [$Title, $Color];
+}
+
 function Listar_Pedidos($vConexion) {
 
     $Listado = array();
@@ -1456,7 +1485,8 @@ function Listar_Pedidos($vConexion) {
     $SQL = "SELECT 
                 p.idPedido, 
                 p.idCliente, 
-                p.fecha, 
+                p.fecha,
+                p.idEstado, 
                 IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                 p.descuento,
                 p.senia, 
@@ -1476,6 +1506,7 @@ function Listar_Pedidos($vConexion) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
@@ -1498,7 +1529,8 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
             $SQL = "SELECT 
                         p.idPedido, 
                         p.idCliente, 
-                        p.fecha, 
+                        p.fecha,
+                        p.idEstado, 
                         IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
@@ -1518,7 +1550,8 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
             $SQL = "SELECT 
                         p.idPedido, 
                         p.idCliente, 
-                        p.fecha, 
+                        p.fecha,
+                        p.idEstado, 
                         IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
@@ -1538,7 +1571,8 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
             $SQL = "SELECT 
                         p.idPedido, 
                         p.idCliente, 
-                        p.fecha, 
+                        p.fecha,
+                        p.idEstado, 
                         IFNULL(SUM(dp.precio_venta * dp.cantidad), 0) AS precioTotal, 
                         p.descuento,
                         p.senia, 
@@ -1565,6 +1599,7 @@ function Listar_Pedidos_Parametro($vConexion, $criterio, $parametro) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_PEDIDO'] = $data['idPedido'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PRECIO_TOTAL'] = $data['precioTotal'];
         $Listado[$i]['DESCUENTO'] = $data['descuento'];
@@ -1646,13 +1681,9 @@ function Eliminar_Pedido($vConexion, $vIdConsulta) {
             mysqli_query($vConexion, $SQL_Update_Stock);
         }
 
-        // 4. Eliminar los detalles del pedido
-        $SQL_Delete_Detalles = "DELETE FROM detalle_pedido WHERE idPedido = $vIdConsulta";
-        mysqli_query($vConexion, $SQL_Delete_Detalles);
-
-        // 5. Eliminar el pedido principal
-        $SQL_Delete_Pedido = "DELETE FROM pedidos WHERE idPedido = $vIdConsulta";
-        mysqli_query($vConexion, $SQL_Delete_Pedido);
+        // 4. Eliminar el pedido principal
+        $SQL_Update_Pedido = "UPDATE pedidos SET idEstado = 4 WHERE idPedido = $vIdConsulta";
+        mysqli_query($vConexion, $SQL_Update_Pedido);
 
         // Confirmar transacción
         mysqli_commit($vConexion);
@@ -1736,6 +1767,37 @@ function Datos_Pedido($vConexion, $vIdPedido) {
         $DatosPedido['CLIENTE_A'] = $data['CLIENTE_A'];
     }
     return $DatosPedido;
+}
+
+function ColorDeFilaPedidos($vEstado) { 
+
+    $Title = '';
+    $Color = '';
+    
+    // Asignar colores y títulos según estado
+    switch ($vEstado) { // Usamos la variable que podría haber sido actualizada
+        case 1:
+            $Title = 'En proceso';
+            $Color = 'table-proceso';
+            break;
+        case 2:
+            $Title = 'Listo';
+            $Color = 'table-completo';
+            break;
+        case 3:
+            $Title = 'Finalizado';
+            $Color = 'table-primaria';
+            break;
+        case 4:
+            $Title = 'Cancelado';
+            $Color = 'table-secondary';
+            break;    
+        default:
+            $Title = 'Estado Desconocido';
+            $Color = '';
+    }
+    
+    return [$Title, $Color];
 }
 
 function Eliminar_Detalle_Pedido($conexion, $idDetalle) {

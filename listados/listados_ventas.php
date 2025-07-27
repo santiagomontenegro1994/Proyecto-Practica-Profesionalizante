@@ -97,7 +97,7 @@ if (!empty($_POST['BotonBuscar'])) {
 
           <!-- Table with stripped rows -->
           <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table">
               <thead>
                 <tr>
                   <th scope="col">ID</th>
@@ -128,9 +128,12 @@ if (!empty($_POST['BotonBuscar'])) {
                   "SubTotal: " . number_format($ListadoVentas[$i]['PRECIO_TOTAL'], 2) . "|" .
                   "Descuento: {$ListadoVentas[$i]['DESCUENTO']}%|" .
                   "Total: " . number_format($saldo, 2) . "\n";
+
+                   // Color de fila según estado
+                    list($Title, $Color) = ColorDeFilaVentas( $ListadoVentas[$i]['ID_ESTADO']);
                 ?>
                 
-                  <tr>
+                  <tr class="<?php echo $Color; ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo $Title; ?>">
                     <td><?php echo $ListadoVentas[$i]['ID_VENTA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['FECHA']; ?></td>
                     <td><?php echo $ListadoVentas[$i]['CLIENTE_N']; ?>, <?php echo $ListadoVentas[$i]['CLIENTE_A']; ?></td>

@@ -98,7 +98,7 @@ if (!empty($_POST['BotonBuscar'])) {
 
           <!-- Table with stripped rows -->
           <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table">
               <thead>
                 <tr>
                   <th scope="col">ID</th>
@@ -131,9 +131,12 @@ if (!empty($_POST['BotonBuscar'])) {
                       "Descuento: {$ListadoPedidos[$i]['DESCUENTO']}%|" .
                       "Seña: " . number_format($ListadoPedidos[$i]['SENIA'], 2) . "|" .  // Añadido la seña
                       "Total: " . number_format($saldo, 2) . "\n";
+
+                    // Color de fila según estado
+                    list($Title, $Color) = ColorDeFilaPedidos( $ListadoPedidos[$i]['ID_ESTADO']);
                 ?>
 
-                  <tr>
+                  <tr class="<?php echo $Color; ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo $Title; ?>">
                     <td><?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?></td>
                     <td><?php echo $ListadoPedidos[$i]['FECHA']; ?></td>
                     <td><?php echo $ListadoPedidos[$i]['CLIENTE_N']; ?>, <?php echo $ListadoPedidos[$i]['CLIENTE_A']; ?></td>
