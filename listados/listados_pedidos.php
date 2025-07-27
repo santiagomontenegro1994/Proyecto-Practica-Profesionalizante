@@ -146,22 +146,35 @@ if (!empty($_POST['BotonBuscar'])) {
                     <td>$<?php echo number_format($ListadoPedidos[$i]['SENIA'], 2); ?></td>
                     <td>$<?php echo number_format($saldo, 2); ?></td>
                     <td>
-                      <!-- Acciones -->
-                      <a href="../eliminar/eliminar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
-                        title="Anular" 
-                        onclick="return confirm('Confirma anular este Pedido?');">
-                        <i class="bi bi-trash-fill text-danger fs-5"></i>
-                      </a>
+                        <!-- Acciones -->
+                        <a href="../eliminar/eliminar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
+                            title="Anular" 
+                            onclick="return confirm('Confirma anular este Pedido?');">
+                            <i class="bi bi-trash-fill text-danger fs-5"></i>
+                        </a>
 
-                      <a href="../modificar/modificar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
-                        title="Modificar">
-                        <i class="bi bi-pencil-fill text-warning fs-5"></i>
-                      </a>
+                        <a href="../modificar/modificar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
+                            title="Modificar">
+                            <i class="bi bi-pencil-fill text-warning fs-5"></i>
+                        </a>
 
-                      <a href="../descargas/descargar_comp_pedidoPDF.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
-                        title="Imprimir">
-                        <i class="bi bi-printer-fill text-primary fs-5"></i>
-                      </a>
+                        <a href="../descargas/descargar_comp_pedidoPDF.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
+                            title="Imprimir">
+                            <i class="bi bi-printer-fill text-primary fs-5"></i>
+                        </a>
+
+                        <?php if ($ListadoPedidos[$i]['ID_ESTADO'] != 3 && $ListadoPedidos[$i]['ID_ESTADO'] != 4): ?>
+                            <a href="../acciones/retirar_pedido.php?ID_PEDIDO=<?php echo $ListadoPedidos[$i]['ID_PEDIDO']; ?>" 
+                                title="Retirar" 
+                                onclick="return confirm('¿Confirmas que el cliente retiró el pedido y pagó el saldo pendiente?');">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            </a>
+                        <?php else: ?>
+                            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" 
+                                  title="<?php echo ($ListadoPedidos[$i]['ID_ESTADO'] == 3) ? 'Pedido ya finalizado' : 'Pedido cancelado'; ?>">
+                                <i class="bi bi-check-circle-fill text-secondary fs-5" style="opacity: 0.5;"></i>
+                            </span>
+                        <?php endif; ?>
                     </td>
                   </tr>
                 <?php 

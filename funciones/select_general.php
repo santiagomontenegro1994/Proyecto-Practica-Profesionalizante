@@ -2822,4 +2822,27 @@ function Actualizar_Estado_Pedido($conexion, $id_pedido, $id_estado) {
     return $stmt->execute();
 }
 
+function Datos_Pedido_Para_Retiro($vConexion, $vIdPedido) {
+    // Consulta que incluye el estado actual
+    $SQL = "SELECT 
+                p.idPedido,
+                p.idEstado,
+                ep.denominacion AS estadoActual,
+                p.descuento,
+                p.senia,
+                (SELECT SUM(dp.precio_venta * dp.cantidad) 
+                 FROM detalle_pedido dp 
+                 WHERE dp.idPedido = p.idPedido) AS precioTotal
+            FROM pedidos p
+            JOIN estado_pedidos ep ON p.idEstado = ep.idEstadoPedido
+            WHERE p.idPedido = ?";
+    
+    $stmt = $vConexion->prepare($SQL);
+    $stmt->bind_param("i", $vIdPedido);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    return $result->fetch_assoc();
+}
+
 ?>
