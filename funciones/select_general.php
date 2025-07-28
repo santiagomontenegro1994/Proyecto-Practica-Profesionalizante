@@ -2182,6 +2182,7 @@ function Listar_Compras($vConexion) {
                 c.idCompra, 
                 c.fecha, 
                 c.descripcion,
+                c.idEstado,
                 p.razon_social AS PROVEEDOR,
                 CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
             FROM compras c
@@ -2197,6 +2198,7 @@ function Listar_Compras($vConexion) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_COMPRA'] = $data['idCompra'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
         $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
@@ -2217,6 +2219,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                         c.idCompra, 
                         c.fecha, 
                         c.descripcion,
+                        c.idEstado,
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
                     FROM compras c
@@ -2231,6 +2234,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                         c.idCompra, 
                         c.fecha, 
                         c.descripcion,
+                        c.idEstado,
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
                     FROM compras c
@@ -2245,6 +2249,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
                         c.idCompra, 
                         c.fecha, 
                         c.descripcion,
+                        c.idEstado,
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
                     FROM compras c
@@ -2263,6 +2268,7 @@ function Listar_Compras_Parametro($vConexion, $criterio, $parametro) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_COMPRA'] = $data['idCompra'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['DESCRIPCION'] = $data['descripcion'];
         $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
@@ -2284,7 +2290,7 @@ function Eliminar_Compra($vConexion , $vIdConsulta) {
 
     if (!empty($data['idCompra']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "UPDATE compras SET idActivo = 2 WHERE idCompra = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE compras SET idEstado = 4 WHERE idCompra = $vIdConsulta");
         
         return true;
 
@@ -2297,10 +2303,13 @@ function Eliminar_Compra($vConexion , $vIdConsulta) {
 function Datos_Compra($vConexion, $idCompra) {
     $SQL = "SELECT c.*, 
                    p.razon_social AS PROVEEDOR,
-                   CONCAT(u.nombre, ' ', u.apellido) AS USUARIO
+                   CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
+                   ec.denominacion AS ESTADO,
+                   ec.idEstadoCompra AS idEstado
             FROM compras c
             INNER JOIN proveedores p ON c.idProveedor = p.idProveedor
             INNER JOIN usuarios u ON c.idUsuario = u.id
+            INNER JOIN estado_compras ec ON c.idEstado = ec.idEstadoCompra
             WHERE c.idCompra = $idCompra";
     
     $rs = mysqli_query($vConexion, $SQL);
@@ -2319,6 +2328,37 @@ function Detalles_Compra($vConexion, $idCompra) {
         $detalles[] = $fila;
     }
     return $detalles;
+}
+
+function ColorDeFilaCompra($vEstado) { 
+
+    $Title = '';
+    $Color = '';
+    
+    // Asignar colores y títulos según estado
+    switch ($vEstado) { // Usamos la variable que podría haber sido actualizada
+        case 1:
+            $Title = 'Pendiente';
+            $Color = 'table-pendiente';
+            break;
+        case 2:
+            $Title = 'Contestado';
+            $Color = 'table-completo';
+            break;
+        case 3:
+            $Title = 'Finalizada';
+            $Color = 'table-primaria';
+            break;
+        case 4:
+            $Title = 'Cancelada';
+            $Color = 'table-secondary';
+            break;
+        default:
+            $Title = 'Estado Desconocido';
+            $Color = '';
+    }
+    
+    return [$Title, $Color];
 }
 
 function Eliminar_Detalle_Compra($vConexion, $idDetalle) {
@@ -2997,6 +3037,38 @@ function Lista_Estados_Orden($conexion) {
     $query = "SELECT idEstadoOrdenCompra AS id, denominacion 
               FROM estado_orden_compra 
               ORDER BY idEstadoOrdenCompra";
+    $result = $conexion->query($query);
+    
+    $estados = array();
+    while ($row = $result->fetch_assoc()) {
+        $estados[] = $row;
+    }
+    return $estados;
+}
+
+function Actualizar_Estado_Compra($conexion, $id_compra, $nuevo_estado) {
+    $query = "UPDATE compras SET idEstado = ? WHERE idCompra = ?";
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        error_log("Error preparando consulta: ".$conexion->error);
+        return false;
+    }
+    
+    $stmt->bind_param("ii", $nuevo_estado, $id_compra);
+    $resultado = $stmt->execute();
+    
+    if (!$resultado) {
+        error_log("Error ejecutando consulta: ".$stmt->error);
+    }
+    
+    $stmt->close();
+    return $resultado;
+}
+
+function Lista_Estados_Compra($conexion) {
+    $query = "SELECT idEstadoCompra AS id, denominacion 
+              FROM estado_compras 
+              ORDER BY idEstadoCompra";
     $result = $conexion->query($query);
     
     $estados = array();

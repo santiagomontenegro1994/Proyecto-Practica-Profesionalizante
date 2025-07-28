@@ -54,6 +54,23 @@ if (!empty($_POST['BotonActualizarCantidad'])) {
     exit;
 }
 
+// Procesar cambio de estado 
+if (!empty($_POST['BotonCambiarEstadoCompra'])) {
+    error_log("Intentando actualizar estado. ID Compra: ".$_POST['IdCompra'].", Nuevo estado: ".$_POST['nuevo_estado_compra']);
+    
+    if (Actualizar_Estado_Compra($MiConexion, $_POST['IdCompra'], $_POST['nuevo_estado_compra'])) {
+        $_SESSION['Mensaje'] = "Estado de la compra actualizado correctamente a ".$_POST['nuevo_estado_compra'];
+        $_SESSION['Estilo'] = 'success';
+        error_log("Estado actualizado correctamente");
+    } else {
+        $_SESSION['Mensaje'] = "Error al actualizar el estado: ".$MiConexion->error;
+        $_SESSION['Estilo'] = 'danger';
+        error_log("Error al actualizar estado: ".$MiConexion->error);
+    }
+    header("Location: modificar_compra.php?ID_COMPRA=".$_POST['IdCompra']);
+    exit;
+}
+
 // Obtener datos principales
 if (!empty($_GET['ID_COMPRA'])) {
     $DatosCompraActual = Datos_Compra($MiConexion, $_GET['ID_COMPRA']);
@@ -126,7 +143,7 @@ ob_end_flush();
                                     <th>Artículo</th>
                                     <th>Cantidad</th>
                                     <th>Precio Unitario (para OC)</th>
-                                    <th>Subtotal</th> <!-- Nueva columna -->
+                                    <th>Subtotal</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -161,9 +178,7 @@ ob_end_flush();
                                                 required>
                                         </div>
                                     </td>
-                                    <td 
-                                        class="subtotal text-end">$0.00</td> <!-- Nueva celda -->
-                                    <td>
+                                    <td class="subtotal text-end">$0.00</td>
                                     <td>
                                         <a href="modificar_compra.php?ID_COMPRA=<?= $DatosCompraActual['idCompra'] ?>&eliminar_detalle=<?= $detalle['idDetalleCompra'] ?>" 
                                         class="btn btn-danger"
@@ -182,6 +197,46 @@ ob_end_flush();
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- Sección para cambiar estado -->
+    <section class="section">
+        <form method="post">
+            <input type="hidden" name="IdCompra" value="<?= $DatosCompraActual['idCompra'] ?>">
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Cambiar Estado de la Compra</h5>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label">Estado actual:</label>
+                            <div class="h4">
+                                <?= $DatosCompraActual['ESTADO'] ?>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <select class="form-select" name="nuevo_estado_compra" required>
+                                <?php 
+                                $estados = Lista_Estados_Compra($MiConexion);
+                                foreach ($estados as $estado) {
+                                    $selected = ($estado['id'] == $DatosCompraActual['idEstado']) ? 'selected' : '';
+                                    echo "<option value='{$estado['id']}' $selected>{$estado['denominacion']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <button type="submit" name="BotonCambiarEstadoCompra" value=1 class="btn btn-primary w-100">
+                                <i class="bi bi-arrow-repeat"></i> Actualizar Estado
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="mt-4 d-flex justify-content-center gap-3">
@@ -204,7 +259,6 @@ require('../footer.inc.php');
 ?>
 
 <script>
-
 function calcularTotales() {
     let total = 0;
     
@@ -223,7 +277,6 @@ function calcularTotales() {
     document.querySelector('.total').textContent = `$${total.toFixed(2)}`;
 }
 
-// Calcular al cargar y cuando cambien precios
 document.addEventListener('DOMContentLoaded', calcularTotales);
 document.querySelectorAll('.precio-oc').forEach(input => {
     input.addEventListener('input', calcularTotales);
@@ -251,12 +304,44 @@ function validarPrecios() {
         return;
     }
     
-    // Redireccionar con parámetros
-    const idCompra = <?= $DatosCompraActual['idCompra'] ?>;
-    window.location.href = `../agregar/generar_orden_compra.php?ID_COMPRA=${idCompra}&PRECIOS=${JSON.stringify(precios)}`;
+    // Confirmar antes de cambiar estado y generar OC
+    if (confirm('¿Está seguro que desea generar la Orden de Compra y marcar esta compra como FINALIZADA?')) {
+        const idCompra = <?= $DatosCompraActual['idCompra'] ?>;
+        
+        // Primero actualizar el estado via AJAX
+        fetch('actualizar_estado_compra.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `IdCompra=${idCompra}&nuevo_estado_compra=3`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirigir para generar la OC después de actualizar el estado
+                window.location.href = `../agregar/generar_orden_compra.php?ID_COMPRA=${idCompra}&PRECIOS=${JSON.stringify(precios)}`;
+            } else {
+                alert('Error al actualizar el estado: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al actualizar el estado');
+        });
+    }
 }
-// Actualizar total antes de enviar
-    calcularTotales();
+
+// Validación para cambio de estado
+document.querySelector('select[name="nuevo_estado_compra"]').addEventListener('change', function() {
+    if (this.value == 3) { // Ajusta según el ID de estado "Finalizado"
+        if (!confirm('¿Confirmas que deseas marcar esta compra como FINALIZADA? Esta acción no se puede deshacer.')) {
+            this.value = this.dataset.prevValue;
+            return false;
+        }
+    }
+    this.dataset.prevValue = this.value;
+});
 </script>
 
 </body>
