@@ -72,7 +72,13 @@ if (!empty($_POST['BotonBuscar'])) {
               </div>
               <div class="col-sm-5 mt-2">
                     <div class="form-check form-check-inline small-text">
-                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Nombre" checked>
+                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Cod" checked>
+                      <label class="form-check-label" for="gridRadios1">
+                        Cod.
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline small-text">
+                      <input class="form-check-input" type="radio" name="gridRadios" id="gridRadios1" value="Nombre">
                       <label class="form-check-label" for="gridRadios1">
                         Nombre
                       </label>
@@ -111,7 +117,7 @@ if (!empty($_POST['BotonBuscar'])) {
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">ID</th>
+                <th scope="col">COD.</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Descripción</th>
                 <th scope="col">Precio</th>

@@ -85,6 +85,7 @@ if (!empty($_POST['BotonRegistrar'])) {
                                 <option value="3" <?php echo (isset($_POST['Nivel']) && $_POST['Nivel'] == '3') ? 'selected' : ''; ?>>Ventas</option>
                                 <option value="4" <?php echo (isset($_POST['Nivel']) && $_POST['Nivel'] == '4') ? 'selected' : ''; ?>>Depósito</option>
                                 <option value="5" <?php echo (isset($_POST['Nivel']) && $_POST['Nivel'] == '5') ? 'selected' : ''; ?>>Compras</option>
+                                <option value="6" <?php echo (isset($_POST['Nivel']) && $_POST['Nivel'] == '6') ? 'selected' : ''; ?>>Recepcion</option>
                             </select>
                         </div>
                     </div>

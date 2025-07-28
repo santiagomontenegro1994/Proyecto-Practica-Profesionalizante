@@ -2,7 +2,7 @@
 ob_start();
 session_start();
 
-if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
+if (empty($_SESSION['Usuario_Nombre'])) { // si el usuario no esta logueado no lo deja entrar
   header('Location: ../inicio/cerrarsesion.php');
   exit;
 }
@@ -11,17 +11,17 @@ require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados 
 require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
 
 require_once '../funciones/conexion.php';
-$MiConexion=ConexionBD();
+$MiConexion = ConexionBD();
 
 //ahora voy a llamar el script gral para usar las funciones necesarias
 require_once '../funciones/select_general.php';
  
 //este array contendra los datos de la consulta original, y cuando 
 //pulse el boton, mantendrá los datos ingresados hasta que se validen y se puedan modificar
-$DatosProductoActual=array();
+$DatosProductoActual = array();
 
 if (!empty($_POST['BotonModificarProducto'])) {
-    $mensajeValidacion = Validar_Producto(); // Captura el mensaje de validación
+    $mensajeValidacion = Validar_Producto_Modificado(); // Captura el mensaje de validación
 
     if (empty($mensajeValidacion)) { // Si no hay errores, procede con la modificación
         if (Modificar_Producto($MiConexion) != false) {
@@ -37,6 +37,7 @@ if (!empty($_POST['BotonModificarProducto'])) {
         $_SESSION['Mensaje'] = $mensajeValidacion;
         $_SESSION['Estilo'] = 'warning';
         $DatosProductoActual['ID_PRODUCTO'] = !empty($_POST['IdProducto']) ? $_POST['IdProducto'] : '';
+        $DatosProductoActual['CODIGO'] = !empty($_POST['Codigo']) ? $_POST['Codigo'] : ''; // Cambiado de ID_PRODUCTO a CODIGO
         $DatosProductoActual['NOMBRE'] = !empty($_POST['Nombre']) ? $_POST['Nombre'] : '';
         $DatosProductoActual['DESCRIPCION'] = !empty($_POST['Descripcion']) ? $_POST['Descripcion'] : '';
         $DatosProductoActual['PRECIO'] = !empty($_POST['Precio']) ? $_POST['Precio'] : '';
@@ -46,10 +47,19 @@ if (!empty($_POST['BotonModificarProducto'])) {
 } else if (!empty($_GET['ID_PRODUCTO'])) {
     //verifico que traigo el nro de consulta por GET si todabia no toque el boton de Modificar
     //busco los datos de esta consulta y los muestro
-    $DatosProductoActual = Datos_Producto($MiConexion , $_GET['ID_PRODUCTO']);
+    $DatosProductoActual = Datos_Producto($MiConexion, $_GET['ID_PRODUCTO']);
 }
 
 ?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modificar Productos</title>
+</head>
+<body>
 
 <main id="main" class="main">
 
@@ -63,75 +73,89 @@ if (!empty($_POST['BotonModificarProducto'])) {
         </ol>
       </nav>
     </div><!-- End Page Title -->
+    
     <section class="section">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Modificar Productos</h5>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Modificar Productos</h5>
 
-              <!-- Horizontal Form -->
-                <form method='post'>
-                <?php if (!empty($_SESSION['Mensaje'])) { ?>
-                    <div class="alert alert-<?php echo $_SESSION['Estilo']; ?> alert-dismissable">
-                        <?php echo $_SESSION['Mensaje']; ?>
-                    </div>
-                <?php } ?>
+          <!-- Horizontal Form -->
+          <form method='post'>
+            <?php if (!empty($_SESSION['Mensaje'])) { ?>
+                <div class="alert alert-<?php echo $_SESSION['Estilo']; ?> alert-dismissible fade show">
+                    <?php echo $_SESSION['Mensaje']; ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php } ?>
+            
+            <div class="row mb-3">
+              <label for="codigo" class="col-sm-2 col-form-label">Código</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="Codigo" id="codigo" required
+                value="<?php echo !empty($DatosProductoActual['ID_PRODUCTO']) ? htmlspecialchars($DatosProductoActual['ID_PRODUCTO']) : ''; ?>">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <label for="nombre" class="col-sm-2 col-form-label">Nombre</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="Nombre" id="nombre" required
+                value="<?php echo !empty($DatosProductoActual['NOMBRE']) ? htmlspecialchars($DatosProductoActual['NOMBRE']) : ''; ?>">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <label for="descripcion" class="col-sm-2 col-form-label">Descripción</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" name="Descripcion" id="descripcion"><?php echo !empty($DatosProductoActual['DESCRIPCION']) ? htmlspecialchars($DatosProductoActual['DESCRIPCION']) : ''; ?></textarea>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <label for="precio" class="col-sm-2 col-form-label">Precio</label>
+              <div class="col-sm-10">
+                <input type="number" step="0.01" class="form-control" name="Precio" id="precio" required
+                value="<?php echo !empty($DatosProductoActual['PRECIO']) ? htmlspecialchars($DatosProductoActual['PRECIO']) : ''; ?>">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <label for="stock" class="col-sm-2 col-form-label">Stock</label>
+              <div class="col-sm-10">
+                <input type="number" class="form-control" name="Stock" id="stock" required
+                value="<?php echo !empty($DatosProductoActual['STOCK']) ? htmlspecialchars($DatosProductoActual['STOCK']) : ''; ?>">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <label for="activo" class="col-sm-2 col-form-label">Activo</label>
+              <div class="col-sm-10">
+                <select class="form-control" name="Activo" id="activo">
+                  <option value="1" <?php echo (isset($DatosProductoActual['ACTIVO']) && $DatosProductoActual['ACTIVO'] == '1') ? 'selected' : ''; ?>>Sí</option>
+                  <option value="0" <?php echo (isset($DatosProductoActual['ACTIVO']) && $DatosProductoActual['ACTIVO'] == '0') ? 'selected' : ''; ?>>No</option>
+                </select>
+              </div>
+            </div>
 
-                <div class="row mb-3">
-                  <label for="nombre" class="col-sm-2 col-form-label">Nombre</label>
-                  <div class="col-sm-10">
-                    <input type="text" class="form-control" name="Nombre" id="nombre"
-                    value="<?php echo !empty($DatosProductoActual['NOMBRE']) ? $DatosProductoActual['NOMBRE'] : ''; ?>">
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="descripcion" class="col-sm-2 col-form-label">Descripción</label>
-                  <div class="col-sm-10">
-                    <textarea class="form-control" name="Descripcion" id="descripcion"><?php echo !empty($DatosProductoActual['DESCRIPCION']) ? $DatosProductoActual['DESCRIPCION'] : ''; ?></textarea>
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="precio" class="col-sm-2 col-form-label">Precio</label>
-                  <div class="col-sm-10">
-                    <input type="number" step="0.01" class="form-control" name="Precio" id="precio"
-                    value="<?php echo !empty($DatosProductoActual['PRECIO']) ? $DatosProductoActual['PRECIO'] : ''; ?>">
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="stock" class="col-sm-2 col-form-label">Stock</label>
-                  <div class="col-sm-10">
-                    <input type="number" class="form-control" name="Stock" id="stock"
-                    value="<?php echo !empty($DatosProductoActual['STOCK']) ? $DatosProductoActual['STOCK'] : ''; ?>">
-                  </div>
-                </div>
-                <div class="row mb-3">
-                  <label for="activo" class="col-sm-2 col-form-label">Activo</label>
-                  <div class="col-sm-10">
-                    <select class="form-control" name="Activo" id="activo">
-                      <option value="1" <?php echo (isset($DatosProductoActual['ACTIVO']) && $DatosProductoActual['ACTIVO'] == '1') ? 'selected' : ''; ?>>Sí</option>
-                      <option value="0" <?php echo (isset($DatosProductoActual['ACTIVO']) && $DatosProductoActual['ACTIVO'] == '0') ? 'selected' : ''; ?>>No</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="text-center">
-                    <input type='hidden' name="IdProducto" value="<?php echo $DatosProductoActual['ID_PRODUCTO']; ?>" />
-                    <button type="submit" class="btn btn-primario" value="Modificar" name="BotonModificarProducto">Modificar</button>
-                    <a href="../listados/listados_productos.php" 
-                    class="btn btn-success btn-info " 
-                    title="Listado"> Volver al listado  </a>
-                </div>
-              </form><!-- End Horizontal Form -->
-
+            <div class="text-center">
+                <input type='hidden' name="IdProducto" value="<?php echo $DatosProductoActual['ID_PRODUCTO']; ?>" />
+                <button type="submit" class="btn btn-primario" value="Modificar" name="BotonModificarProducto">Modificar</button>
+                <a href="../listados/listados_productos.php" 
+                class="btn btn-success btn-info" 
+                title="Listado"> Volver al listado  </a>
+            </div>
+          </form><!-- End Horizontal Form -->
+        </div>
+      </div>
     </section>
 
 </main><!-- End #main -->
 
 <?php
-    $_SESSION['Mensaje']='';
+    $_SESSION['Mensaje'] = '';
     require ('../footer.inc.php'); //Aca uso el FOOTER que esta seccionados en otro archivo
     ob_end_flush();
 ?>
 
 </body>
-
 </html>

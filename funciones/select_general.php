@@ -1,7 +1,6 @@
 <?php
 function Eliminar_Cliente($vConexion , $vIdConsulta) {
 
-
     //soy admin 
         $SQL_MiConsulta="SELECT idCliente FROM clientes 
                         WHERE idCliente = $vIdConsulta ";
@@ -983,39 +982,112 @@ function Cobrar_Turno($vConexion, $idTurno) {
 }
 //------------
 function Validar_Producto(){
+    global $MiConexion; // Necesitamos la conexión para verificar el código
+    
     $vMensaje='';
+    
+    // Validación del código
+    if (empty($_POST['Codigo'])) {
+        $vMensaje.='Debes ingresar un código para el producto. <br />';
+    } else {
+        // Verificar si el código ya existe
+        $codigo = mysqli_real_escape_string($MiConexion, $_POST['Codigo']);
+        $consulta = "SELECT idProducto FROM productos WHERE idProducto = '$codigo'";
+        $resultado = mysqli_query($MiConexion, $consulta);
+        
+        if (mysqli_num_rows($resultado) > 0) {
+            $vMensaje.='El código ingresado ya existe para otro producto. <br />';
+        }
+    }
         
     if (strlen($_POST['Nombre']) < 3) {
         $vMensaje.='Debes ingresar un nombre con al menos 3 caracteres. <br />';
     }
-    if (strlen($_POST['Precio']) < 1) {
-        $vMensaje.='Debes ingresar un precio con al menos 1 caracter. <br />';
+    if (empty($_POST['Precio'])) {
+        $vMensaje.='Debes ingresar un precio. <br />';
     }
-    if (strlen($_POST['Stock']) < 1) {
-        $vMensaje.='Debes ingresar un stock con al menos 1 caracter. <br />';
+    if (empty($_POST['Stock'])) {
+        $vMensaje.='Debes ingresar un stock. <br />';
     }
            
-    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
+    // Limpieza de datos
     foreach($_POST as $Id=>$Valor){
         $_POST[$Id] = trim($_POST[$Id]);
         $_POST[$Id] = strip_tags($_POST[$Id]);
     }
     
+    return $vMensaje;
+}
+
+function Validar_Producto_Modificado() {
+    global $MiConexion;
+    
+    $vMensaje = '';
+    $idProductoActual = !empty($_POST['IdProducto']) ? $_POST['IdProducto'] : '';
+    
+    // Validación del código
+    if (empty($_POST['Codigo'])) {
+        $vMensaje .= 'Debes ingresar un código para el producto. <br />';
+    } else {
+        // Verificar si el código ya existe para OTRO producto diferente
+        $codigo = mysqli_real_escape_string($MiConexion, $_POST['Codigo']);
+        $idProducto = mysqli_real_escape_string($MiConexion, $idProductoActual);
+        
+        $consulta = "SELECT idProducto FROM productos 
+                    WHERE idProducto = '$codigo' 
+                    AND idProducto != '$idProducto'";  // Excluye el producto actual
+        
+        $resultado = mysqli_query($MiConexion, $consulta);
+        
+        if (!$resultado) {
+            // Error en la consulta SQL
+            error_log("Error en validación de código: " . mysqli_error($MiConexion));
+            $vMensaje .= 'Error al validar el código del producto. Intente nuevamente. <br />';
+        } elseif (mysqli_num_rows($resultado) > 0) {
+            $vMensaje .= 'El código ingresado ya existe para otro producto. <br />';
+        }
+    }
+        
+    if (empty($_POST['Nombre']) || strlen($_POST['Nombre']) < 3) {
+        $vMensaje .= 'Debes ingresar un nombre con al menos 3 caracteres. <br />';
+    }
+    
+    if (empty($_POST['Precio']) || !is_numeric($_POST['Precio']) || $_POST['Precio'] <= 0) {
+        $vMensaje .= 'Debes ingresar un precio válido mayor a 0. <br />';
+    }
+    
+    if (empty($_POST['Stock']) || !is_numeric($_POST['Stock']) || $_POST['Stock'] < 0) {
+        $vMensaje .= 'Debes ingresar un stock válido (no negativo). <br />';
+    }
+           
+    // Limpieza de datos
+    foreach($_POST as $Id => $Valor) {
+        if (is_string($Valor)) {
+            $_POST[$Id] = trim($Valor);
+            $_POST[$Id] = strip_tags($Valor);
+        }
+    }
     
     return $vMensaje;
-    
 }
 
 function InsertarProductos($vConexion) {
     // Obtengo la fecha actual en formato 'YYYY-MM-DD'
     $fechaActual = date('Y-m-d');
 
-    $SQL_Insert = "INSERT INTO productos (nombre, descripcion, precio, stock, fechaRegistro, idActivo)
-    VALUES ('" . $_POST['Nombre'] . "' , '" . $_POST['Descripcion'] . "' , '" . $_POST['Precio'] . "', '" . $_POST['Stock'] . "', '$fechaActual', '1')";
+    // Escapar los valores para prevenir SQL injection
+    $codigo = mysqli_real_escape_string($vConexion, $_POST['Codigo']);
+    $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
+    $descripcion = mysqli_real_escape_string($vConexion, $_POST['Descripcion']);
+    $precio = floatval($_POST['Precio']);
+    $stock = intval($_POST['Stock']);
+
+    $SQL_Insert = "INSERT INTO productos (idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo)
+    VALUES ('$codigo', '$nombre', '$descripcion', $precio, $stock, '$fechaActual', '1')";
 
     if (!mysqli_query($vConexion, $SQL_Insert)) {
         // Si surge un error, finalizo la ejecución del script con un mensaje
-        die('<h4>Error al intentar insertar el registro.</h4>');
+        die('<h4>Error al intentar insertar el registro: ' . mysqli_error($vConexion) . '</h4>');
     }
 
     return true;
@@ -1059,6 +1131,12 @@ function Listar_Productos_Parametro($vConexion, $criterio, $parametro) {
             $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
                     FROM productos
                     WHERE idActivo = 1 AND nombre LIKE '%$parametro%'
+                    ORDER BY nombre";
+            break;
+        case 'Cod':
+            $SQL = "SELECT idProducto, nombre, descripcion, precio, stock, fechaRegistro, idActivo
+                    FROM productos
+                    WHERE idActivo = 1 AND idProducto LIKE '%$parametro%'
                     ORDER BY nombre";
             break;
         case 'Descripcion':
@@ -1112,6 +1190,7 @@ function Datos_Producto($vConexion, $vIdProducto) {
     $data = mysqli_fetch_array($rs);
     if (!empty($data)) {
         $DatosProducto['ID_PRODUCTO'] = $data['idProducto'];
+        $DatosProducto['CODIGO'] = $data['idProducto'];
         $DatosProducto['NOMBRE'] = $data['nombre'];
         $DatosProducto['DESCRIPCION'] = $data['descripcion'];
         $DatosProducto['PRECIO'] = $data['precio'];
@@ -1123,24 +1202,27 @@ function Datos_Producto($vConexion, $vIdProducto) {
 }
 
 function Modificar_Producto($vConexion) {
+    $codigo = mysqli_real_escape_string($vConexion, $_POST['Codigo']);
     $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
     $descripcion = mysqli_real_escape_string($vConexion, $_POST['Descripcion']);
-    $precio = mysqli_real_escape_string($vConexion, $_POST['Precio']);
-    $stock = mysqli_real_escape_string($vConexion, $_POST['Stock']);
-    $activo = mysqli_real_escape_string($vConexion, $_POST['Activo']);
+    $precio = floatval($_POST['Precio']);
+    $stock = intval($_POST['Stock']);
+    $activo = intval($_POST['Activo']);
     $idProducto = mysqli_real_escape_string($vConexion, $_POST['IdProducto']);
 
     $SQL_MiConsulta = "UPDATE productos 
-    SET nombre = '$nombre',
-    descripcion = '$descripcion',
-    precio = '$precio',
-    stock = '$stock',
-    idActivo = '$activo'
+    SET idProducto = '$codigo',
+        nombre = '$nombre',
+        descripcion = '$descripcion',
+        precio = $precio,
+        stock = $stock,
+        idActivo = $activo
     WHERE idProducto = '$idProducto'";
 
-    if (mysqli_query($vConexion, $SQL_MiConsulta) != false) {
+    if (mysqli_query($vConexion, $SQL_MiConsulta)) {
         return true;
     } else {
+        error_log("Error al modificar producto: " . mysqli_error($vConexion));
         return false;
     }
 }
@@ -1156,7 +1238,7 @@ function Eliminar_Producto($vConexion, $vIdProducto) {
 
     if (!empty($data['idProducto'])) {
         // Si el producto existe, lo elimino
-        mysqli_query($vConexion, "UPDATE productos SET idActivo = 2 WHERE idProducto = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE productos SET idActivo = 2 WHERE idProducto = $vIdProducto");
         return true;
     } else {
         return false;
@@ -2291,7 +2373,8 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
         case 'Proveedor':
             $SQL = "SELECT 
                         o.idOrdenCompra, 
-                        o.fecha, 
+                        o.fecha,
+                        O.idEstado, 
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
                         IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
@@ -2299,7 +2382,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE idActivo = 1 AND p.razon_social LIKE '%$parametro%'
+                    WHERE o.idActivo = 1 AND p.razon_social LIKE '%$parametro%'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2307,7 +2390,8 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
         case 'Fecha':
             $SQL = "SELECT 
                         o.idOrdenCompra, 
-                        o.fecha, 
+                        o.fecha,
+                        O.idEstado, 
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
                         IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
@@ -2315,7 +2399,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE idActivo = 1 AND o.fecha LIKE '%$parametro%'
+                    WHERE o.idActivo = 1 AND o.fecha LIKE '%$parametro%'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2324,6 +2408,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
             $SQL = "SELECT 
                         o.idOrdenCompra, 
                         o.fecha, 
+                        O.idEstado,
                         p.razon_social AS PROVEEDOR,
                         CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
                         IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
@@ -2331,7 +2416,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
                     LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
                     LEFT JOIN usuarios u ON o.idUsuario = u.id
                     LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
-                    WHERE idActivo = 1 AND o.idOrdenCompra = '$parametro'
+                    WHERE o.idActivo = 1 AND o.idOrdenCompra = '$parametro'
                     GROUP BY o.idOrdenCompra, o.fecha, p.razon_social, u.nombre, u.apellido
                     ORDER BY o.idOrdenCompra DESC";
             break;
@@ -2345,6 +2430,7 @@ function Listar_Ordenes_Compra_Parametro($MiConexion, $criterio, $parametro) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_ORDEN'] = $data['idOrdenCompra'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
         $Listado[$i]['USUARIO'] = $data['USUARIO'];
@@ -2574,7 +2660,7 @@ function Validar_Usuario() {
     if (strlen($_POST['User']) < 3) {
         $mensaje .= 'Debes ingresar un usuario con al menos 3 caracteres.<br />';
     }
-    if (empty($_POST['Nivel']) || !in_array($_POST['Nivel'], ['1','2','3','4','5'])) {
+    if (empty($_POST['Nivel']) || !in_array($_POST['Nivel'], ['1','2','3','4','5','6'])) {
         $mensaje .= 'Debes seleccionar un nivel válido.<br />';
     }
     // Validación de contraseña solo si se está creando o modificando la clave
@@ -2603,7 +2689,7 @@ function InsertarUsuario($vConexion) {
     $nombre = mysqli_real_escape_string($vConexion, $_POST['Nombre']);
     $apellido = mysqli_real_escape_string($vConexion, $_POST['Apellido']);
     $user = mysqli_real_escape_string($vConexion, $_POST['User']);
-    $clave = password_hash($_POST['Clave'], PASSWORD_DEFAULT);
+    $clave = mysqli_real_escape_string($vConexion,$_POST['Clave']);
     $nivel = (int)$_POST['Nivel'];
 
     $SQL_Insert = "INSERT INTO usuarios (nombre, apellido, user, clave, nivel) 
@@ -2632,6 +2718,7 @@ function Listar_Usuarios($vConexion) {
             case 3: $Listado[$i]['NIVEL'] = 'Ventas'; break;
             case 4: $Listado[$i]['NIVEL'] = 'Depósito'; break;
             case 5: $Listado[$i]['NIVEL'] = 'Compras'; break;
+            case 6: $Listado[$i]['NIVEL'] = 'Recepcion'; break;
             default: $Listado[$i]['NIVEL'] = $data['NIVEL'];
         }
         $i++;
@@ -2667,6 +2754,7 @@ function Listar_Usuarios_Parametro($vConexion, $criterio, $parametro) {
             case 3: $Listado[$i]['NIVEL'] = 'Ventas'; break;
             case 4: $Listado[$i]['NIVEL'] = 'Depósito'; break;
             case 5: $Listado[$i]['NIVEL'] = 'Compras'; break;
+            case 6: $Listado[$i]['NIVEL'] = 'Recepcion'; break;
             default: $Listado[$i]['NIVEL'] = $data['NIVEL'];
         }
         $i++;
@@ -2705,7 +2793,7 @@ function Modificar_Usuario($vConexion) {
 
     // Si se ingresó una nueva clave, la actualiza
     if (!empty($_POST['Clave'])) {
-        $clave = password_hash($_POST['Clave'], PASSWORD_DEFAULT);
+        $clave = mysqli_real_escape_string($vConexion,$_POST['Clave']);
         $SQL_MiConsulta .= ", clave = '$clave'";
     }
 
