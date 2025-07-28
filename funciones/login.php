@@ -3,7 +3,7 @@ function DatosLogin($vUsuario, $vClave, $vConexion){
     $Usuario=array();
     
     $SQL="SELECT * FROM usuarios 
-     WHERE user='$vUsuario' AND clave='$vClave'  ";
+     WHERE user='$vUsuario' AND clave='$vClave' AND idActivo=1";
 
     $rs = mysqli_query($vConexion, $SQL);
         

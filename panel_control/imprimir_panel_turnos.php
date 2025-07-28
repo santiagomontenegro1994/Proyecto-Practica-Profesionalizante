@@ -40,72 +40,121 @@ if (!$MiConexion) {
 
 // Obtener datos para el reporte (función modificada)
 function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
-    // Configurar filtro según período
+    // Configurar fechas según período (igual que get_turnos_data.php)
+    $hoy = date('Y-m-d');
+    $ayer = date('Y-m-d', strtotime('-1 day'));
+    $inicio_semana = date('Y-m-d', strtotime('last monday'));
+    $inicio_mes = date('Y-m-01');
+    $inicio_anio = date('Y-01-01');
+    $inicio_anterior = '';
+    $fin_anterior = '';
     switch($periodo) {
         case 'hoy':
-            $filtro = "turnos.Fecha = CURDATE()";
+            $filtro = "Fecha = '$hoy'";
+            $inicio_anterior = $ayer;
+            $fin_anterior = $ayer;
             break;
         case 'semana':
-            $filtro = "turnos.Fecha BETWEEN DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) AND CURDATE()";
+            $filtro = "Fecha BETWEEN '$inicio_semana' AND '$hoy'";
+            $inicio_anterior = date('Y-m-d', strtotime('last monday -7 days'));
+            $fin_anterior = date('Y-m-d', strtotime('last sunday -7 days'));
             break;
         case 'mes':
-            $filtro = "turnos.Fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()";
+            $filtro = "Fecha BETWEEN '$inicio_mes' AND '$hoy'";
+            $inicio_anterior = date('Y-m-01', strtotime('-1 month'));
+            $fin_anterior = date('Y-m-t', strtotime('-1 month'));
             break;
         case 'anio':
-            $filtro = "turnos.Fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-01-01') AND CURDATE()";
+            $filtro = "Fecha BETWEEN '$inicio_anio' AND '$hoy'";
+            $inicio_anterior = date('Y-01-01', strtotime('-1 year'));
+            $fin_anterior = date('Y-12-31', strtotime('-1 year'));
             break;
         case 'personalizado':
             if ($fecha_inicio && $fecha_fin) {
-                $filtro = "turnos.Fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+                $filtro = "Fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+                $dias = (strtotime($fecha_fin) - strtotime($fecha_inicio)) / (60 * 60 * 24);
+                $inicio_anterior = date('Y-m-d', strtotime($fecha_inicio . " -" . ($dias + 1) . " days"));
+                $fin_anterior = date('Y-m-d', strtotime($fecha_inicio . " -1 day"));
             } else {
-                $filtro = "turnos.Fecha = CURDATE()";
+                $filtro = "Fecha = '$hoy'";
+                $inicio_anterior = $ayer;
+                $fin_anterior = $ayer;
             }
             break;
         default:
-            $filtro = "turnos.Fecha = CURDATE()";
+            $filtro = "Fecha = '$hoy'";
+            $inicio_anterior = $ayer;
+            $fin_anterior = $ayer;
     }
-    
+
     $datos = [];
-    
-    // 1. CONSULTA DE RESUMEN
-    $query_resumen = "SELECT 
-                COUNT(DISTINCT turnos.IdTurno) as total_turnos,
-                COALESCE(SUM(ts.precio), 0) as total_ingresos
-              FROM turnos
-              LEFT JOIN detalle_turno dt ON turnos.IdTurno = dt.idTurno
-              LEFT JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
-              WHERE $filtro AND turnos.IdActivo = 1";
-    
-    $result = $conexion->query($query_resumen);
-    $datos['resumen'] = $result ? $result->fetch_assoc() : ['total_turnos' => 0, 'total_ingresos' => 0];
-    
-    // 2. Turnos por estado
-    $query_estados = "SELECT 
-                e.Denominacion as estado,
-                COUNT(turnos.IdTurno) as cantidad
-              FROM turnos
-              JOIN estado e ON turnos.IdEstado = e.IdEstado
-              WHERE $filtro
-              GROUP BY e.Denominacion";
-    
-    $result = $conexion->query($query_estados);
-    $datos['estados'] = [];
+
+    // 1. Total de turnos e ingresos (igual que 'turnosHoy' e 'ingresosTurnos')
+    $query_total_turnos = "SELECT COUNT(*) as total FROM turnos WHERE $filtro AND idActivo = 1";
+    $result = $conexion->query($query_total_turnos);
+    $total_turnos = 0;
     if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $datos['estados'][] = $row;
+        $row = $result->fetch_assoc();
+        $total_turnos = (int)$row['total'];
+    }
+
+    $query_total_ingresos = "SELECT COALESCE(SUM(ts.precio), 0) as total 
+        FROM turnos t
+        JOIN detalle_turno dt ON t.IdTurno = dt.idTurno
+        JOIN tipo_servicio ts ON dt.idTipoServicio = ts.IdTipoServicio
+        WHERE $filtro 
+        AND t.IdEstado = 4
+        AND t.idActivo = 1
+        AND ts.idActivo = 1";
+    $result = $conexion->query($query_total_ingresos);
+    $total_ingresos = 0;
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $total_ingresos = (float)$row['total'];
+    }
+    $datos['resumen'] = [
+        'total_turnos' => $total_turnos,
+        'total_ingresos' => $total_ingresos
+    ];
+
+    // 2. Turnos por estado (igual que 'estadoChart')
+    $estados_query = "SELECT IdEstado, Denominacion FROM estado ORDER BY IdEstado";
+    $estados_result = $conexion->query($estados_query);
+    $estados = [];
+    while ($estado = $estados_result->fetch_assoc()) {
+        $estados[$estado['IdEstado']] = $estado['Denominacion'];
+    }
+    $query_estados = "SELECT 
+            t.IdEstado,
+            COUNT(t.IdTurno) as cantidad
+        FROM turnos t
+        WHERE $filtro AND t.IdActivo = 1
+        GROUP BY t.IdEstado";
+    $result = $conexion->query($query_estados);
+    $datos_estados = [];
+    foreach ($estados as $id => $nombre) {
+        $datos_estados[$id] = [
+            'estado' => $nombre,
+            'cantidad' => 0
+        ];
+    }
+    while ($row = $result->fetch_assoc()) {
+        if (isset($datos_estados[$row['IdEstado']])) {
+            $datos_estados[$row['IdEstado']]['cantidad'] = (int)$row['cantidad'];
         }
     }
-    
-    // 3. Turnos por estilista
+    // Convertir a array plano para la tabla
+    $datos['estados'] = array_values($datos_estados);
+
+    // 3. Turnos por estilista (igual que 'estilistaChart')
     $query_estilistas = "SELECT 
-                CONCAT(es.nombre, ' ', es.apellido) as estilista,
-                COUNT(turnos.IdTurno) as cantidad
-              FROM turnos
-              JOIN usuarios es ON turnos.IdEstilista = es.id
-              WHERE $filtro
-              GROUP BY es.id
-              ORDER BY cantidad DESC";
-    
+            CONCAT(e.nombre, ' ', e.apellido) as estilista,
+            COUNT(t.IdTurno) as cantidad
+        FROM turnos t
+        JOIN usuarios e ON t.IdEstilista = e.id
+        WHERE $filtro AND t.IdActivo = 1
+        GROUP BY e.id, e.nombre, e.apellido
+        ORDER BY cantidad DESC";
     $result = $conexion->query($query_estilistas);
     $datos['estilistas'] = [];
     if ($result) {
@@ -113,29 +162,28 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['estilistas'][] = $row;
         }
     }
-    
-    // 4. Turnos por franja horaria
+
+    // 4. Turnos por franja horaria (igual que 'horarioChart')
     $query_horarios = "SELECT 
-                CASE 
-                  WHEN TIME(turnos.Horario) BETWEEN '09:00:00' AND '11:59:59' THEN 'Mañana (9-12)'
-                  WHEN TIME(turnos.Horario) BETWEEN '12:00:00' AND '14:59:59' THEN 'Mediodía (12-15)'
-                  WHEN TIME(turnos.Horario) BETWEEN '15:00:00' AND '17:59:59' THEN 'Tarde (15-18)'
-                  WHEN TIME(turnos.Horario) BETWEEN '18:00:00' AND '20:59:59' THEN 'Noche (18-21)'
-                  ELSE 'Otro horario'
-                END as franja,
-                COUNT(turnos.IdTurno) as cantidad
-              FROM turnos
-              WHERE $filtro
-              GROUP BY franja
-              ORDER BY 
-                CASE franja
-                  WHEN 'Mañana (9-12)' THEN 1
-                  WHEN 'Mediodía (12-15)' THEN 2
-                  WHEN 'Tarde (15-18)' THEN 3
-                  WHEN 'Noche (18-21)' THEN 4
-                  ELSE 5
-                END";
-    
+            CASE 
+              WHEN TIME(Horario) BETWEEN '09:00:00' AND '11:59:59' THEN 'Mañana (9-12)'
+              WHEN TIME(Horario) BETWEEN '12:00:00' AND '14:59:59' THEN 'Mediodía (12-15)'
+              WHEN TIME(Horario) BETWEEN '15:00:00' AND '17:59:59' THEN 'Tarde (15-18)'
+              WHEN TIME(Horario) BETWEEN '18:00:00' AND '20:59:59' THEN 'Noche (18-21)'
+              ELSE 'Otro horario'
+            END as franja,
+            COUNT(IdTurno) as cantidad
+        FROM turnos
+        WHERE $filtro AND IdActivo = 1
+        GROUP BY franja
+        ORDER BY 
+            CASE franja
+              WHEN 'Mañana (9-12)' THEN 1
+              WHEN 'Mediodía (12-15)' THEN 2
+              WHEN 'Tarde (15-18)' THEN 3
+              WHEN 'Noche (18-21)' THEN 4
+              ELSE 5
+            END";
     $result = $conexion->query($query_horarios);
     $datos['horarios'] = [];
     if ($result) {
@@ -143,7 +191,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['horarios'][] = $row;
         }
     }
-    
+
     return $datos;
 }
 

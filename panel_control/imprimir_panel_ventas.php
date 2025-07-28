@@ -40,58 +40,84 @@ if (!$MiConexion) {
 
 // Obtener datos para el reporte
 function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
-    // Configurar filtro según período
+    // Configurar fechas según período (igual que get_ventas_data.php)
+    $hoy = date('Y-m-d');
+    $ayer = date('Y-m-d', strtotime('-1 day'));
+    $inicio_semana = date('Y-m-d', strtotime('last monday'));
+    $inicio_mes = date('Y-m-01');
+    $inicio_anio = date('Y-01-01');
+    $inicio_anterior = '';
+    $fin_anterior = '';
     switch($periodo) {
         case 'hoy':
-            $filtro = "v.fecha = CURDATE()";
+            $filtro_ventas = "v.fecha = '$hoy' AND v.idEstado = 2";
+            $filtro_pedidos = "p.fecha = '$hoy' AND p.idEstado = 3";
             break;
         case 'semana':
-            $filtro = "v.fecha BETWEEN DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) AND CURDATE()";
+            $filtro_ventas = "v.fecha BETWEEN '$inicio_semana' AND '$hoy' AND v.idEstado = 2";
+            $filtro_pedidos = "p.fecha BETWEEN '$inicio_semana' AND '$hoy' AND p.idEstado = 3";
             break;
         case 'mes':
-            $filtro = "v.fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()";
+            $filtro_ventas = "v.fecha BETWEEN '$inicio_mes' AND '$hoy' AND v.idEstado = 2";
+            $filtro_pedidos = "p.fecha BETWEEN '$inicio_mes' AND '$hoy' AND p.idEstado = 3";
             break;
         case 'anio':
-            $filtro = "v.fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-01-01') AND CURDATE()";
+            $filtro_ventas = "v.fecha BETWEEN '$inicio_anio' AND '$hoy' AND v.idEstado = 2";
+            $filtro_pedidos = "p.fecha BETWEEN '$inicio_anio' AND '$hoy' AND p.idEstado = 3";
             break;
         case 'personalizado':
             if ($fecha_inicio && $fecha_fin) {
-                $filtro = "v.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+                $filtro_ventas = "v.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin' AND v.idEstado = 2";
+                $filtro_pedidos = "p.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin' AND p.idEstado = 3";
             } else {
-                $filtro = "v.fecha = CURDATE()";
+                $filtro_ventas = "v.fecha = '$hoy' AND v.idEstado = 2";
+                $filtro_pedidos = "p.fecha = '$hoy' AND p.idEstado = 3";
             }
             break;
         default:
-            $filtro = "v.fecha = CURDATE()";
+            $filtro_ventas = "v.fecha = '$hoy' AND v.idEstado = 2";
+            $filtro_pedidos = "p.fecha = '$hoy' AND p.idEstado = 3";
     }
-    
+
     $datos = [];
-    
-    // 1. CONSULTA DE RESUMEN
+
+    // 1. CONSULTA DE RESUMEN (ventas + pedidos)
     $query_resumen = "SELECT 
-                COUNT(DISTINCT v.idVenta) as total_ventas,
-                COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) + 
-                COALESCE(SUM(p.senia), 0) as total_ingresos
-              FROM ventas v
-              LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-              LEFT JOIN pedidos p ON v.idCliente = p.idCliente AND p.fecha = v.fecha
-              WHERE $filtro";
-    
+        (SELECT COUNT(*) FROM ventas v WHERE $filtro_ventas) +
+        (SELECT COUNT(*) FROM pedidos p WHERE $filtro_pedidos) as total_ventas,
+        (SELECT COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) 
+            FROM ventas v 
+            JOIN detalle_venta dv ON v.idVenta = dv.idVenta 
+            WHERE $filtro_ventas) +
+        (SELECT COALESCE(SUM(dp.precio_venta * dp.cantidad), 0) 
+            FROM pedidos p 
+            JOIN detalle_pedido dp ON p.idPedido = dp.idPedido 
+            WHERE $filtro_pedidos) as total_ingresos";
     $result = $conexion->query($query_resumen);
     $datos['resumen'] = $result ? $result->fetch_assoc() : ['total_ventas' => 0, 'total_ingresos' => 0];
-    
-    // 2. Productos más vendidos (top 10)
+
+    // 2. Productos más vendidos (ventas + pedidos, top 10)
     $query_productos = "SELECT 
-                p.nombre as producto,
-                COALESCE(SUM(dv.cantidad), 0) as cantidad
-              FROM productos p
-              LEFT JOIN detalle_venta dv ON p.idProducto = dv.idProducto
-              LEFT JOIN ventas v ON dv.idVenta = v.idVenta AND $filtro
-              GROUP BY p.idProducto
-              HAVING cantidad > 0
-              ORDER BY cantidad DESC
-              LIMIT 10";
-    
+        p.nombre as producto,
+        COALESCE(v.cantidad, 0) + COALESCE(pd.cantidad, 0) as cantidad
+    FROM productos p
+    LEFT JOIN (
+        SELECT dv.idProducto, SUM(dv.cantidad) as cantidad
+        FROM detalle_venta dv
+        JOIN ventas v ON dv.idVenta = v.idVenta
+        WHERE $filtro_ventas
+        GROUP BY dv.idProducto
+    ) v ON p.idProducto = v.idProducto
+    LEFT JOIN (
+        SELECT dp.idProducto, SUM(dp.cantidad) as cantidad
+        FROM detalle_pedido dp
+        JOIN pedidos p ON dp.idPedido = p.idPedido
+        WHERE $filtro_pedidos
+        GROUP BY dp.idProducto
+    ) pd ON p.idProducto = pd.idProducto
+    WHERE COALESCE(v.cantidad, 0) + COALESCE(pd.cantidad, 0) > 0
+    ORDER BY cantidad DESC
+    LIMIT 10";
     $result = $conexion->query($query_productos);
     $datos['productos'] = [];
     if ($result) {
@@ -99,21 +125,21 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['productos'][] = $row;
         }
     }
-    
-    // 3. Clientes destacados (top 10)
+
+    // 3. Clientes destacados (ventas + pedidos, top 10)
     $query_clientes = "SELECT 
-                CONCAT(c.nombre, ' ', c.apellido) as cliente,
-                COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) + 
-                COALESCE(SUM(p.senia), 0) as monto_gastado
-              FROM clientes c
-              LEFT JOIN ventas v ON c.idCliente = v.idCliente AND $filtro
-              LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-              LEFT JOIN pedidos p ON c.idCliente = p.idCliente AND p.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'
-              GROUP BY c.idCliente
-              HAVING monto_gastado > 0
-              ORDER BY monto_gastado DESC
-              LIMIT 10";
-    
+        CONCAT(c.nombre, ' ', c.apellido) as cliente,
+        COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) + 
+        COALESCE(SUM(dp.precio_venta * dp.cantidad), 0) as monto_gastado
+      FROM clientes c
+      LEFT JOIN ventas v ON c.idCliente = v.idCliente AND $filtro_ventas
+      LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+      LEFT JOIN pedidos p ON c.idCliente = p.idCliente AND $filtro_pedidos
+      LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+      GROUP BY c.idCliente
+      HAVING monto_gastado > 0
+      ORDER BY monto_gastado DESC
+      LIMIT 10";
     $result = $conexion->query($query_clientes);
     $datos['clientes'] = [];
     if ($result) {
@@ -121,18 +147,20 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['clientes'][] = $row;
         }
     }
-    
-    // 4. Rendimiento por empleado
+
+    // 4. Rendimiento por empleado (ventas + pedidos)
     $query_empleados = "SELECT 
-                CONCAT(u.nombre, ' ', u.apellido) as empleado,
-                COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) as monto_generado
-              FROM usuarios u
-              LEFT JOIN ventas v ON u.id = v.idUsuario AND $filtro
-              LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-              GROUP BY u.id
-              HAVING monto_generado > 0
-              ORDER BY monto_generado DESC";
-    
+        CONCAT(u.nombre, ' ', u.apellido) as empleado,
+        COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) + 
+        COALESCE(SUM(dp.precio_venta * dp.cantidad), 0) as monto_generado
+      FROM usuarios u
+      LEFT JOIN ventas v ON u.id = v.idUsuario AND $filtro_ventas
+      LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+      LEFT JOIN pedidos p ON u.id = p.idUsuario AND $filtro_pedidos
+      LEFT JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+      GROUP BY u.id
+      HAVING monto_generado > 0
+      ORDER BY monto_generado DESC";
     $result = $conexion->query($query_empleados);
     $datos['empleados'] = [];
     if ($result) {
@@ -140,17 +168,32 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['empleados'][] = $row;
         }
     }
-    
-    // 5. Ventas por día
+
+    // 5. Ventas por día (ventas + pedidos)
     $query_dias = "SELECT 
-                v.fecha,
-                COALESCE(SUM(dv.precio_venta * dv.cantidad), 0) as monto_total
-              FROM ventas v
-              LEFT JOIN detalle_venta dv ON v.idVenta = dv.idVenta
-              WHERE $filtro
-              GROUP BY v.fecha
-              ORDER BY v.fecha";
-    
+        fecha,
+        SUM(monto) as monto_total
+      FROM (
+          SELECT 
+              v.fecha,
+              SUM(dv.precio_venta * dv.cantidad) as monto
+          FROM ventas v
+          JOIN detalle_venta dv ON v.idVenta = dv.idVenta
+          WHERE $filtro_ventas
+          GROUP BY v.fecha
+          
+          UNION ALL
+          
+          SELECT 
+              p.fecha,
+              SUM(dp.precio_venta * dp.cantidad) as monto
+          FROM pedidos p
+          JOIN detalle_pedido dp ON p.idPedido = dp.idPedido
+          WHERE $filtro_pedidos
+          GROUP BY p.fecha
+      ) as combined
+      GROUP BY fecha
+      ORDER BY fecha";
     $result = $conexion->query($query_dias);
     $datos['dias'] = [];
     if ($result) {
@@ -158,7 +201,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['dias'][] = $row;
         }
     }
-    
+
     return $datos;
 }
 

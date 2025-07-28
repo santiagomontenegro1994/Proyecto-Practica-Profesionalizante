@@ -49,3 +49,14 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\Proyecto-Practica-Profesionalizante\panel_control\get_recomendaciones.php on line 94
+[28-Jul-2025 18:49:54 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 18:50:35 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:00:13 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:01:29 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:02:07 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:05:30 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:05:39 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:11:17 Europe/Berlin] Error en get_ventas_data: Unknown column 'p.fecha' in 'on clause'
+[28-Jul-2025 19:29:15 Europe/Berlin] Error en get_ventas_data: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '}
+                            GROUP BY dv.idProducto
+                      ...' at line 9

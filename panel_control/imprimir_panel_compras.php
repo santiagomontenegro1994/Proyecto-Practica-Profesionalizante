@@ -40,33 +40,38 @@ if (!$MiConexion) {
 
 // Obtener datos para el reporte
 function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
-    // Configurar filtro según período
+    // Configurar filtro según período (igual que get_compras_data.php)
+    $hoy = date('Y-m-d');
+    $ayer = date('Y-m-d', strtotime('-1 day'));
+    $inicio_semana = date('Y-m-d', strtotime('last monday'));
+    $inicio_mes = date('Y-m-01');
+    $inicio_anio = date('Y-01-01');
     switch($periodo) {
         case 'hoy':
-            $filtro = "oc.fecha = CURDATE()";
+            $filtro = "oc.fecha = '$hoy' AND oc.idEstado IN (2,3)";
             break;
         case 'semana':
-            $filtro = "oc.fecha BETWEEN DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) AND CURDATE()";
+            $filtro = "oc.fecha BETWEEN '$inicio_semana' AND '$hoy' AND oc.idEstado IN (2,3)";
             break;
         case 'mes':
-            $filtro = "oc.fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND CURDATE()";
+            $filtro = "oc.fecha BETWEEN '$inicio_mes' AND '$hoy' AND oc.idEstado IN (2,3)";
             break;
         case 'anio':
-            $filtro = "oc.fecha BETWEEN DATE_FORMAT(CURDATE(), '%Y-01-01') AND CURDATE()";
+            $filtro = "oc.fecha BETWEEN '$inicio_anio' AND '$hoy' AND oc.idEstado IN (2,3)";
             break;
         case 'personalizado':
             if ($fecha_inicio && $fecha_fin) {
-                $filtro = "oc.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+                $filtro = "oc.fecha BETWEEN '$fecha_inicio' AND '$fecha_fin' AND oc.idEstado IN (2,3)";
             } else {
-                $filtro = "oc.fecha = CURDATE()";
+                $filtro = "oc.fecha = '$hoy' AND oc.idEstado IN (2,3)";
             }
             break;
         default:
-            $filtro = "oc.fecha = CURDATE()";
+            $filtro = "oc.fecha = '$hoy' AND oc.idEstado IN (2,3)";
     }
-    
+
     $datos = [];
-    
+
     // 1. CONSULTA DE RESUMEN
     $query_resumen = "SELECT 
                 COUNT(DISTINCT oc.idOrdenCompra) as total_compras,
@@ -74,10 +79,9 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               FROM orden_compra oc
               LEFT JOIN detalle_orden_compra doc ON oc.idOrdenCompra = doc.idOrdenCompra
               WHERE $filtro";
-    
     $result = $conexion->query($query_resumen);
     $datos['resumen'] = $result ? $result->fetch_assoc() : ['total_compras' => 0, 'total_gastos' => 0];
-    
+
     // 2. Artículos más comprados (top 10)
     $query_articulos = "SELECT 
                 p.nombre as articulo,
@@ -89,7 +93,6 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               GROUP BY p.idProducto
               ORDER BY cantidad DESC
               LIMIT 10";
-    
     $result = $conexion->query($query_articulos);
     $datos['articulos'] = [];
     if ($result) {
@@ -97,7 +100,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['articulos'][] = $row;
         }
     }
-    
+
     // 3. Compras por proveedor
     $query_proveedores = "SELECT 
                 pr.razon_social as proveedor,
@@ -108,7 +111,6 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               WHERE $filtro
               GROUP BY pr.idProveedor
               ORDER BY monto_total DESC";
-    
     $result = $conexion->query($query_proveedores);
     $datos['proveedores'] = [];
     if ($result) {
@@ -116,7 +118,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['proveedores'][] = $row;
         }
     }
-    
+
     // 4. Evolución de compras
     $query_evolucion = "SELECT 
                 oc.fecha,
@@ -126,7 +128,6 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               WHERE $filtro
               GROUP BY oc.fecha
               ORDER BY oc.fecha";
-    
     $result = $conexion->query($query_evolucion);
     $datos['evolucion'] = [];
     if ($result) {
@@ -134,7 +135,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['evolucion'][] = $row;
         }
     }
-    
+
     // 5. Frecuencia de compras por proveedor
     $query_frecuencia = "SELECT 
                 pr.razon_social as proveedor,
@@ -144,7 +145,6 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
               WHERE $filtro
               GROUP BY pr.idProveedor
               ORDER BY frecuencia DESC";
-    
     $result = $conexion->query($query_frecuencia);
     $datos['frecuencia'] = [];
     if ($result) {
@@ -152,7 +152,7 @@ function obtenerDatosReporte($conexion, $periodo, $fecha_inicio, $fecha_fin) {
             $datos['frecuencia'][] = $row;
         }
     }
-    
+
     return $datos;
 }
 
