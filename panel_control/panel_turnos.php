@@ -305,9 +305,14 @@ let datosReporte = {
 };
 
 // Función para formatear números
-function formatNumber(value, decimals = 0) {
+function formatNumber(value, decimals = 2) {
   const num = typeof value === 'string' ? parseFloat(value) : value;
-  return isNaN(num) ? '0' : num.toFixed(decimals);
+  if (isNaN(num)) return '0,00';
+  
+  return num.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
 }
 
 // Función para manejar la selección de período
@@ -418,6 +423,19 @@ async function cargarDatos(tipo, periodo, fechaInicio = null, fechaFin = null) {
       const variacionElement = document.getElementById('variacion-ingresosTurnos');
       variacionElement.className = data.variacion >= 0 ? 
         'text-success small pt-1 fw-bold' : 'text-danger small pt-1 fw-bold';
+    }
+    // Guardar datos para reportes
+    if (tipo === 'turnosHoy') {
+      datosReporte.turnos = data.turnos;
+    } else if (tipo === 'ingresosTurnos') {
+      datosReporte.ingresos = data.ingresos;
+    }
+    
+    // Actualizar gráfico si es necesario
+    if (tipo === 'estadoChart' || tipo === 'estilistaChart' || tipo === 'horarioChart') {
+      const funcion = tipo === 'estadoChart' ? cargarGraficoEstado :
+                     tipo === 'estilistaChart' ? cargarGraficoEstilista : cargarGraficoHorario;
+      funcion(periodo, fechaInicio, fechaFin);
     }
   } catch (error) {
     console.error(`Error cargando ${tipo}:`, error);

@@ -340,9 +340,14 @@ let datosReporte = {
 };
 
 // Función para formatear números
-function formatNumber(value, decimals = 0) {
+function formatNumber(value, decimals = 2) {
   const num = typeof value === 'string' ? parseFloat(value) : value;
-  return isNaN(num) ? '0' : num.toFixed(decimals);
+  if (isNaN(num)) return '0,00';
+  
+  return num.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
 }
 
 // Función para manejar la selección de período
