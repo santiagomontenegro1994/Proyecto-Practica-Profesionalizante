@@ -2256,7 +2256,8 @@ function Listar_Ordenes_Compra($MiConexion) {
 
     $SQL = "SELECT 
                 o.idOrdenCompra, 
-                o.fecha, 
+                o.fecha,
+                O.idEstado,
                 p.razon_social AS PROVEEDOR,
                 CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
                 IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
@@ -2272,6 +2273,7 @@ function Listar_Ordenes_Compra($MiConexion) {
     $i = 0;
     while ($data = mysqli_fetch_array($rs)) {
         $Listado[$i]['ID_ORDEN'] = $data['idOrdenCompra'];
+        $Listado[$i]['ID_ESTADO'] = $data['idEstado'];
         $Listado[$i]['FECHA'] = $data['fecha'];
         $Listado[$i]['PROVEEDOR'] = $data['PROVEEDOR'];
         $Listado[$i]['USUARIO'] = $data['USUARIO'];
@@ -2379,11 +2381,15 @@ function Datos_Orden_Compra($conexion, $id_orden) {
                 o.fecha, 
                 p.razon_social AS PROVEEDOR,
                 p.telefono,
+                eoc.denominacion AS ESTADO,
+                eoc.idEstadoOrdenCompra,
+                o.idEstado,
                 CONCAT(u.nombre, ' ', u.apellido) AS USUARIO,
                 IFNULL(SUM(d.cantidad * d.precio), 0) AS PRECIO_TOTAL
             FROM orden_compra o
             LEFT JOIN proveedores p ON o.idProveedor = p.idProveedor
             LEFT JOIN usuarios u ON o.idUsuario = u.id
+            LEFT JOIN estado_orden_compra eoc ON o.idEstado = eoc.idEstadoOrdenCompra
             LEFT JOIN detalle_orden_compra d ON o.idOrdenCompra = d.idOrdenCompra
             WHERE o.idOrdenCompra = ?
             GROUP BY o.idOrdenCompra";
@@ -2524,6 +2530,37 @@ function Insertar_Orden_Compra($conexion) {
         $GLOBALS['error_compra'] = $e->getMessage();
         return false;
     }
+}
+
+function ColorDeFilaOrdenesCompra($vEstado) { 
+
+    $Title = '';
+    $Color = '';
+    
+    // Asignar colores y títulos según estado
+    switch ($vEstado) { // Usamos la variable que podría haber sido actualizada
+        case 1:
+            $Title = 'Iniciada';
+            $Color = 'table-proceso';
+            break;
+        case 2:
+            $Title = 'Pagada';
+            $Color = 'table-completo';
+            break;
+        case 3:
+            $Title = 'Finalizada';
+            $Color = 'table-primaria';
+            break;
+        case 4:
+            $Title = 'Cancelada';
+            $Color = 'table-secondary';
+            break;
+        default:
+            $Title = 'Estado Desconocido';
+            $Color = '';
+    }
+    
+    return [$Title, $Color];
 }
 
 function Validar_Usuario() {
@@ -2843,6 +2880,42 @@ function Datos_Pedido_Para_Retiro($vConexion, $vIdPedido) {
     $result = $stmt->get_result();
     
     return $result->fetch_assoc();
+}
+
+function Actualizar_Estado_Orden($conexion, $id_orden, $nuevo_estado) {
+    error_log("Actualizando orden $id_orden a estado $nuevo_estado");
+    $query = "UPDATE orden_compra SET idEstado = ? WHERE idOrdenCompra = ?";
+    
+    error_log("Consulta SQL: $query");
+    
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        error_log("Error preparando consulta: ".$conexion->error);
+        return false;
+    }
+    
+    $stmt->bind_param("ii", $nuevo_estado, $id_orden);
+    $resultado = $stmt->execute();
+    
+    if (!$resultado) {
+        error_log("Error ejecutando consulta: ".$stmt->error);
+    }
+    
+    $stmt->close();
+    return $resultado;
+}
+
+function Lista_Estados_Orden($conexion) {
+    $query = "SELECT idEstadoOrdenCompra AS id, denominacion 
+              FROM estado_orden_compra 
+              ORDER BY idEstadoOrdenCompra";
+    $result = $conexion->query($query);
+    
+    $estados = array();
+    while ($row = $result->fetch_assoc()) {
+        $estados[] = $row;
+    }
+    return $estados;
 }
 
 ?>

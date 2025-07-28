@@ -1,5 +1,4 @@
 <?php
-// modificar_orden_compra.php
 ob_start();
 session_start();
 
@@ -57,6 +56,23 @@ if (!empty($_POST['BotonActualizar'])) {
         $_SESSION['Estilo'] = 'danger';
     }
     
+    header("Location: modificar_orden_compra.php?ID_ORDEN=".$_POST['IdOrden']);
+    exit;
+}
+
+// Procesar cambio de estado 
+if (!empty($_POST['BotonCambiarEstado'])) {
+    error_log("Intentando actualizar estado. ID Orden: ".$_POST['IdOrden'].", Nuevo estado: ".$_POST['nuevo_estado']);
+    
+    if (Actualizar_Estado_Orden($MiConexion, $_POST['IdOrden'], $_POST['nuevo_estado'])) {
+        $_SESSION['Mensaje'] = "Estado de la orden actualizado correctamente a ".$_POST['nuevo_estado'];
+        $_SESSION['Estilo'] = 'success';
+        error_log("Estado actualizado correctamente");
+    } else {
+        $_SESSION['Mensaje'] = "Error al actualizar el estado: ".$MiConexion->error;
+        $_SESSION['Estilo'] = 'danger';
+        error_log("Error al actualizar estado: ".$MiConexion->error);
+    }
     header("Location: modificar_orden_compra.php?ID_ORDEN=".$_POST['IdOrden']);
     exit;
 }
@@ -191,6 +207,46 @@ ob_end_flush();
                             </tfoot>
                         </table>
                     </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- Sección para cambiar estado -->
+    <section class="section">
+        <form method="post">
+            <input type="hidden" name="IdOrden" value="<?= $DatosOrdenActual['idOrdenCompra'] ?>">
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Cambiar Estado de la Orden</h5>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label">Estado actual:</label>
+                            <div class="h4">
+                                <?= $DatosOrdenActual['ESTADO'] ?>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <select class="form-select" name="nuevo_estado" required>
+                                <?php 
+                                $estados = Lista_Estados_Orden($MiConexion);
+                                foreach ($estados as $estado) {
+                                    $selected = ($estado['id'] == $DatosOrdenActual['idEstado']) ? 'selected' : '';
+                                    echo "<option value='{$estado['id']}' $selected>{$estado['denominacion']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <button type="submit" name="BotonCambiarEstado" value=1 class="btn btn-primary w-100">
+                                <i class="bi bi-arrow-repeat"></i> Actualizar Estado
+                            </button>
+                        </div>
+                    </div>
                     
                     <div class="mt-4 d-flex justify-content-center gap-3">
                         <a href="../listados/listados_ordenes_compra.php" class="btn btn-secondary">
@@ -230,6 +286,17 @@ function calcularTotales() {
 document.addEventListener('DOMContentLoaded', calcularTotales);
 document.querySelectorAll('.precio, input[name^="cantidad"]').forEach(input => {
     input.addEventListener('input', calcularTotales);
+});
+
+// Validación para cambio de estado
+document.querySelector('select[name="nuevo_estado"]').addEventListener('change', function() {
+    if (this.value == 3) { // 3 = Finalizado (ajusta según tus IDs de estado)
+        if (!confirm('¿Confirmas que deseas marcar esta orden como FINALIZADA? Esta acción no se puede deshacer.')) {
+            this.value = this.dataset.prevValue;
+            return false;
+        }
+    }
+    this.dataset.prevValue = this.value;
 });
 </script>
 

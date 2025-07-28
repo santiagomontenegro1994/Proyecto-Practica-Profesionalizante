@@ -103,8 +103,11 @@ if (!empty($_POST['BotonBuscar'])) {
               </thead>
               <tbody>
                 <?php 
-                for ($i = 0; $i < $CantidadOrdenes; $i++) { ?>
-                  <tr>
+                for ($i = 0; $i < $CantidadOrdenes; $i++) { 
+                  // Color de fila según estado
+                    list($Title, $Color) = ColorDeFilaOrdenesCompra( $ListadoOrdenes[$i]['ID_ESTADO']);
+                  ?>
+                  <tr class="<?php echo $Color; ?>" data-bs-toggle="tooltip" data-bs-placement="left" title="<?php echo $Title; ?>">
                     <td><?php echo $ListadoOrdenes[$i]['ID_ORDEN']; ?></td>
                     <td><?php echo $ListadoOrdenes[$i]['FECHA']; ?></td>
                     <td><?php echo $ListadoOrdenes[$i]['PROVEEDOR']; ?></td>
