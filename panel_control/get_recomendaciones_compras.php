@@ -66,40 +66,41 @@ try {
     $fin_anterior = '';
     $periodo_texto = 'Hoy';
 
+    // MODIFICACIÓN PRINCIPAL: Agregar condición de estado 2 o 3 a todos los filtros
     switch($periodo) {
         case 'hoy':
-            $filtro = "oc.fecha = '$hoy'";
+            $filtro = "oc.fecha = '$hoy' AND oc.idEstado IN (2, 3)";
             $inicio_anterior = $ayer;
             $fin_anterior = $ayer;
             $periodo_texto = 'Hoy';
             break;
         case 'semana':
-            $filtro = "oc.fecha BETWEEN '$inicio_semana' AND '$hoy'";
+            $filtro = "oc.fecha BETWEEN '$inicio_semana' AND '$hoy' AND oc.idEstado IN (2, 3)";
             $inicio_anterior = date('Y-m-d', strtotime('last monday -7 days'));
             $fin_anterior = date('Y-m-d', strtotime('last sunday -7 days'));
             $periodo_texto = 'Esta semana';
             break;
         case 'mes':
-            $filtro = "oc.fecha BETWEEN '$inicio_mes' AND '$hoy'";
+            $filtro = "oc.fecha BETWEEN '$inicio_mes' AND '$hoy' AND oc.idEstado IN (2, 3)";
             $inicio_anterior = date('Y-m-01', strtotime('-1 month'));
             $fin_anterior = date('Y-m-t', strtotime('-1 month'));
             $periodo_texto = 'Este mes';
             break;
         case 'anio':
-            $filtro = "oc.fecha BETWEEN '$inicio_anio' AND '$hoy'";
+            $filtro = "oc.fecha BETWEEN '$inicio_anio' AND '$hoy' AND oc.idEstado IN (2, 3)";
             $inicio_anterior = date('Y-01-01', strtotime('-1 year'));
             $fin_anterior = date('Y-12-31', strtotime('-1 year'));
             $periodo_texto = 'Este año';
             break;
         case 'personalizado':
-            $filtro = "oc.fecha BETWEEN '$fechaInicio' AND '$fechaFin'";
+            $filtro = "oc.fecha BETWEEN '$fechaInicio' AND '$fechaFin' AND oc.idEstado IN (2, 3)";
             $dias = (strtotime($fechaFin) - strtotime($fechaInicio)) / (60 * 60 * 24);
             $inicio_anterior = date('Y-m-d', strtotime($fechaInicio . " -" . ($dias + 1) . " days"));
             $fin_anterior = date('Y-m-d', strtotime($fechaInicio . " -1 day"));
             $periodo_texto = "Personalizado ($fechaInicio al $fechaFin)";
             break;
         default:
-            $filtro = "oc.fecha = '$hoy'";
+            $filtro = "oc.fecha = '$hoy' AND oc.idEstado IN (2, 3)";
             $periodo_texto = 'Hoy';
             break;
     }
@@ -146,9 +147,9 @@ try {
         $datos['comprasHoy']['total'] = (int)$row['total'];
     }
 
-    // Consulta para contar compras período anterior
+    // Consulta para contar compras período anterior (también con filtro de estado)
     if (!empty($inicio_anterior) && !empty($fin_anterior)) {
-        $query_anterior = "SELECT COUNT(*) as total FROM orden_compra oc WHERE oc.fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'";
+        $query_anterior = "SELECT COUNT(*) as total FROM orden_compra oc WHERE oc.fecha BETWEEN '$inicio_anterior' AND '$fin_anterior' AND oc.idEstado IN (2, 3)";
         $result_anterior = $conexion->query($query_anterior);
         if ($result_anterior) {
             $row_anterior = $result_anterior->fetch_assoc();
@@ -170,12 +171,12 @@ try {
         $datos['gastosCompras']['total'] = (float)$row['total'];
     }
 
-    // Consulta para sumar gastos período anterior
+    // Consulta para sumar gastos período anterior (también con filtro de estado)
     if (!empty($inicio_anterior) && !empty($fin_anterior)) {
         $query_anterior = "SELECT COALESCE(SUM(doc.cantidad * doc.precio), 0) as total 
                            FROM detalle_orden_compra doc
                            JOIN orden_compra oc ON doc.idOrdenCompra = oc.idOrdenCompra
-                           WHERE oc.fecha BETWEEN '$inicio_anterior' AND '$fin_anterior'";
+                           WHERE oc.fecha BETWEEN '$inicio_anterior' AND '$fin_anterior' AND oc.idEstado IN (2, 3)";
         $result_anterior = $conexion->query($query_anterior);
         if ($result_anterior) {
             $row_anterior = $result_anterior->fetch_assoc();
@@ -316,4 +317,3 @@ try {
     // Respuesta de error con datos de diagnóstico
     jsonError("Error al generar recomendaciones: " . $e->getMessage(), 500);
 }
-?>
