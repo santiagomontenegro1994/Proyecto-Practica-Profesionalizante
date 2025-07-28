@@ -2,17 +2,16 @@
 ob_start(); // Inicia el buffering de salida
 session_start();
 
-if (empty($_SESSION['Usuario_Nombre']) ) { // si el usuario no esta logueado no lo deja entrar
-  header('Location: ../inicio/cerrarsesion.php');
-  exit;
+if (empty($_SESSION['Usuario_Nombre'])) {
+    header('Location: ../inicio/cerrarsesion.php');
+    exit;
 }
 
-require ('../encabezado.inc.php'); //Aca uso el encabezado que esta seccionados en otro archivo
-
-require ('../barraLateral.inc.php'); //Aca uso el encabezaso que esta seccionados en otro archivo
+require('../encabezado.inc.php');
+require('../barraLateral.inc.php');
 
 require_once '../funciones/conexion.php';
-$MiConexion=ConexionBD(); 
+$MiConexion = ConexionBD();
 
 require_once '../funciones/select_general.php';
 $ListadoTipos = Listar_Tipos($MiConexion);
@@ -26,41 +25,45 @@ $CantidadClientes = count($ListadoClientes);
 
 $ListadoEstados = Listar_Estados_Turnos($MiConexion);
 $CantidadEstados = count($ListadoEstados);
- 
 
-//este array contendra los datos de la consulta original, y cuando 
-//pulse el boton, mantendrá los datos ingresados hasta que se validen y se puedan modificar
-$DatosTurnoActual=array();
+$DatosTurnoActual = array();
 
 if (!empty($_POST['ModificarTurno'])) {
-    Validar_Turno();
-
-    if (empty($_SESSION['Mensaje'])) { //ya toque el boton modificar y el mensaje esta vacio...
-        
-        if (Modificar_Turno($MiConexion) != false) {
-            $_SESSION['Mensaje'] = "Tu cliente se ha modificado correctamente!";
-            $_SESSION['Estilo']='success';
+    // Limpiar mensaje anterior
+    $_SESSION['Mensaje'] = '';
+    $_SESSION['Estilo'] = 'warning';
+    
+    // Validar el turno
+    $valido = Validar_Turno_Modificar($MiConexion);
+    
+    if ($valido) {        
+        if (Modificar_Turno($MiConexion)) {
+            $_SESSION['Mensaje'] = "El turno se ha modificado correctamente!";
+            $_SESSION['Estilo'] = 'success';
+            ob_end_clean(); // Limpiar buffer antes de redirigir
             header('Location: ../listados/listados_turnos.php');
             exit;
         }
-
-    }else {  //ya toque el boton modificar y el mensaje NO esta vacio...
-        $_SESSION['Estilo']='warning';
-        $DatosTurnoActual['ID_TURNO'] = !empty($_POST['IdTurno']) ? $_POST['IdTurno'] :'';
-        $DatosTurnoActual['HORARIO'] = !empty($_POST['Horario']) ? $_POST['Horario'] :'';
-        $DatosTurnoActual['FECHA'] = !empty($_POST['Fecha']) ? $_POST['Fecha'] :'';
-        $DatosTurnoActual['TIPO_SERVICIO'] = !empty($_POST['TipoServicio']) ? $_POST['TipoServicio'] :'';
-        $DatosTurnoActual['ESTILISTA'] = !empty($_POST['Estilista']) ? $_POST['Estilista'] :'';
-        $DatosTurnoActual['CLIENTE'] = !empty($_POST['Cliente']) ? $_POST['Cliente'] :'';
-        $DatosTurnoActual['ESTADO'] = !empty($_POST['Estado']) ? $_POST['Estado'] :'';
     }
+    
+    // Si hay errores, guardar los datos del formulario
+    $DatosTurnoActual = [
+        'ID_TURNO' => $_POST['IdTurno'] ?? '',
+        'HORARIO' => $_POST['Horario'] ?? '',
+        'FECHA' => $_POST['Fecha'] ?? '',
+        'TIPO_SERVICIO' => $_POST['TipoServicio'] ?? [],
+        'ESTILISTA' => $_POST['Estilista'] ?? '',
+        'CLIENTE' => $_POST['Cliente'] ?? '',
+        'ESTADO' => $_POST['Estado'] ?? ''
+    ];
+    
+    // Convertir servicios en array para select múltiple
+    $serviciosSeleccionados = is_array($DatosTurnoActual['TIPO_SERVICIO']) ? 
+                            $DatosTurnoActual['TIPO_SERVICIO'] : 
+                            explode(',', $DatosTurnoActual['TIPO_SERVICIO']);
 
-}else if (!empty($_GET['ID_TURNO'])) {
-    //verifico que traigo el nro de consulta por GET si todabia no toque el boton de Modificar
-    //busco los datos de esta consulta y los muestro
-    $DatosTurnoActual = Datos_Turno($MiConexion , $_GET['ID_TURNO']);
-
-    // Convertir los servicios en array
+} elseif (!empty($_GET['ID_TURNO'])) {
+    $DatosTurnoActual = Datos_Turno($MiConexion, $_GET['ID_TURNO']);
     $serviciosSeleccionados = !empty($DatosTurnoActual['servicios_seleccionados']) ? 
                             explode(',', $DatosTurnoActual['servicios_seleccionados']) : 
                             [];

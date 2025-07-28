@@ -26,7 +26,7 @@ $_SESSION['Estilo'] = 'alert';
 
 if (!empty($_POST['Registrar'])) {
     // Validar los datos
-    Validar_Turno();
+    Validar_Turno_Agregado($MiConexion);
     if (empty($_SESSION['Mensaje'])) {
         if (InsertarTurnos($MiConexion) != false) {
             $_SESSION['Mensaje'] = 'Se ha registrado correctamente.';

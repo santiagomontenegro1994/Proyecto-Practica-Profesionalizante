@@ -399,30 +399,144 @@ function Datos_Turno($vConexion, $vIdTurno) {
     return $DatosTurno;
 }
 
-function Validar_Turno(){
-    $_SESSION['Mensaje']='';
+function Validar_Turno_Modificar($conexion) {
+    $_SESSION['Mensaje'] = '';
+    $_SESSION['Estilo'] = 'warning';
+    
+    // Validaciones básicas
+    $errores = [];
+    
+    if (empty($_POST['Fecha']) || strlen($_POST['Fecha']) < 4) {
+        $errores[] = 'Debes seleccionar una fecha válida.';
+    }
+    
+    if (empty($_POST['Horario'])) {
+        $errores[] = 'Debes seleccionar un horario válido.';
+    }
+    
+    if (empty($_POST['TipoServicio']) || in_array('', $_POST['TipoServicio'])) {
+        $errores[] = 'Debes seleccionar al menos un Tipo de Servicio válido.';
+    }
+    
+    if (empty($_POST['Estilista']) || $_POST['Estilista'] === 'Selecciona una opcion') {
+        $errores[] = 'Debes seleccionar un Estilista válido.';
+    }
+    
+    if (empty($_POST['Cliente']) || $_POST['Cliente'] == 'Selecciona una opcion') {
+        $errores[] = 'Debes seleccionar un Cliente válido.';
+    }
+
+    if (!empty($errores)) {
+        $_SESSION['Mensaje'] = implode('<br />', $errores);
+        return false;
+    }
+
+    // Verificar disponibilidad del estilista
+    try {
+        $fecha = $_POST['Fecha'];
+        $horario = $_POST['Horario'];
+        $idEstilista = (int)$_POST['Estilista'];
+        $idTurnoActual = (int)$_POST['IdTurno'];
+        
+        // Normalizar formato de hora
+        if (strlen($horario) == 5) {
+            $horario .= ':00';
+        }
+        
+        $query = "SELECT COUNT(*) AS count FROM turnos 
+                  WHERE Fecha = ? 
+                  AND Horario = ? 
+                  AND IdEstilista = ? 
+                  AND idActivo = 1
+                  AND IdTurno != ?";
+        
+        $stmt = $conexion->prepare($query);
+        if (!$stmt) {
+            throw new Exception("Error preparando consulta");
+        }
+        
+        $stmt->bind_param("ssii", $fecha, $horario, $idEstilista, $idTurnoActual);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error ejecutando consulta");
+        }
+        
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        
+        if ($row['count'] > 0) {
+            $_SESSION['Mensaje'] = 'El estilista ya tiene un turno asignado en esa fecha y horario.';
+            return false;
+        }
+        
+        return true;
+        
+    } catch (Exception $e) {
+        error_log("Error en Validar_Turno_Modificar: " . $e->getMessage());
+        $_SESSION['Mensaje'] = 'Error al validar el turno. Por favor intente nuevamente.';
+        $_SESSION['Estilo'] = 'danger';
+        return false;
+    }
+}
+
+function Validar_Turno_Agregado($conexion) {
+    $_SESSION['Mensaje'] = '';
+    
+    // Validaciones básicas
     if (strlen($_POST['Fecha']) < 4) {
-        $_SESSION['Mensaje'].='Debes seleccionar una fecha. <br />';
+        $_SESSION['Mensaje'] .= 'Debes seleccionar una fecha. <br />';
     }
     if (empty($_POST['Horario'])) {
-        $_SESSION['Mensaje'].='Debes seleccionar un horario. <br />';
+        $_SESSION['Mensaje'] .= 'Debes seleccionar un horario. <br />';
     }
     if (empty($_POST['TipoServicio']) || in_array('', $_POST['TipoServicio'])) {
         $_SESSION['Mensaje'] .= 'Debes seleccionar al menos un Tipo de Servicio válido.<br />';
     }
     if ($_POST['Estilista'] === 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Estilista. <br />';
+        $_SESSION['Mensaje'] .= 'Debes seleccionar un Estilista. <br />';
     }
     if ($_POST['Cliente'] == 'Selecciona una opcion') {
-        $_SESSION['Mensaje'].='Debes seleccionar un Cliente. <br />';
+        $_SESSION['Mensaje'] .= 'Debes seleccionar un Cliente. <br />';
     }
 
-    //con esto aseguramos que limpiamos espacios y limpiamos de caracteres de codigo ingresados
-    //foreach($_POST as $Id=>$Valor){
-    //    $_POST[$Id] = trim($_POST[$Id]);
-    //    $_POST[$Id] = strip_tags($_POST[$Id]);
-    //}
+    // Si hay errores en las validaciones básicas, no continuar con la verificación de disponibilidad
+    if (!empty($_SESSION['Mensaje'])) {
+        return $_SESSION['Mensaje'];
+    }
 
+    // Verificar disponibilidad del estilista
+    $fecha = $_POST['Fecha'];
+    $horario = $_POST['Horario'];
+    $idEstilista = $_POST['Estilista'];
+    
+    // Si estamos editando un turno existente, excluirlo de la verificación
+    $idTurnoActual = isset($_POST['IdTurno']) ? $_POST['IdTurno'] : 0;
+    
+    $query = "SELECT COUNT(*) AS count FROM turnos 
+              WHERE Fecha = ? 
+              AND Horario = ? 
+              AND IdEstilista = ? 
+              AND idActivo = 1
+              AND IdTurno != ?";
+    
+    $stmt = $conexion->prepare($query);
+    if (!$stmt) {
+        error_log("Error preparando consulta: ".$conexion->error);
+        $_SESSION['Mensaje'] .= 'Error al verificar disponibilidad del estilista.';
+        return $_SESSION['Mensaje'];
+    }
+    
+    $stmt->bind_param("ssii", $fecha, $horario, $idEstilista, $idTurnoActual);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if ($row['count'] > 0) {
+        $_SESSION['Mensaje'] .= 'El estilista ya tiene un turno asignado en esa fecha y horario. <br />';
+    }
+    
+    $stmt->close();
+    
     return $_SESSION['Mensaje'];
 }
 
@@ -2492,7 +2606,7 @@ function Eliminar_Orden_Compra($vConexion , $vIdConsulta) {
 
     if (!empty($data['idOrdenCompra']) ) {
         //si se cumple todo, entonces elimino:
-        mysqli_query($vConexion, "UPDATE orden_compra SET idActivo = 2 WHERE idOrdenCompra = $vIdConsulta");
+        mysqli_query($vConexion, "UPDATE orden_compra SET idEstado = 4 WHERE idOrdenCompra = $vIdConsulta");
         return true;
 
     }else {
